@@ -1,0 +1,59 @@
+using System;
+using System.Collections;
+using System.Linq;
+using NUnit.Framework;
+using UnityEditor.SceneManagement;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.TestTools;
+
+public class SortingIntegrationTests
+{
+    bool previousEnabled;
+    StackTraceLogType previousLogStack;
+    EnterPlayModeOptions previousOptions;
+    [SetUp] public void Setup() { previousEnabled=EditorSettings.enterPlayModeOptionsEnabled;previousOptions=EditorSettings.enterPlayModeOptions;previousLogStack=Application.GetStackTraceLogType(LogType.Log);Application.SetStackTraceLogType(LogType.Log,StackTraceLogType.None); }
+    [UnityTearDown] public IEnumerator Cleanup()
+    {
+        if(EditorApplication.isPlaying) yield return new ExitPlayMode();
+        EditorSettings.enterPlayModeOptionsEnabled=previousEnabled;EditorSettings.enterPlayModeOptions=previousOptions;
+        Application.SetStackTraceLogType(LogType.Log,previousLogStack);
+    }
+    [Test] public void PlayerPrefabHasNoPrototypeDependencies()
+    {
+        var dependencies=AssetDatabase.GetDependencies("Assets/_LabSorting/Prefabs/Player/LabPlayer.prefab",true);
+        Assert.IsFalse(dependencies.Any(p=>p.Contains("/Prototype/")),"Permanent player must not depend on disposable content");
+    }
+    [UnityTest]
+    [Timeout(900000)]
+    public IEnumerator CoreSortingAndController()
+    {
+        EditorSceneManager.OpenScene("Assets/_LabSorting/Prototype/Scenes/SortingTest.unity");
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Sorting.SortingSession")).First(t=>t!=null);
+        var session=UnityEngine.Object.FindFirstObjectByType(type);
+        type.GetField("persistence").SetValue(session,false);
+        EditorSettings.enterPlayModeOptionsEnabled=true;
+        EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);
+        var checkType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.SortingSmokeChecks")).First(t=>t!=null);
+        Assert.IsNotNull(checkType);
+        yield return (IEnumerator)checkType.GetMethod("Run").Invoke(null,null);
+        yield return new ExitPlayMode();
+    }
+    [Test]
+    public void PlayerHeightMatchesPrefabAndSavedScene()
+    {
+        var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_LabSorting/Prefabs/Player/LabPlayer.prefab");
+        AssertDimensions(prefab);
+        EditorSceneManager.OpenScene("Assets/_LabSorting/Prototype/Scenes/SortingTest.unity");
+        var capsule=UnityEngine.Object.FindObjectsByType<CapsuleCollider>(FindObjectsSortMode.None).Single(c=>c.GetComponents<MonoBehaviour>().Any(m=>m&&m.GetType().Name=="KinematicCharacterMotor"));
+        AssertDimensions(capsule.gameObject);
+    }
+    static void AssertDimensions(GameObject player)
+    {
+        var capsule=player.GetComponent<CapsuleCollider>();Assert.That(capsule.height,Is.EqualTo(1.7f).Within(.0001f));Assert.That(capsule.center.y,Is.EqualTo(.85f).Within(.0001f));Assert.That(capsule.radius,Is.EqualTo(.3f).Within(.0001f));
+        var camera=player.GetComponentInChildren<Camera>(true);Assert.That(player.transform.InverseTransformPoint(camera.transform.position).y,Is.EqualTo(1.6f).Within(.0001f));Assert.That(player.transform.localScale,Is.EqualTo(Vector3.one));
+        var motor=player.GetComponents<MonoBehaviour>().Single(m=>m&&m.GetType().Name=="KinematicCharacterMotor");var serialized=new SerializedObject(motor);
+        Assert.That(serialized.FindProperty("CapsuleHeight").floatValue,Is.EqualTo(1.7f).Within(.0001f));Assert.That(serialized.FindProperty("CapsuleYOffset").floatValue,Is.EqualTo(.85f).Within(.0001f));
+    }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "LabSorting.Tests",
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}
