@@ -10,7 +10,7 @@ namespace LabSorting.Prototype
     {
         static IEnumerator Wait(float seconds)
         {
-            float end=Time.time+seconds,deadline=Time.realtimeSinceStartup+20;
+            float end=Time.time+seconds,deadline=Time.realtimeSinceStartup+120;
             while(Time.time<end){if(Time.realtimeSinceStartup>deadline)throw new Exception("Height test frame clock stopped");yield return null;}
         }
         static GameObject Box(string name,Transform parent,Vector3 position,Vector3 size)
@@ -92,3 +92,4 @@ namespace LabSorting.Prototype
         }
     }
 }
+

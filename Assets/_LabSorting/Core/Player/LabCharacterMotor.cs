@@ -64,6 +64,7 @@ namespace LabSorting.Player
 
         [Header("Misc")]
         public List<Collider> IgnoredColliders = new List<Collider>();
+        public readonly HashSet<Collider> SortingColliders = new HashSet<Collider>();
         public BonusOrientationMethod BonusOrientationMethod = BonusOrientationMethod.None;
         public float BonusOrientationSharpness = 10f;
         public Vector3 Gravity = new Vector3(0, -30f, 0);
@@ -553,7 +554,7 @@ namespace LabSorting.Player
 
         public bool IsColliderValidForCollisions(Collider coll)
         {
-            if (IgnoredColliders.Contains(coll))
+            if (SortingColliders.Contains(coll) || IgnoredColliders.Contains(coll))
             {
                 return false;
             }
@@ -602,6 +603,7 @@ namespace LabSorting.Player
         }
     }
 }
+
 
 
 

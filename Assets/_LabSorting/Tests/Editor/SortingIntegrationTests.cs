@@ -32,6 +32,14 @@ public class SortingIntegrationTests
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Sorting.SortingSession")).First(t=>t!=null);
         var session=UnityEngine.Object.FindFirstObjectByType(type);
         type.GetField("persistence").SetValue(session,false);
+        var completionType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.UI.LabCompletionPanel")).First(t=>t!=null);
+        var completion=UnityEngine.Object.FindFirstObjectByType(completionType);if(completion)completionType.GetField("autoShow").SetValue(completion,false);
+        var recoveryType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Sorting.ItemRecovery")).First(t=>t!=null);
+        var recovery=UnityEngine.Object.FindFirstObjectByType(recoveryType);if(recovery)recoveryType.GetField("automatic").SetValue(recovery,false);
+        var settingsType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.UI.SettingsTutorialPanel")).First(t=>t!=null);
+        var settings=UnityEngine.Object.FindFirstObjectByType(settingsType);
+        if(settings){settingsType.GetField("autoTutorial").SetValue(settings,false);settingsType.GetField("preferencesPrefix").SetValue(settings,"LabSorting.AutomatedTutorial.");}
+        foreach(var key in new[]{"LookSensitivity","Sound","Haptics","TutorialDone","TutorialPage"})PlayerPrefs.DeleteKey("LabSorting.AutomatedTutorial."+key);
         EditorSettings.enterPlayModeOptionsEnabled=true;
         EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
         yield return new EnterPlayMode(false);
@@ -49,6 +57,23 @@ public class SortingIntegrationTests
         var capsule=UnityEngine.Object.FindObjectsByType<CapsuleCollider>(FindObjectsSortMode.None).Single(c=>c.GetComponents<MonoBehaviour>().Any(m=>m&&m.GetType().Name=="KinematicCharacterMotor"));
         AssertDimensions(capsule.gameObject);
     }
+    [UnityTest,Timeout(900000)]
+    public IEnumerator StressCatalogPerformance()
+    {
+        EditorSceneManager.OpenScene("Assets/_LabSorting/Prototype/Scenes/SortingStressTest.unity");
+        var catalogType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.StressCatalog")).First(t=>t!=null);
+        var catalog=UnityEngine.Object.FindFirstObjectByType(catalogType);catalogType.GetField("autoStart").SetValue(catalog,false);
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);UnityEngine.Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.StressPerformanceChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
+        yield return new ExitPlayMode();
+    }
+    [Test] public void IntegrationValidatorDetectsBadContent()
+    {
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Editor.IntegrationValidationChecks")).First(t=>t!=null);
+        type.GetMethod("Run").Invoke(null,null);
+    }
     static void AssertDimensions(GameObject player)
     {
         var capsule=player.GetComponent<CapsuleCollider>();Assert.That(capsule.height,Is.EqualTo(1.7f).Within(.0001f));Assert.That(capsule.center.y,Is.EqualTo(.85f).Within(.0001f));Assert.That(capsule.radius,Is.EqualTo(.3f).Within(.0001f));
@@ -57,3 +82,6 @@ public class SortingIntegrationTests
         Assert.That(serialized.FindProperty("CapsuleHeight").floatValue,Is.EqualTo(1.7f).Within(.0001f));Assert.That(serialized.FindProperty("CapsuleYOffset").floatValue,Is.EqualTo(.85f).Within(.0001f));
     }
 }
+
+
+

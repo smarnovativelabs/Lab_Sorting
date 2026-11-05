@@ -61,6 +61,8 @@ namespace LabSorting.Player
         public Transform CameraTarget => cameraTarget != null ? cameraTarget : transform;
         public Quaternion CameraRotation => CameraTarget.rotation;
         public Vector3 CameraForward => CameraTarget.forward;
+        public float SensitivityMultiplier { get; private set; } = 1f;
+        public void SetSensitivityMultiplier(float value) { SensitivityMultiplier = float.IsNaN(value)||float.IsInfinity(value)?1f:Mathf.Clamp(value,.5f,2f); }
         public float Yaw => yaw;
         public float Pitch => pitch;
         public bool IsLookLocked => lookLocked || lookLockOwners.Count > 0;
@@ -111,6 +113,7 @@ namespace LabSorting.Player
                 return;
             }
 
+            input *= SensitivityMultiplier;
             float yawDelta;
             float pitchDelta;
 
@@ -289,4 +292,5 @@ namespace LabSorting.Player
         }
     }
 }
+
 

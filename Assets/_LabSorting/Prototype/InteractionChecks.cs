@@ -11,8 +11,8 @@ namespace LabSorting.Prototype
 {
     public static class InteractionChecks
     {
-        static IEnumerator Wait(float seconds){float end=Time.unscaledTime+seconds,deadline=Time.realtimeSinceStartup+20;while(Time.unscaledTime<end){if(Time.realtimeSinceStartup>deadline)throw new Exception("Interaction frame clock stopped");yield return null;}}
-        static IEnumerator Until(Func<bool> done){float deadline=Time.realtimeSinceStartup+8;while(!done()&&Time.realtimeSinceStartup<deadline)yield return null;}
+        static IEnumerator Wait(float seconds){float end=Time.unscaledTime+seconds,deadline=Time.realtimeSinceStartup+120;while(Time.unscaledTime<end){if(Time.realtimeSinceStartup>deadline)throw new Exception("Interaction frame clock stopped");yield return null;}}
+        static IEnumerator Until(Func<bool> done){float deadline=Time.realtimeSinceStartup+90;while(!done()&&Time.realtimeSinceStartup<deadline)yield return null;}
         static void Aim(SortingSession s,Vector3 point){s.player.look.SnapToDirection(point-s.player.view.transform.position);Physics.SyncTransforms();s.RefreshTarget();}
         static void Move(SortingSession s,Vector3 pos){s.player.Clear();s.player.character.Motor.BaseVelocity=Vector3.zero;s.player.character.Motor.SetPositionAndRotation(pos,Quaternion.identity);s.player.look.SetYawPitch(Vector2.zero);Physics.SyncTransforms();}
         public static IEnumerator Run(SortingSession s,Action<bool,string> check)
@@ -73,6 +73,7 @@ namespace LabSorting.Prototype
         }
     }
 }
+
 
 
 

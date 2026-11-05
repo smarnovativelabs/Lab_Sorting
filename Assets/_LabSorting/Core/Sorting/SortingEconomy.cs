@@ -30,7 +30,7 @@ namespace LabSorting.Sorting
             int cost=Mathf.Max(1,searchCost);if(cash<cost) return Fail("Not enough cash for search");
             cash-=cost;searchType=type;searchUntil=Time.unscaledTime+Mathf.Max(1,searchDuration);
             foreach(var item in items) if(item.location==ItemLocation.Loose && item.definition==type) item.SetSearchHighlight(true);
-            Commit("Search: "+count+" loose "+type.displayName+" found");SearchStarted?.Invoke(type,count);return true;
+            Commit("Search: "+count+" loose "+type.displayName+" found");SearchStarted?.Invoke(type,count);SaveTransaction();return true;
         }
         public bool TryMagnet()
         {
@@ -50,14 +50,14 @@ namespace LabSorting.Sorting
                 if(item.location==ItemLocation.Loose && item.definition==type && !item.Moving){var origin=item.transform.position;if(TryPick(item)){collected++;origins.Add(origin);}}
             }
             if(collected==0) return Fail("Nothing collected — no charge");
-            cash-=cost;Commit("Magnet collected "+collected+" "+type.displayName);MagnetCollected?.Invoke(type,origins.ToArray());return true;
+            cash-=cost;Commit("Magnet collected "+collected+" "+type.displayName);MagnetCollected?.Invoke(type,origins.ToArray());SaveTransaction();return true;
         }
         public bool TryUpgradeCapacity()
         {
             if(player.blocked) return false;
             if(capacity>=maxCapacity) return Fail("Maximum capacity reached — no charge");
             int cost=UpgradeCost;if(cash<cost) return Fail("Not enough cash for upgrade");
-            cash-=cost;capacity++;Commit("Capacity upgraded to "+capacity);return true;
+            cash-=cost;capacity++;Commit("Capacity upgraded to "+capacity);SaveTransaction();return true;
         }
         void UpdateSearch() { if(searchType && Time.unscaledTime>=searchUntil) {EndSearch();Notify();} }
         void EndSearch() { if(items!=null) foreach(var item in items) if(item) item.SetSearchHighlight(false);searchType=null;searchUntil=0; }
@@ -70,4 +70,5 @@ namespace LabSorting.Sorting
         }
     }
 }
+
 

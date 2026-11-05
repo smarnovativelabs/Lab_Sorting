@@ -18,9 +18,12 @@ namespace LabSorting.UI
             var type=session.Active?session.Active.definition.displayName:"Select item";
             wallet.text="CASH  "+session.Cash+"   |   Slots "+session.capacity+"/"+session.maxCapacity;
             searchLabel.text=session.SearchType?"SEARCH  "+session.SearchSeconds.ToString("0.0")+"s\n"+session.SearchType.displayName:"SEARCH  $"+session.searchCost+"\n"+type;
-            magnetLabel.text="MAGNET  $"+session.magnetCost+"\n"+(session.carried.Count>=session.capacity?"Hands full — no charge":type);
+            magnetLabel.text="MAGNET  $"+session.magnetCost+"\n"+(session.carried.Count>=session.capacity?type+" — FULL":type);
             upgradeLabel.text=session.capacity>=session.maxCapacity?"CAPACITY MAX":"+1 SLOT  $"+session.UpgradeCost;
             bool enabled=!session.player.blocked;
+            if(!session.Active) {if(!session.SearchType)searchLabel.text="SEARCH  $"+session.searchCost+"\nSelect an item";magnetLabel.text="MAGNET  $"+session.magnetCost+"\nSelect an item";}
+            else if(session.Cash<session.searchCost&&!session.SearchType)searchLabel.text+=" (low cash)";
+            if(session.Active&&session.Cash<session.magnetCost)magnetLabel.text+=" (low cash)";
             searchButton.interactable=enabled&&session.Active&&!session.SearchType&&session.Cash>=session.searchCost;
             magnetButton.interactable=enabled&&session.Active&&session.carried.Count<session.capacity&&!session.Active.Moving&&session.Cash>=session.magnetCost;
             upgradeButton.interactable=enabled&&session.capacity<session.maxCapacity&&session.Cash>=session.UpgradeCost;
@@ -36,5 +39,7 @@ namespace LabSorting.UI
         }
     }
 }
+
+
 
 

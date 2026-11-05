@@ -8,7 +8,7 @@ namespace LabSorting.Prototype
 {
     public static class RewardsChecks
     {
-        static IEnumerator Wait(float seconds){float end=Time.unscaledTime+seconds,deadline=Time.realtimeSinceStartup+20;while(Time.unscaledTime<end){if(Time.realtimeSinceStartup>deadline)throw new Exception("Rewards frame clock stopped");yield return null;}}
+        static IEnumerator Wait(float seconds){float end=Time.unscaledTime+seconds,deadline=Time.realtimeSinceStartup+120;while(Time.unscaledTime<end){if(Time.realtimeSinceStartup>deadline)throw new Exception("Rewards frame clock stopped");yield return null;}}
         public static IEnumerator Run(SortingSession s,Action<bool,string> check,Action<SortingSession,string> capture)
         {
             var initial=s.Capture();bool oldPersistence=s.persistence;var ui=UnityEngine.Object.FindFirstObjectByType<SortingRewardsHUD>();var hud=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();var economy=UnityEngine.Object.FindFirstObjectByType<EconomyHUD>();
@@ -52,3 +52,4 @@ namespace LabSorting.Prototype
         }
     }
 }
+

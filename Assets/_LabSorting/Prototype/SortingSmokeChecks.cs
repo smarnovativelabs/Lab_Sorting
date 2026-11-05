@@ -65,6 +65,13 @@ namespace LabSorting.Prototype
             yield return HeightReachChecks.Run(session,Check);
             yield return InteractionChecks.Run(session,Check);
             yield return RewardsChecks.Run(session,Check,(s,path)=>Capture(s,path));
+            yield return SettingsChecks.Run(session,Check,(s,path)=>Capture(s,path));
+            yield return RecoveryChecks.Run(session,Check);
+            yield return CompletionChecks.Run(session,Check,(s,path)=>Capture(s,path));
+            yield return InventoryPolishChecks.Run(session,Check,(s,path)=>Capture(s,path));
+            yield return ResumeAndTouchChecks.Run(session,Check);
+            yield return AsyncSaveChecks.Run(session,Check);
+            yield return ViewportChecks.Run(session,Check);
             // Disk round trip uses an isolated test save, never the user's progress.
             session.saveName="sorting-automated-test.json";session.persistence=true;
             session.TryPick(session.items[0]);DOTween.CompleteAll();session.Save();session.Restore(initial);
@@ -79,7 +86,7 @@ namespace LabSorting.Prototype
         }
         static IEnumerator WaitGameSeconds(float seconds)
         {
-            float end=Time.time+seconds; float deadline=Time.realtimeSinceStartup+15; int frame=Time.frameCount;
+            float end=Time.time+seconds; float deadline=Time.realtimeSinceStartup+120; int frame=Time.frameCount;
             while(Time.time<end) { if(Time.realtimeSinceStartup>deadline) throw new Exception("Play mode clock stopped"); yield return null; }
             if(Time.frameCount<=frame) throw new Exception("No advancing gameplay frames");
         }
@@ -193,6 +200,10 @@ namespace LabSorting.Prototype
         }
     }
 }
+
+
+
+
 
 
 

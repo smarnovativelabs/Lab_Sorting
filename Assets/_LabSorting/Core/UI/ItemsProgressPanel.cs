@@ -31,6 +31,8 @@ namespace LabSorting.UI
         public void Toggle() {if(IsOpen) Close();else Open();}
         public void Open()
         {
+            var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;
+            var settings=GetComponent<SettingsTutorialPanel>();if(settings&&settings.IsOpen)return;
             if(IsOpen) return;previousBlocked=session.player.blocked;session.player.SetBlocked(true);IsOpen=true;
             previousCursor=Cursor.lockState;previousCursorVisible=Cursor.visible;Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
             root.SetActive(true);root.transform.SetAsLastSibling();page=0;Refresh();
@@ -58,3 +60,5 @@ namespace LabSorting.UI
         void OnDisable() {if(IsOpen) Close();fade?.Kill();scale?.Kill();}
     }
 }
+
+
