@@ -21,6 +21,7 @@ namespace LabSorting.Prototype
             session.player.SendMessage("OnApplicationFocus",true);
             yield return null;yield return null;
             var initial=session.Capture();checks=0;
+            yield return PhysicsFrameChecks.Run(Check);
             Check(session.items.Length==50 && session.racks.Length==5,"50 items and 5 racks authored");
             Check(Time.frameCount>1,"Play mode frames advancing");
             for(int i=0;i<10;i++) {Check(session.TryPick(session.items[i]),"Pickup "+i); DOTween.CompleteAll();}
@@ -53,7 +54,10 @@ namespace LabSorting.Prototype
             var pos=session.player.transform.position;session.player.SetMove(Vector2.up);
             yield return WaitGameSeconds(.6f);session.player.SetMove(Vector2.zero);
             Check(Vector3.Distance(pos,session.player.transform.position)>.5f,"KCC moves player [from="+pos+", to="+session.player.transform.position+", velocity="+session.player.character.Motor.BaseVelocity+"]");
-            float yaw=session.player.look.Yaw;session.player.AddLook(new Vector2(100,0));yield return null;
+            float yaw=session.player.look.Yaw;session.player.AddLook(new Vector2(100,0));
+            // EditMode test coroutine ticks need not correspond to a paced player
+            // Update. Observe real advancing game time before inspecting input.
+            yield return WaitGameSeconds(.05f);
             Check(Mathf.Abs(Mathf.DeltaAngle(yaw,session.player.look.Yaw))>1,"Drag rotates camera");
             session.player.SetBlocked(true);yield return WaitGameSeconds(.2f);pos=session.player.transform.position;
             session.player.SetMove(Vector2.up);session.player.AddLook(new Vector2(100,0));yield return WaitGameSeconds(.3f);

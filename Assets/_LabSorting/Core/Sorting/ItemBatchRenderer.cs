@@ -11,7 +11,7 @@ namespace LabSorting.Sorting
         public SortingSession session;
         public Camera targetCamera;
         [Min(1)] public int minimumItems=200;
-        [Min(1)] public float cellSize=8;
+        [Min(1)] public float cellSize=16;
         public int SubmittedBatches {get;private set;}
         public int BatchedItems {get;private set;}
         public int FallbackItems {get;private set;}
