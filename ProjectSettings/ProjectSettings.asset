@@ -828,7 +828,7 @@ PlayerSettings:
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
     Android: MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED;APP_UI_EDITOR_ONLY
-    Standalone: APP_UI_EDITOR_ONLY;MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
+    Standalone: APP_UI_EDITOR_ONLY;MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED;SENTIS_ANALYTICS_ENABLED
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
