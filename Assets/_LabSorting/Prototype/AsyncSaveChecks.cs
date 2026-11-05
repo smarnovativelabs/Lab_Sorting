@@ -13,6 +13,7 @@ namespace LabSorting.Prototype
         static IEnumerator Until(Func<bool> ready){float end=Time.realtimeSinceStartup+30;while(!ready()&&Time.realtimeSinceStartup<end)yield return null;}
         public static IEnumerator Run(SortingSession s,Action<bool,string> check)
         {
+            SaveStreamChecks.Run(s,check);
             string path=Path.Combine(Application.persistentDataPath,"sorting-worker-test-"+Guid.NewGuid().ToString("N")+".json");
             var gate=new ManualResetEventSlim(false);var entered=new ManualResetEventSlim(false);int writes=0,writerThread=0;int mainThread=Thread.CurrentThread.ManagedThreadId;
             var writer=new DurableSaveWriter(path,(p,json,preserve)=>{writerThread=Thread.CurrentThread.ManagedThreadId;Interlocked.Increment(ref writes);entered.Set();if(!gate.Wait(10000))throw new IOException("Test worker gate timed out");DurableSaveWriter.AtomicWrite(p,json,preserve);});
@@ -29,25 +30,31 @@ namespace LabSorting.Prototype
             }
             finally{gate.Set();writer.Flush();gate.Dispose();entered.Dispose();foreach(var suffix in new[]{"",".bak",".tmp"})if(File.Exists(path+suffix))File.Delete(path+suffix);}
         }
-        [Serializable] public class Performance {public int items,requests;public double captureMedianMs,captureP95Ms,captureMaxMs,workerSerializationMs,workerWriteMs;public long medianMainThreadAllocatedBytes;public string context="3500-item warm incremental save requests during rendered gameplay; disk/serialization are on one worker. Explicit pause/quit/load flush can still wait for storage. Editor measurements, not Android guarantees.";}
+        [Serializable] public class Performance {public int items,requests,catalogCopies,gen0Collections;public bool allocationCounterValid;public double captureMedianMs,captureP95Ms,captureMaxMs,worstPathMs,worstSnapshotMs,worstQueueMs,workerSerializationMs,workerWriteMs;public long medianMainThreadAllocatedBytes;public string context="3500-item 120 warm requests during rendered gameplay; every fourth request dirties one item. Streaming JSON plus buffered writes run on one worker. Serialization time includes buffered IO; write time is final durable flush/replace. GC collection count covers the whole rendered test window, not saves alone. Allocation -1 means runtime counter failed calibration. Explicit pause/quit/load flush can still wait for storage. Editor measurements, not Android guarantees.";}
         public static IEnumerator RunLarge(SortingSession s,Camera camera,Action<bool,string> check)
         {
-            var initial=s.Capture();bool persistence=s.persistence;s.persistence=true;var timings=new List<double>();var allocations=new List<long>();
+            var initial=s.Capture();bool persistence=s.persistence;s.persistence=true;var timings=new List<double>(120);var allocations=new List<long>(120);double maxObserved=-1,worstPath=0,worstSnapshot=0,worstQueue=0;
             try
             {
                 s.InitializeSaveCache();s.RequestSave();yield return Until(()=>!s.SavePending);check(s.FlushSaves(),"3500-item initial checkpoint is durable");
-                for(int i=0;i<30;i++)
+                SaveAllocationChecks.Run(s,check);yield return Until(()=>!s.SavePending);
+                long allocationStart=GC.GetAllocatedBytesForCurrentThread();var probe=new byte[8192];GC.KeepAlive(probe);bool allocationValid=GC.GetAllocatedBytesForCurrentThread()-allocationStart>=8192;int copies=s.SaveCatalogCopies,collections=GC.CollectionCount(0);
+                for(int i=0;i<120;i++)
                 {
-                    long bytes=GC.GetAllocatedBytesForCurrentThread(),started=System.Diagnostics.Stopwatch.GetTimestamp();bool accepted=s.RequestSave();timings.Add((System.Diagnostics.Stopwatch.GetTimestamp()-started)*1000.0/System.Diagnostics.Stopwatch.Frequency);allocations.Add(GC.GetAllocatedBytesForCurrentThread()-bytes);check(accepted,"Large background save request accepted");camera.Render();yield return null;
+                    if(i%4==0)s.items[s.items.Length-1].Snap(s.items[s.items.Length-1].transform.position, s.items[s.items.Length-1].transform.rotation);
+                    long bytes=GC.GetAllocatedBytesForCurrentThread(),started=System.Diagnostics.Stopwatch.GetTimestamp();bool accepted=s.RequestSave();timings.Add((System.Diagnostics.Stopwatch.GetTimestamp()-started)*1000.0/System.Diagnostics.Stopwatch.Frequency);allocations.Add(GC.GetAllocatedBytesForCurrentThread()-bytes);if(timings[timings.Count-1]>maxObserved){maxObserved=timings[timings.Count-1];worstPath=s.LastSavePathMilliseconds;worstSnapshot=s.LastSaveSnapshotMilliseconds;worstQueue=s.LastSaveQueueMilliseconds;}check(accepted,"Large background save request accepted");camera.Render();yield return null;
                 }
+                int catalogCopies=s.SaveCatalogCopies-copies,gen0=GC.CollectionCount(0)-collections;check(catalogCopies>=30&&catalogCopies<=32,"Unchanged requests reuse immutable catalog; only dirty requests copy it");
                 yield return Until(()=>!s.SavePending);check(s.FlushSaves()&&s.LastSaveError==null,"3500-item repeated saves finish without storage errors");
                 s.TryPick(s.items[0]);s.RequestSave();DG.Tweening.DOTween.CompleteAll();s.TryPlace(s.racks[0]);int cash=s.Cash;s.RequestSave();yield return Until(()=>!s.SavePending);check(s.FlushSaves(),"Newest placement snapshot is durable after rapid pickup/place");s.Restore(initial);check(s.Load()&&s.Cash==cash&&s.SortedCount==1&&s.carried.Count==0,"Cash and sorted progress load from the same newest complete snapshot");
                 // Capture destination without forcing the ongoing throw animation to complete.
                 s.persistence=false;s.Restore(initial);s.TryPick(s.items[0]);DG.Tweening.DOTween.CompleteAll();float end=Time.unscaledTime+.3f;while(Time.unscaledTime<end)yield return null;s.ThrowActive();var destination=s.items[0].SavedPosition;s.persistence=true;s.RequestSave();check(s.items[0].Moving,"Async save preserves throw animation");yield return Until(()=>!s.SavePending);s.persistence=false;s.Restore(initial);check(s.Load()&&Vector3.Distance(s.items[0].transform.position,destination)<.001f,"Incremental cache saves final safe throw destination");
-                timings.Sort();allocations.Sort();var result=new Performance{items=s.items.Length,requests=timings.Count,captureMedianMs=timings[timings.Count/2],captureP95Ms=timings[(int)(timings.Count*.95f)],captureMaxMs=timings[timings.Count-1],medianMainThreadAllocatedBytes=allocations[allocations.Count/2],workerSerializationMs=s.LastSaveSerializationMilliseconds,workerWriteMs=s.LastSaveWriteMilliseconds};File.WriteAllText("Logs/SaveHitchPerformance.json",JsonUtility.ToJson(result,true));
+                timings.Sort();allocations.Sort();var result=new Performance{items=s.items.Length,requests=timings.Count,catalogCopies=catalogCopies,gen0Collections=gen0,allocationCounterValid=allocationValid,captureMedianMs=timings[timings.Count/2],captureP95Ms=timings[(int)(timings.Count*.95f)],captureMaxMs=timings[timings.Count-1],worstPathMs=worstPath,worstSnapshotMs=worstSnapshot,worstQueueMs=worstQueue,medianMainThreadAllocatedBytes=allocationValid?allocations[allocations.Count/2]:-1,workerSerializationMs=s.LastSaveSerializationMilliseconds,workerWriteMs=s.LastSaveWriteMilliseconds};File.WriteAllText("Logs/SaveHitchPerformance.json",JsonUtility.ToJson(result,true));
             }
             finally{s.FlushSaves();s.persistence=false;s.Restore(initial);s.persistence=persistence;}
         }
     }
 }
+
+
 

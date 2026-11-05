@@ -29,7 +29,8 @@ namespace LabSorting.Sorting
         [Range(.3f,1f)] public float heldScale=.65f;
         public bool Moving => motion!=null && motion.IsActive() && motion.IsPlaying();
         public void CompleteMotion() { motion?.Complete(true); }
-        void Awake() { if(originalScale==Vector3.zero) originalScale=transform.localScale; }
+        void Awake() { if(originalScale==Vector3.zero) originalScale=transform.localScale; DisableShadows(); }
+        public void DisableShadows(){foreach(var renderer in GetComponentsInChildren<Renderer>(true)){renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=false;}}
         public void Highlight(bool value) { if(hovered==value)return;hovered=value;ApplyHighlight();VisualChanged?.Invoke(); }
         public void SetSearchHighlight(bool value) { if(searched==value)return;searched=value;ApplyHighlight();VisualChanged?.Invoke(); }
         void ApplyHighlight() { if(outline) outline.enabled=hovered||(searched&&!batchHighlight); }

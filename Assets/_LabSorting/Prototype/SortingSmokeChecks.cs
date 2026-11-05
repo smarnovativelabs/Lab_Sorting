@@ -71,6 +71,7 @@ namespace LabSorting.Prototype
             yield return InventoryPolishChecks.Run(session,Check,(s,path)=>Capture(s,path));
             yield return ResumeAndTouchChecks.Run(session,Check);
             yield return AsyncSaveChecks.Run(session,Check);
+            yield return FunChecks.Run(session,Check,(s,path)=>Capture(s,path));
             yield return ViewportChecks.Run(session,Check);
             // Disk round trip uses an isolated test save, never the user's progress.
             session.saveName="sorting-automated-test.json";session.persistence=true;
@@ -200,6 +201,7 @@ namespace LabSorting.Prototype
         }
     }
 }
+
 
 
 

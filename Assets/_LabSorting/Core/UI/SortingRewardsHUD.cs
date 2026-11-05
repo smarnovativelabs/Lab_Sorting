@@ -13,20 +13,21 @@ namespace LabSorting.UI
         readonly Queue<string> announcements=new Queue<string>();
         readonly List<RectTransform> chips=new List<RectTransform>();
         readonly List<Tween> flights=new List<Tween>();
-        Tween toastTween,abilityTween;
+        Tween toastTween,abilityTween,rackTween;
         int revision=-1;
         public int ActiveFlights { get {int count=0;foreach(var chip in chips)if(chip&&chip.gameObject.activeSelf)count++;return count;} }
-        void OnEnable(){if(!session)return;session.MilestoneEarned+=Earned;session.SearchStarted+=Search;session.MagnetCollected+=Magnet;session.VisualsReset+=ResetVisuals;}
-        void OnDisable(){if(session){session.MilestoneEarned-=Earned;session.SearchStarted-=Search;session.MagnetCollected-=Magnet;session.VisualsReset-=ResetVisuals;}ResetVisuals();}
+        void OnEnable(){if(!session)return;session.MilestoneEarned+=Earned;session.SmallGoalEarned+=Earned;session.RackCompleted+=CelebrateRack;session.SearchStarted+=Search;session.MagnetCollected+=Magnet;session.VisualsReset+=ResetVisuals;}
+        void OnDisable(){if(session){session.MilestoneEarned-=Earned;session.SmallGoalEarned-=Earned;session.RackCompleted-=CelebrateRack;session.SearchStarted-=Search;session.MagnetCollected-=Magnet;session.VisualsReset-=ResetVisuals;}ResetVisuals();}
         void Update()
         {
-            if(revision!=session.Revision){revision=session.Revision;milestone.text=session.NextMilestoneText;selectedSwatch.color=session.Active?session.Active.definition.color:new Color(.3f,.35f,.4f);}
+            if(revision!=session.Revision){revision=session.Revision;milestone.text=session.ShortGoalText+"\n"+session.NextMilestoneText;selectedSwatch.color=session.Active?session.Active.definition.color:new Color(.3f,.35f,.4f);}
             if(announcements.Count>0&&(toastTween==null||!toastTween.IsActive()))
             {
                 toast.text=announcements.Dequeue();toast.color=new Color(.5f,1,.75f,1);toast.transform.localScale=Vector3.one*.94f;
                 toastTween=DOTween.Sequence().Append(toast.transform.DOScale(1,.18f).SetEase(Ease.OutCubic)).AppendInterval(2.5f).Append(toast.DOFade(0,.3f)).SetUpdate(true);
             }
         }
+        void CelebrateRack(SortRack rack){rackTween?.Kill(true);if(!rack.label)return;var label=rack.label.transform;var scale=label.localScale;rackTween=DOTween.Sequence().AppendInterval(.26f).AppendCallback(()=>{var feedback=session.GetComponent<SortingFeedback>();if(feedback)feedback.Play(SortingCue.RackComplete);}).Append(label.DOScale(scale*1.08f,.16f)).Append(label.DOScale(scale,.24f)).SetUpdate(true).OnKill(()=>{if(label)label.localScale=scale;});}
         void Earned(string goal,int reward){announcements.Enqueue(goal+"   +$"+reward);}
         void Ability(string text,Color color)
         {
@@ -54,6 +55,7 @@ namespace LabSorting.UI
             }
         }
         void ClearFlights(){foreach(var flight in flights)flight?.Kill();flights.Clear();foreach(var chip in chips)if(chip)chip.gameObject.SetActive(false);}
-        void ResetVisuals(){ClearFlights();announcements.Clear();toastTween?.Kill();abilityTween?.Kill();if(toast)toast.text="";if(ability)ability.text="";revision=-1;}
+        void ResetVisuals(){rackTween?.Kill();ClearFlights();announcements.Clear();toastTween?.Kill();abilityTween?.Kill();if(toast)toast.text="";if(ability)ability.text="";revision=-1;}
     }
 }
+

@@ -12,13 +12,15 @@ namespace LabSorting.Sorting
         readonly object gate=new object();
         readonly string path;
         readonly Action<string,string,bool> write;
+        readonly SaveJsonStream serializer=new SaveJsonStream();
+        static readonly Encoding Utf8=new UTF8Encoding(false);
         Work pending,latest;
         Task task;
         bool running,protectBackup;
         long requested,completed;
         string error;
         double serializationMs,writeMs;
-        public DurableSaveWriter(string path,Action<string,string,bool> writeOverride=null){this.path=path;write=writeOverride??AtomicWrite;}
+        public DurableSaveWriter(string path,Action<string,string,bool> writeOverride=null){this.path=path;write=writeOverride;}
         public bool Pending {get{lock(gate)return completed<requested;}}
         public int QueuedSnapshots {get{lock(gate)return pending==null?0:1;}}
         public long CompletedSequence {get{lock(gate)return completed;}}
@@ -40,7 +42,18 @@ namespace LabSorting.Sorting
                 lock(gate){work=pending;pending=null;preserve=protectBackup;if(work==null){running=false;return;}}
                 try
                 {
-                    var clock=System.Diagnostics.Stopwatch.StartNew();string json=JsonUtility.ToJson(work.snapshot);double serialize=clock.Elapsed.TotalMilliseconds;clock.Restart();write(path,json,preserve);double disk=clock.Elapsed.TotalMilliseconds;
+                    var clock=System.Diagnostics.Stopwatch.StartNew();double serialize,disk;
+                    if(write!=null){string json=JsonUtility.ToJson(work.snapshot);serialize=clock.Elapsed.TotalMilliseconds;clock.Restart();write(path,json,preserve);disk=clock.Elapsed.TotalMilliseconds;}
+                    else
+                    {
+                        string temp=path+".tmp";
+                        using(var stream=new FileStream(temp,FileMode.Create,FileAccess.Write,FileShare.None,16384))
+                        {
+                            using(var writer=new StreamWriter(stream,Utf8,4096,true)){serializer.Write(writer,work.snapshot);writer.Flush();}
+                            serialize=clock.Elapsed.TotalMilliseconds;clock.Restart();stream.Flush(true);
+                        }
+                        Replace(temp,path,preserve);disk=clock.Elapsed.TotalMilliseconds;
+                    }
                     lock(gate){completed=work.sequence;error=null;protectBackup=false;serializationMs=serialize;writeMs=disk;}
                 }
                 catch(Exception exception){lock(gate){error=exception.Message;running=false;}return;}
@@ -60,8 +73,9 @@ namespace LabSorting.Sorting
                 using(var writer=new StreamWriter(stream,new UTF8Encoding(false),4096,true)){writer.Write(json);writer.Flush();}
                 stream.Flush(true);
             }
-            if(File.Exists(path))File.Replace(temp,path,preserveBackup?null:path+".bak");else File.Move(temp,path);
+            Replace(temp,path,preserveBackup);
         }
+        static void Replace(string temp,string path,bool preserveBackup){if(File.Exists(path))File.Replace(temp,path,preserveBackup?null:path+".bak");else File.Move(temp,path);}
     }
 }
 

@@ -47,6 +47,7 @@ namespace LabSorting.Prototype
                 foreach(int count in new[]{500,1500,3500})
                 {
                     yield return catalog.Populate(count);var initial=s.Capture();Check(s.items.Length==count&&s.items.Select(i=>i.id).Distinct().Count()==count,"Unique logical catalog for "+count);Check(s.player.character.SortingColliders.Count==count,"Fast collision exclusion catalog for "+count);
+                    Check(s.items.All(item=>item.visual.shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.Off&&!item.visual.receiveShadows),"All spawned items have shadows disabled at "+count);
                     batch.enabled=false;yield return SampleFrames(count,"ordinary renderers",batch,camera);
                     int baselinePixels=CaptureRenderedTexture(texture,"Logs/StressBaseline-"+count+".png");
                     batch.enabled=true;batch.Rebuild();yield return SampleFrames(count,"spatial instancing",batch,camera);
@@ -69,5 +70,6 @@ namespace LabSorting.Prototype
         }
     }
 }
+
 
 

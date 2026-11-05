@@ -19,7 +19,7 @@ namespace LabSorting.Prototype
                 s.persistence=false;p.autoShow=true;check(p.root&&p.card&&p.continueButton&&p.confetti.Length>0,"Lab completion summary is wired");yield return Wait(.4f);check(!p.IsOpen&&!s.CompletionAcknowledged,"Incomplete lab never opens completion summary");int cash=s.Cash;
                 for(int i=0;i<s.items.Length;i++){s.TryPick(s.items[i]);DOTween.CompleteAll();s.TryPlace(s.racks[i%5]);if(i<s.items.Length-1)DOTween.CompleteAll();}
                 check(!p.IsOpen&&s.items[s.items.Length-1].Moving,"Summary waits for final placement instead of interrupting its animation");yield return Until(()=>p.IsOpen);check(p.IsOpen&&s.player.blocked&&!s.items.Any(i=>i.Moving),"Full lab opens summary after placement finishes and blocks gameplay");
-                int expected=cash+s.items.Length*s.placementReward+s.firstTenBonus+s.categoryBonus+s.halfBonus+s.completeBonus;
+                int expected=cash+s.items.Length*s.placementReward+s.firstTenBonus+s.categoryBonus+s.halfBonus+s.completeBonus+Mathf.CeilToInt(s.items.Length/(float)SortingSession.ShortGoalSize)*SortingSession.ShortGoalBonus+s.CompletedRackCount*SortingSession.RackBonus;
                 check(s.Cash==expected,"Completion UI adds no second cash reward");check(p.summary.text.Contains("50 / 50")&&p.summary.text.Contains("5 categories")&&p.summary.text.Contains("4 milestones"),"Summary reflects current lab totals and milestones");check(p.summary.preferredHeight<=p.summary.rectTransform.rect.height,"Completion summary fits its card");capture(s,"Logs/LabCompletion.png");
                 check(!s.TryPick(s.items[0])&&!s.TrySearch()&&!s.TryUpgradeCapacity()&&s.Cash==expected,"Completion modal blocks sorting and paid actions");settings.OpenSettings();progress.Open();check(!settings.IsOpen&&!progress.IsOpen&&p.IsOpen,"Other panels cannot nest over completion");
                 var complete=s.Capture();check(!complete.completionAcknowledged,"Showing summary does not acknowledge it prematurely");s.persistence=true;s.Save();s.Restore(initial);check(s.Load(),"Completed unacknowledged lab loads from disk");yield return Until(()=>p.IsOpen);check(p.IsOpen&&!s.CompletionAcknowledged&&s.Cash==expected,"Interrupted completion summary returns without paying again");
@@ -34,3 +34,4 @@ namespace LabSorting.Prototype
         }
     }
 }
+

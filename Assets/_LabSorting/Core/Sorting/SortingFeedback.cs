@@ -2,7 +2,7 @@ using UnityEngine;
 using Lofelt.NiceVibrations;
 namespace LabSorting.Sorting
 {
-    public enum SortingCue { Pick, Place, Throw, Reject }
+    public enum SortingCue { Pick, Place, Throw, Reject, RackComplete }
     [RequireComponent(typeof(AudioSource))]
     public sealed class SortingFeedback : MonoBehaviour
     {
@@ -32,11 +32,12 @@ namespace LabSorting.Sorting
             // A magnet batch or repeated invalid tap produces one soft response, not a burst.
             if(!isActiveAndEnabled||Time.unscaledTime<nextFeedback) return;
             nextFeedback=Time.unscaledTime+(cue==SortingCue.Reject ? .18f : .075f);AcceptedCues++;
-            var clip=cue==SortingCue.Pick?pick:cue==SortingCue.Place?place:cue==SortingCue.Throw?drop:reject;
-            if(SoundEnabled&&clip&&source) {source.pitch=1;source.PlayOneShot(clip,volume);PlayedSounds++;}
+            var clip=cue==SortingCue.Pick?pick:(cue==SortingCue.Place||cue==SortingCue.RackComplete)?place:cue==SortingCue.Throw?drop:reject;
+            if(SoundEnabled&&clip&&source) {source.pitch=cue==SortingCue.RackComplete?1.2f:1;source.PlayOneShot(clip,volume);PlayedSounds++;}
             #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            if(HapticsEnabled) HapticPatterns.PlayPreset(cue==SortingCue.Place?HapticPatterns.PresetType.LightImpact:cue==SortingCue.Reject?HapticPatterns.PresetType.Warning:HapticPatterns.PresetType.Selection);
+            if(HapticsEnabled) HapticPatterns.PlayPreset((cue==SortingCue.Place||cue==SortingCue.RackComplete)?HapticPatterns.PresetType.LightImpact:cue==SortingCue.Reject?HapticPatterns.PresetType.Warning:HapticPatterns.PresetType.Selection);
             #endif
         }
     }
 }
+

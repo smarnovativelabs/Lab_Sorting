@@ -9,6 +9,11 @@ using UnityEngine.TestTools;
 
 public class SortingIntegrationTests
 {
+    [Test] public void ItemShadowsDisabledInScenesAndPrefabs()
+    {
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Editor.ItemShadowUpgrade")).First(t=>t!=null);
+        type.GetMethod("Validate").Invoke(null,null);
+    }
     bool previousEnabled;
     StackTraceLogType previousLogStack;
     EnterPlayModeOptions previousOptions;
@@ -66,6 +71,18 @@ public class SortingIntegrationTests
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
         yield return new EnterPlayMode(false);UnityEngine.Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.StressPerformanceChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
+        yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(1500000)]
+    public IEnumerator LongSessionSaveAndMemory()
+    {
+        EditorSceneManager.OpenScene("Assets/_LabSorting/Prototype/Scenes/SortingStressTest.unity");
+        var catalogType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.StressCatalog")).First(t=>t!=null);
+        catalogType.GetField("autoStart").SetValue(UnityEngine.Object.FindFirstObjectByType(catalogType),false);
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.SortingSoakChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
     }

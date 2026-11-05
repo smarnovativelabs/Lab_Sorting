@@ -98,7 +98,8 @@ namespace LabSorting.Sorting
             if(!rack.CanAccept(Active.definition)) return Fail(rack.Count>=rack.slots.Length?"Rack full":"This rack holds "+rack.Type.displayName);
             var item=Active; int index=rack.Add(item); RemoveActive(); item.transform.SetParent(null,true);
             item.Travel(rack.slots[index].position,rack.slots[index].rotation*Quaternion.Euler(item.definition.shelfEuler));
-            if(rewardedItems.Add(item.id)) cash+=placementReward;
+            bool firstPlacement=rewardedItems.Add(item.id);if(firstPlacement) cash+=placementReward;
+            CheckSmallGoals(rack,firstPlacement);
             CheckMilestones();Commit("Placed "+item.definition.displayName); Feedback?.Invoke(SortingCue.Place);return true;
         }
         public void ThrowActive()
@@ -118,11 +119,11 @@ namespace LabSorting.Sorting
         bool Fail(string reason) { if(reason==lastFailure&&Time.unscaledTime<nextFailure)return false;lastFailure=reason;nextFailure=Time.unscaledTime+.8f;Message=reason;MessageIsError=true; Notify(); Feedback?.Invoke(SortingCue.Reject);return false; }
         void Commit(string message) { lastFailure=null;nextAction=Time.unscaledTime+.24f; Message=message;MessageIsError=false; saveAt=Time.unscaledTime+.4f; Notify(); }
         void Notify() { Revision++; Changed?.Invoke(); }
-        [Serializable] public class Snapshot { public int version=3; public string searchId; public float searchRemaining; public bool completionAcknowledged; public List<string> milestones=new List<string>(); public int cash; public List<string> rewarded=new List<string>(); public int capacity; public Vector3 playerPosition; public Vector2 look; public string active; public List<string> hand=new List<string>(); public List<Entry> items=new List<Entry>(); }
+        [Serializable] public class Snapshot { public int version=3; public List<string> completedRacks; public string searchId; public float searchRemaining; public bool completionAcknowledged; public List<string> milestones=new List<string>(); public int cash; public List<string> rewarded=new List<string>(); public int capacity; public Vector3 playerPosition; public Vector2 look; public string active; public List<string> hand=new List<string>(); public List<Entry> items=new List<Entry>(); }
         [Serializable] public class Entry { public string id,rack; public int slot; public ItemLocation location; public Vector3 position; public Quaternion rotation; }
         public Snapshot Capture()
         {
-            var data=new Snapshot {searchId=SearchType?SearchType.id:null,searchRemaining=SearchSeconds,completionAcknowledged=CompletionAcknowledged,milestones=new List<string>(claimedMilestones),cash=cash,rewarded=new List<string>(rewardedItems),capacity=capacity,playerPosition=player.transform.position,look=new Vector2(player.look.Yaw,player.look.Pitch),active=Active?Active.id:null};
+            var data=new Snapshot {completedRacks=new List<string>(completedRacks),searchId=SearchType?SearchType.id:null,searchRemaining=SearchSeconds,completionAcknowledged=CompletionAcknowledged,milestones=new List<string>(claimedMilestones),cash=cash,rewarded=new List<string>(rewardedItems),capacity=capacity,playerPosition=player.transform.position,look=new Vector2(player.look.Yaw,player.look.Pitch),active=Active?Active.id:null};
             foreach(var item in carried) data.hand.Add(item.id);
             foreach(var item in items)
             {
@@ -160,7 +161,8 @@ namespace LabSorting.Sorting
             if(held.Count>0&&!held.Contains(data.active??"")) return false;
             var milestones=new HashSet<string>();
             if(data.version>=3){if(data.milestones==null)return false;foreach(var id in data.milestones)if(id==null||Array.IndexOf(milestoneIds,id)<0||!milestones.Add(id))return false;}
-            VisualsReset?.Invoke();CompletionAcknowledged=data.version>=3&&data.completionAcknowledged;claimedMilestones=milestones;
+            var rackRewards=new HashSet<string>(); if(data.completedRacks!=null){foreach(var id in data.completedRacks)if(id==null||!rackLookup.ContainsKey(id)||!rackRewards.Add(id))return false;} else {foreach(var rack in racks){int count=0;foreach(var e in data.items)if(e.location==ItemLocation.Rack&&e.rack==rack.id)count++;if(rack.slots.Length>0&&count==rack.slots.Length)rackRewards.Add(rack.id);}}
+            completedRacks=rackRewards;VisualsReset?.Invoke();CompletionAcknowledged=data.version>=3&&data.completionAcknowledged;claimedMilestones=milestones;
             lastFailure=null;MessageIsError=false;CancelHold();EndSearch();cash=data.version>=2?data.cash:200;rewardedItems=rewards;
             ClearTarget(); foreach(var rack in racks) rack.Initialize(); carried.Clear(); Active=null; capacity=data.capacity;
             foreach(var e in data.items)
@@ -187,6 +189,7 @@ namespace LabSorting.Sorting
         void OnApplicationQuit() { Save(); }
     }
 }
+
 
 
 

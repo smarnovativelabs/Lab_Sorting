@@ -28,8 +28,8 @@ namespace LabSorting.Prototype
                     if(i==9)check(s.HasMilestone("first-ten")&&s.Cash==wallet+10*s.placementReward+s.firstTenBonus,"Ten unique items award first milestone once");
                     if(i==24)check(s.HasMilestone("half")&&!s.HasMilestone("complete"),"Half milestone triggers at 25 of 50 items");
                 }
-                int expected=wallet+s.items.Length*s.placementReward+s.firstTenBonus+s.categoryBonus+s.halfBonus+s.completeBonus;
-                check(s.MilestoneCount==4&&earned==4&&s.Cash==expected,"All four milestones award exact configured bonuses");yield return Wait(.1f);check(ui.milestone.text=="ALL MILESTONES COMPLETE","HUD reflects completed milestones");capture(s,"Logs/MilestonesHUD.png");
+                int expected=wallet+s.items.Length*s.placementReward+s.firstTenBonus+s.categoryBonus+s.halfBonus+s.completeBonus+Mathf.CeilToInt(s.items.Length/(float)SortingSession.ShortGoalSize)*SortingSession.ShortGoalBonus+s.CompletedRackCount*SortingSession.RackBonus;
+                check(s.MilestoneCount==4&&earned==4&&s.Cash==expected,"All four milestones award exact configured bonuses");yield return Wait(.1f);check(ui.milestone.text.Contains("ALL MILESTONES COMPLETE"),"HUD reflects completed milestones");capture(s,"Logs/MilestonesHUD.png");
                 s.TryPick(s.items[0]);DOTween.CompleteAll();s.TryPlace(s.racks[0]);DOTween.CompleteAll();check(s.Cash==expected&&earned==4,"Removing and replacing cannot farm milestone rewards");
                 var saved=s.Capture();check(saved.version==3&&saved.milestones.Count==4,"Save version 3 includes claimed milestone IDs");s.Restore(initial);check(s.Restore(saved)&&s.MilestoneCount==4&&s.Cash==expected,"Milestone snapshot round trip preserves rewards");
                 s.persistence=true;s.Save();s.Restore(initial);check(s.Load()&&s.MilestoneCount==4&&s.Cash==expected,"Disk save/load persists one-time bonuses");s.persistence=false;
@@ -52,4 +52,5 @@ namespace LabSorting.Prototype
         }
     }
 }
+
 

@@ -9,6 +9,7 @@ namespace LabSorting.UI
         public SortingSession session;
         public bool place;
         int pointer=int.MinValue;
+        public bool PointerHeld=>pointer!=int.MinValue;
         public void OnPointerDown(PointerEventData e)
         {
             if(pointer!=int.MinValue||e.button!=PointerEventData.InputButton.Left||!GetComponent<UnityEngine.UI.Button>().IsInteractable())return;
