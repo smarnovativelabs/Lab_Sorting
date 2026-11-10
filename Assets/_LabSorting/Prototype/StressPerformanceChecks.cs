@@ -75,7 +75,7 @@ namespace LabSorting.Prototype
                         camera.transform.position=position;camera.orthographicSize=size;
                     }
                     s.items[count-1].gameObject.SetActive(false);camera.Render();Check(batch.BatchedItems==count-1,"Deactivation invalidates cached item visibility at "+count);s.items[count-1].gameObject.SetActive(true);camera.Render();Check(batch.BatchedItems==count,"Reactivation restores cached item visibility at "+count);
-                    var op=new Operations{items=count};s.TryPick(s.items[0]);DG.Tweening.DOTween.CompleteAll();yield return null;Check(!s.Active.visual.forceRenderingOff,"Held item returns to normal renderer");
+                    var op=new Operations{items=count};s.TryPick(s.items[0]);DG.Tweening.DOTween.CompleteAll();yield return null;camera.Render();Check(!s.Active.visual.forceRenderingOff,"Held item returns to normal renderer");
                     var clock=System.Diagnostics.Stopwatch.StartNew();Check(s.TrySearch(),"Unlimited-range search at "+count);op.searchMs=clock.Elapsed.TotalMilliseconds;
                     yield return SampleFrames(count,"instancing + search",batch,camera);Check(batch.SubmittedBatches<=250,"Search does not create hundreds of outline draws");
                     clock.Restart();Check(s.TryMagnet(),"Magnet succeeds at "+count);op.magnetMs=clock.Elapsed.TotalMilliseconds;Check(s.carried.Count==s.capacity,"Magnet collects up to capacity at "+count);int cash=s.Cash;Check(!s.TryMagnet()&&s.Cash==cash,"Full magnet does not charge at "+count);
