@@ -5,11 +5,16 @@ namespace LabSorting.Sorting
 {
     public sealed partial class SortingSession
     {
-        public const int ShortGoalSize=25,ShortGoalBonus=10,RackBonus=10;
+        public const int ShortGoalSize=25,ShortGoalBonus=2,RackBonus=1;
         HashSet<string> completedRacks=new HashSet<string>();
         public event Action<string,int> SmallGoalEarned;
         public event Action<SortRack> RackCompleted;
         public int CompletedRackCount=>completedRacks.Count;
+        public bool ShortGoalsComplete=>items.Length>0&&rewardedItems.Count>=items.Length;
+        public int ShortGoalOrdinal=>rewardedItems.Count/ShortGoalSize;
+        public int ShortGoalTarget=>Mathf.Min(ShortGoalSize,Mathf.Max(0,items.Length-ShortGoalOrdinal*ShortGoalSize));
+        public int ShortGoalProgress=>ShortGoalsComplete?ShortGoalTarget:rewardedItems.Count%ShortGoalSize;
+        public float ShortGoalFraction=>ShortGoalsComplete?1:ShortGoalTarget>0?(float)ShortGoalProgress/ShortGoalTarget:0;
         public string ShortGoalText
         {
             get
@@ -25,8 +30,9 @@ namespace LabSorting.Sorting
             int done=rewardedItems.Count;
             if(firstPlacement&&(done%ShortGoalSize==0||done==items.Length))
             {cash+=ShortGoalBonus;SmallGoalEarned?.Invoke("Sorting goal complete!",ShortGoalBonus);}
-            if(rack.slots.Length>0&&rack.Count==rack.slots.Length&&completedRacks.Add(rack.id))
+            if(rack.Capacity>0&&rack.Count==rack.Capacity&&completedRacks.Add(rack.id))
             {cash+=RackBonus;SmallGoalEarned?.Invoke("Rack complete!",RackBonus);RackCompleted?.Invoke(rack);}
         }
     }
 }
+

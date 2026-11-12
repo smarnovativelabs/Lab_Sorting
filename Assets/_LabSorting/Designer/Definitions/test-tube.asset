@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-test-tube
   displayName: Test Tube
+  icon: {fileID: -1238528406, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
+  placementMaterial: 1
   color: {r: 1, g: 1, b: 1, a: 1}
   shelfEuler: {x: 0, y: 0, z: 0}
+  center: {x: -0.0000000037252903, y: 0.21000001, z: 0.000000029802322}
+  size: {x: 0.08581321, y: 0.42000002, z: 0.085813195}

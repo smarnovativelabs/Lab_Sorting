@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-emergency-tool-kit-blue
   displayName: Emergency Tool kit Blue
+  icon: {fileID: -236761244, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
+  placementMaterial: 2
   color: {r: 1, g: 1, b: 1, a: 1}
   shelfEuler: {x: 0, y: 0, z: 0}
+  center: {x: 0, y: 0.17872247, z: 0}
+  size: {x: 0.42, y: 0.35744494, z: 0.1438157}

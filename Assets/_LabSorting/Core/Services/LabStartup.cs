@@ -21,6 +21,7 @@ namespace LabSorting.Services
         IEnumerator Start()
         {
             if(!autoLoad)yield break;
+            if(!connectivity)connectivity=FindFirstObjectByType<InternetConnectivity>();
             if(!connectivity)
             {
                 var owner=new GameObject("Lab Connectivity");
@@ -31,11 +32,12 @@ namespace LabSorting.Services
             if(!Application.CanStreamedLevelBeLoaded(gameplayScenePath))
             {
                 Error="Gameplay scene is not included in Build Settings.";
-                if(loadingLabel)loadingLabel.text="Unable to load the lab.";
+                if(loadingLabel)loadingLabel.text=PlayerPrefs.GetString("Lab.Language","en")=="es"?"No se pudo cargar el laboratorio.":"Unable to load the lab.";
                 Debug.LogError(Error,this);yield break;
             }
             Loading=true;
-            if(loadingLabel)loadingLabel.text="Loading lab…";
+            // Boot precedes the gameplay localization owner; use the saved language without delaying loading.
+            if(loadingLabel)loadingLabel.text=PlayerPrefs.GetString("Lab.Language","en")=="es"?"Cargando laboratorio…":"Loading lab…";
             // Render the loading view once, then load without a Play-button interaction.
             yield return null;
             var load=SceneManager.LoadSceneAsync(gameplayScenePath,LoadSceneMode.Single);

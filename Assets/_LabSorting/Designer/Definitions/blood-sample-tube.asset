@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-blood-sample-tube
   displayName: Blood Sample Tube
+  icon: {fileID: -29387878, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
+  placementMaterial: 1
   color: {r: 1, g: 1, b: 1, a: 1}
   shelfEuler: {x: 0, y: 0, z: 0}
+  center: {x: 0, y: 0.1721302, z: 0.000000029802322}
+  size: {x: 0.07895136, y: 0.3442604, z: 0.07895142}

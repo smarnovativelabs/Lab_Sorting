@@ -16,10 +16,11 @@ namespace LabSorting.UI
             pointer=e.pointerId;session.BeginHold(place);
         }
         public void OnPointerUp(PointerEventData e){if(e.pointerId==pointer)Release();}
-        public void OnPointerExit(PointerEventData e){if(e.pointerId==pointer)Release();}
+        public void OnPointerExit(PointerEventData e){if(e.pointerId==pointer)Cancel();}
         void Release(){pointer=int.MinValue;if(session)session.EndHold(place);}
-        void OnDisable(){Release();}
-        void OnApplicationFocus(bool focus){if(!focus)Release();}
-        void OnApplicationPause(bool pause){if(pause)Release();}
+        void Cancel(){bool owned=PointerHeld;pointer=int.MinValue;if(owned&&session)session.CancelHold();}
+        void OnDisable(){Cancel();}
+        void OnApplicationFocus(bool focus){if(!focus)Cancel();}
+        void OnApplicationPause(bool pause){if(pause)Cancel();}
     }
 }

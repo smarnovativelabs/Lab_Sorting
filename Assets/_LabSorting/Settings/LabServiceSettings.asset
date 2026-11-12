@@ -18,13 +18,25 @@ MonoBehaviour:
   androidInterstitialId: 
   androidRewardedId: 
   googleMobileAdsAppId: 
-  removeAdsProductId: 
-  smallCashProductId: 
-  largeCashProductId: 
-  smallCashAmount: 1000
-  largeCashAmount: 5000
+  removeAdsProductId: lab_sorting_remove_ads
+  smallCashProductId: lab_sorting_cash_500
+  largeCashProductId: lab_sorting_cash_1500
+  searchPackProductId: lab_sorting_searches_25
+  magnetPackProductId: lab_sorting_magnets_10
+  slotPackProductId: lab_sorting_slots_5
+  searchPackAmount: 25
+  magnetPackAmount: 10
+  slotPackAmount: 5
+  rewardedCashAmount: 25
+  rewardedSearchAmount: 2
+  rewardedMagnetAmount: 1
+  rewardedSlotAmount: 1
+  smallCashAmount: 500
+  largeCashAmount: 1500
   googlePlayPublicKey: 
   privacyPolicyUrl: 
+  tenjinApiKey: 
+  underAgeOfConsent: 0
   enableLiveServices: 0
   testDeviceAdvertisingIds: []
   interstitialCooldownSeconds: 180

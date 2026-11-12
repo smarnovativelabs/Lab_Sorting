@@ -1,0 +1,1812 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: LabUI Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: LabUI
+  m_TableCollectionNameGuidString: 373158e928ff66144a66e092cf5965be
+  m_Entries:
+  - m_Id: 4880711680
+    m_Key: SortingItem
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4989763584
+    m_Key: Stable Movement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4998152192
+    m_Key: Air Movement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4998152193
+    m_Key: Jumping
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5002346496
+    m_Key: Misc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5010735104
+    m_Key: CameraTarget
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5010735105
+    m_Key: Rig
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5010735106
+    m_Key: Pitch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5027512320
+    m_Key: en
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5027512321
+    m_Key: LabUI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5031706624
+    m_Key: Lab Connectivity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5031706625
+    m_Key: "Loading lab\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5031706626
+    m_Key: game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5031706627
+    m_Key: lab_sorting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5031706628
+    m_Key: Tenjin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5031706629
+    m_Key: lab_session_start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900928
+    m_Key: context
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900929
+    m_Key: ),new Parameter(
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900930
+    m_Key: ad_revenue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900931
+    m_Key: ad_impression
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900932
+    m_Key: ad_platform
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900933
+    m_Key: AppLovin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900934
+    m_Key: ad_source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900935
+    m_Key: currency
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900936
+    m_Key: USD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900937
+    m_Key: value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900938
+    m_Key: search_used
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900939
+    m_Key: magnet_used
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900940
+    m_Key: rack_completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900941
+    m_Key: milestone_completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900942
+    m_Key: sorting_progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900943
+    m_Key: placed_this_session
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900944
+    m_Key: lab_session_pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5035900945
+    m_Key: placements
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095232
+    m_Key: purchase_confirmed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095233
+    m_Key: purchase_delivered
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095234
+    m_Key: 'iap:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095235
+    m_Key: purchase_started
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095236
+    m_Key: 'ad:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095237
+    m_Key: );busy=true;Status=
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095238
+    m_Key: reward_ad_started
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095239
+    m_Key: Reward added!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095240
+    m_Key: reward_ad_completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5044289536
+    m_Key: interstitial_shown
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5048483840
+    m_Key: Short drop landing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5048483841
+    m_Key: 'Landing body '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5048483842
+    m_Key: Temporary drop physics (3 bodies)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5048483843
+    m_Key: settled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5048483844
+    m_Key: flight recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5048483845
+    m_Key: timeout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5048483846
+    m_Key: sleep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5048483847
+    m_Key: deviation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5052678144
+    m_Key: _BaseColor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5061066752
+    m_Key: Ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5061066753
+    m_Key: No clear recovery point; retrying later
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5061066754
+    m_Key: 'Recovered '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5061066755
+    m_Key: Recovery configuration missing, or not in Play mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5061066756
+    m_Key: ' lost item'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5065261056
+    m_Key: complete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5069455360
+    m_Key: Sorting drop requires a BoxCollider
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843968
+    m_Key: Integer formatting failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843969
+    m_Key: Non-finite save coordinate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843970
+    m_Key: null
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843971
+    m_Key: 0123456789abcdef
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843972
+    m_Key: false
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843973
+    m_Key: Select a carried item first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843974
+    m_Key: "Search already active \u2014 no charge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843975
+    m_Key: 'No loose '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843976
+    m_Key: " remaining \u2014 no charge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843977
+    m_Key: Get search uses with cash, a rewarded ad or the store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843978
+    m_Key: 'Search: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843979
+    m_Key: ' loose '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843980
+    m_Key: ' found'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843981
+    m_Key: "Hands full \u2014 magnet not charged"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843982
+    m_Key: "Pick or select an item first \u2014 magnet not charged"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843983
+    m_Key: SELECT ITEM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843984
+    m_Key: "Wait for pickup to finish \u2014 no charge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843985
+    m_Key: " available \u2014 no charge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843986
+    m_Key: NO MATCH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843987
+    m_Key: Get magnet uses with cash, a rewarded ad or the store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843988
+    m_Key: "Nothing collected \u2014 no charge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843989
+    m_Key: 'COLLECTED '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843990
+    m_Key: 'Magnet collected '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843991
+    m_Key: "Maximum capacity reached \u2014 no charge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843992
+    m_Key: Get a slot with cash, a rewarded ad or the store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843993
+    m_Key: 'Capacity upgraded to '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5082038272
+    m_Key: SHORT GOALS COMPLETE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5082038273
+    m_Key: 'SHORT GOAL  Sort new items  '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5086232576
+    m_Key: Sorting goal complete!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5086232577
+    m_Key: Rack complete!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5086232578
+    m_Key: Target assistance and hold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815488
+    m_Key: first-ten
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815489
+    m_Key: category
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815490
+    m_Key: half
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815491
+    m_Key: 'First '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815492
+    m_Key: ' items'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815493
+    m_Key: First category complete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815494
+    m_Key: Lab 50% sorted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815495
+    m_Key: Lab fully sorted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815496
+    m_Key: Complete any item type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815497
+    m_Key: +(id==
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815498
+    m_Key: ALL MILESTONES COMPLETE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815499
+    m_Key: Not enough cash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815500
+    m_Key: 'Added 1 '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815501
+    m_Key: 'Received '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5103009792
+    m_Key: 'Sorting save has not completed: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5103009793
+    m_Key: writer timeout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5103009794
+    m_Key: Progress saved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5103009795
+    m_Key: 'Sorting save failed; retaining latest snapshot: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398400
+    m_Key: No available item in reach
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398401
+    m_Key: "Hands full \u2014 place or throw an item"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398402
+    m_Key: 'Picked '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398403
+    m_Key: 'Selected '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398404
+    m_Key: Pick an item first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398405
+    m_Key: Aim at a rack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398406
+    m_Key: 'This rack holds '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398407
+    m_Key: Rack full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398408
+    m_Key: Too big for this rack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398409
+    m_Key: 'Placed '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398410
+    m_Key: 'Dropped '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398411
+    m_Key: 'Skipping invalid sorting save: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5115592704
+    m_Key: Toss into far racks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5115592705
+    m_Key: arc overlap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5115592706
+    m_Key: arc sweep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5115592707
+    m_Key: slide overlap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5115592708
+    m_Key: slide sweep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5115592709
+    m_Key: 'Nice shot! '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5123981312
+    m_Key: Invalid saved rack slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5123981313
+    m_Key: 'Rack point '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5123981314
+    m_Key: ' does not exist for '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5123981315
+    m_Key: no type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5123981316
+    m_Key: FULL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5123981317
+    m_Key: ' SLOT LEFT'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5123981318
+    m_Key: ' SLOTS LEFT'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5128175616
+    m_Key: Tutorial complete!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5128175617
+    m_Key: DROP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5128175618
+    m_Key: TOSS!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564224
+    m_Key: Select item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564225
+    m_Key: 'CASH  '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564226
+    m_Key: '   |   Slots '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564227
+    m_Key: 'SEARCH  '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564228
+    m_Key: SEARCH  $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564229
+    m_Key: MAGNET  $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564230
+    m_Key: " \u2014 FULL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564231
+    m_Key: 'MAGNET  '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564232
+    m_Key: CAPACITY MAX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564233
+    m_Key: +1 SLOT  $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564234
+    m_Key: ' (low cash)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564235
+    m_Key: SEARCH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564236
+    m_Key: MAGNET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564237
+    m_Key: TURN AROUND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564238
+    m_Key: < LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564239
+    m_Key: RIGHT >
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564240
+    m_Key: AHEAD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564241
+    m_Key: 'v '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5144952832
+    m_Key: Tutorial Rack Guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5144952833
+    m_Key: < RACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5144952834
+    m_Key: RACK >
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5144952835
+    m_Key: v RACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5144952836
+    m_Key: ' m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5144952837
+    m_Key: GuidedDone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5144952838
+    m_Key: GuidedStep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5149147136
+    m_Key: 'STEP '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5149147137
+    m_Key: '  (W A S D)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5149147138
+    m_Key: '  (drag with mouse or touchpad)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5149147139
+    m_Key: '  (E)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5149147140
+    m_Key: '  (F)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5149147141
+    m_Key: ):GuidedRack?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5149147142
+    m_Key: '  (Q)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5149147143
+    m_Key: Well done! +$
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341440
+    m_Key: 'SOUND: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341441
+    m_Key: ON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341442
+    m_Key: OFF
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341443
+    m_Key: 'HAPTICS: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341444
+    m_Key: 'ITEM PROGRESS    '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341445
+    m_Key: ' sorted'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341446
+    m_Key: ' sorted     '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341447
+    m_Key: ' remaining     '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5153341448
+    m_Key: ' held'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5165924352
+    m_Key: Safe Area Monitor (Shared)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118656
+    m_Key: Edges
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118657
+    m_Key: Extra Padding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118658
+    m_Key: Optional Background Overscan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118659
+    m_Key: 'For the Egg-style layout use (100,80), then give a full-stretch Inner
+      Content the '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118660
+    m_Key: https
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118661
+    m_Key: ADS REMOVED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118662
+    m_Key: 'REMOVE ADS  '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118663
+    m_Key: Unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118664
+    m_Key: 'Analytics: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118665
+    m_Key: 'Attribution: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118666
+    m_Key: 'Crash reports: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5174312960
+    m_Key: 'Language: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5174312961
+    m_Key: English
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507264
+    m_Key: TutorialDone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507265
+    m_Key: How to play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507266
+    m_Key: LookSensitivity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507267
+    m_Key: Sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507268
+    m_Key: Haptics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507269
+    m_Key: SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507270
+    m_Key: WELCOME TO LAB SORTING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507271
+    m_Key: TutorialPage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507272
+    m_Key: LET'S SORT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507273
+    m_Key: NEXT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507274
+    m_Key: 'LOOK SENSITIVITY  '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701568
+    m_Key: 'TOSS into '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701569
+    m_Key: ' rack'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701570
+    m_Key: empty rack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701571
+    m_Key: "Empty rack \u2014 assign selected item"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701572
+    m_Key: '    Remaining '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701573
+    m_Key: 'SORTED  '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701574
+    m_Key: 'SELECTED  '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701575
+    m_Key: '  x'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5186895872
+    m_Key: STREAK x
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5186895873
+    m_Key: NICE SHOT!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5186895874
+    m_Key: MAGNET  +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5186895875
+    m_Key: MagnetVisual
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090176
+    m_Key: Added to your supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090177
+    m_Key: Not enough cash or capacity is full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090178
+    m_Key: CARRY CAPACITY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090179
+    m_Key: 'Capacity '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090180
+    m_Key: '   |   Slot tokens '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090181
+    m_Key: 'Cash '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090182
+    m_Key: 'Uses owned: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090183
+    m_Key: '   |   Cash '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090184
+    m_Key: BIG PACK +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090185
+    m_Key: PACK +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090186
+    m_Key: MAX CAPACITY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090187
+    m_Key: USE 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090188
+    m_Key: USE FOR $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090189
+    m_Key: PICK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090190
+    m_Key: PLACE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090191
+    m_Key: THROW
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090192
+    m_Key: BACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090193
+    m_Key: SKIP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090194
+    m_Key: HOW TO PLAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090195
+    m_Key: REPLAY TUTORIAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090196
+    m_Key: RESET SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090197
+    m_Key: STORE & PRIVACY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090198
+    m_Key: REMOVE ADS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090199
+    m_Key: RESTORE PURCHASES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090200
+    m_Key: RETRY CONNECTION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090201
+    m_Key: AD PRIVACY OPTIONS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090202
+    m_Key: PRIVACY POLICY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090203
+    m_Key: 'Analytics: ON'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090204
+    m_Key: 'Analytics: OFF'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090205
+    m_Key: 'Attribution: ON'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090206
+    m_Key: 'Attribution: OFF'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090207
+    m_Key: 'Crash reports: ON'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090208
+    m_Key: 'Crash reports: OFF'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090209
+    m_Key: Highlight the selected item type anywhere in the lab.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090210
+    m_Key: Bring matching loose items into your hands.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090211
+    m_Key: Add one permanent carry slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090212
+    m_Key: Use cash for search, magnet and extra carry slots.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216912707584
+    m_Key: PREVIOUS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216958844928
+    m_Key: GOT IT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216958844929
+    m_Key: CONTINUE EXPLORING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216958844930
+    m_Key: LAB ORGANIZED!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039232
+    m_Key: ITEM PROGRESS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039233
+    m_Key: ITEMS SORTED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039234
+    m_Key: ITEMS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039235
+    m_Key: SORTED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039236
+    m_Key: Sorted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039237
+    m_Key: sorted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039238
+    m_Key: Remaining
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039239
+    m_Key: remaining
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039240
+    m_Key: held
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039241
+    m_Key: SELECTED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039242
+    m_Key: SELECT AN ITEM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039243
+    m_Key: Hands
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039244
+    m_Key: SLOTS LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039245
+    m_Key: SLOT LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039246
+    m_Key: EMPTY / ANY ITEM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039247
+    m_Key: Wrong item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039248
+    m_Key: This rack holds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039249
+    m_Key: No loose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039250
+    m_Key: "remaining \u2014 no charge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039251
+    m_Key: "available \u2014 no charge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039252
+    m_Key: COLLECTED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039253
+    m_Key: Magnet collected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039254
+    m_Key: Capacity upgraded to
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039255
+    m_Key: "Save delayed \u2014 retrying. Keep the game open."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039256
+    m_Key: Picked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039257
+    m_Key: Selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039258
+    m_Key: Placed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039259
+    m_Key: Dropped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039260
+    m_Key: Nice shot!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039261
+    m_Key: Recovered
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039262
+    m_Key: lost item(s) to the safe area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039263
+    m_Key: SHORT GOAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039264
+    m_Key: Sort new items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039265
+    m_Key: CAPACITY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039266
+    m_Key: SLOT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039267
+    m_Key: low cash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039268
+    m_Key: LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039269
+    m_Key: RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039270
+    m_Key: Select an item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039271
+    m_Key: categories organized
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039272
+    m_Key: milestones unlocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039273
+    m_Key: Cash balance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039274
+    m_Key: Completion milestone secured!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039275
+    m_Key: Use the joystick to walk around the lab.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039276
+    m_Key: Drag on the right side of the screen to look around.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039277
+    m_Key: drag with mouse or touchpad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039278
+    m_Key: Tap PICK to grab the item you are aiming at.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039279
+    m_Key: Aim the + at any item on the floor. PICK appears when you can grab it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039280
+    m_Key: Pick up an item first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039281
+    m_Key: Tap PLACE. The first item on a rack decides what that rack holds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039282
+    m_Key: Walk to the marked rack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039283
+    m_Key: m), then aim the + anywhere on it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039284
+    m_Key: Find an empty rack on this floor, or one holding the same item.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039285
+    m_Key: Pick up another item first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039286
+    m_Key: Tap DROP to throw one item gently forward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039287
+    m_Key: Your item will drop forward when there is room.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039288
+    m_Key: Nice! This rack now holds that item type.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039289
+    m_Key: DROP throws one item gently forward. Select a type in your hand to use
+      SEARCH or MAGNET. Get tools with cash, optional reward videos or the store.
+      Tap GOT IT to continue.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039290
+    m_Key: Well done!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039291
+    m_Key: Now sort every item to finish the lab.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039292
+    m_Key: STEP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039293
+    m_Key: RACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039294
+    m_Key: MOVE & LOOK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039295
+    m_Key: Use the left joystick to move. Drag the right side to look around.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039296
+    m_Key: 'On desktop: WASD to move, drag to look. Adjust look sensitivity in Settings.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039297
+    m_Key: PICK & DROP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039298
+    m_Key: Aim at an outlined item. Tap PICK for one item, or hold to collect more
+      of that type.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039299
+    m_Key: Hands start with 10 slots. DROP drops one selected item per tap.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039300
+    m_Key: SORT YOUR RACKS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039301
+    m_Key: Tap an inventory category to select it. Aim at a green rack and tap or
+      hold PLACE.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039302
+    m_Key: The first item assigns the whole rack. Pick all its items back up to reset
+      it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039303
+    m_Key: TOOLS & REWARDS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039304
+    m_Key: SEARCH and MAGNET use your selected category anywhere in the lab. Full
+      hands never charge for magnet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039305
+    m_Key: Small milestone rewards help you progress. Get tools with cash, optional
+      reward videos or the store. ITEM PROGRESS shows what remains.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039306
+    m_Key: Changes save automatically. Close this panel to try your look speed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039307
+    m_Key: Reset changes controls and feedback only; sorting progress stays safe.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039308
+    m_Key: Remaining includes floor items and items in your hand.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039309
+    m_Key: Remove Ads disables automatic ads. Reward videos remain optional.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039310
+    m_Key: "Offline \u2014 sorting is still available."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039311
+    m_Key: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039312
+    m_Key: Analytics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039313
+    m_Key: Attribution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039314
+    m_Key: Crash reports
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039315
+    m_Key: 'SOUND: ON'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039316
+    m_Key: 'SOUND: OFF'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039317
+    m_Key: 'HAPTICS: ON'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039318
+    m_Key: 'HAPTICS: OFF'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039319
+    m_Key: Look sensitivity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039320
+    m_Key: slow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039321
+    m_Key: default
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039322
+    m_Key: fast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039323
+    m_Key: Store unavailable. Please try later.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039324
+    m_Key: Store unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039325
+    m_Key: Purchase cancelled or unsuccessful.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039326
+    m_Key: Purchase awaiting approval.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039327
+    m_Key: Purchase delivered.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039328
+    m_Key: Purchase confirmation pending.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039329
+    m_Key: Could not restore pending purchases.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039330
+    m_Key: Purchase delivery pending.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039331
+    m_Key: Ads removed. Optional reward videos remain available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039332
+    m_Key: Saving purchase. Delivery will retry.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039333
+    m_Key: Purchase verification pending. Please retry later.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039334
+    m_Key: Opening store...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039335
+    m_Key: No video available or capacity is full.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039336
+    m_Key: Watching reward video...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039337
+    m_Key: Video unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039338
+    m_Key: Reward saving. Please wait.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039339
+    m_Key: Video closed. Reward requires completion.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039340
+    m_Key: Video could not play. No reward used.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039341
+    m_Key: Store unavailable or already owned.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039342
+    m_Key: Restore requested.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039343
+    m_Key: Restore unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039344
+    m_Key: Restore verification pending.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039345
+    m_Key: Video and store offers are currently unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039346
+    m_Key: Capacity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039347
+    m_Key: Slot tokens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039348
+    m_Key: 'Uses owned:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039349
+    m_Key: Cash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039350
+    m_Key: CASH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039351
+    m_Key: Search
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039352
+    m_Key: Magnet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039353
+    m_Key: Slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039354
+    m_Key: BUY 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039355
+    m_Key: BIG PACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039356
+    m_Key: PACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039357
+    m_Key: WATCH AD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039358
+    m_Key: USE FOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039359
+    m_Key: Added 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039360
+    m_Key: Received
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039361
+    m_Key: 'Search:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039362
+    m_Key: loose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039363
+    m_Key: found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039364
+    m_Key: First
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039365
+    m_Key: items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039366
+    m_Key: TOSS into
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039367
+    m_Key: rack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039368
+    m_Key: Antibiotic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039369
+    m_Key: Bandage Rolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039370
+    m_Key: Batteries large
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039371
+    m_Key: Batteries Small
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039372
+    m_Key: Blood Bag
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039373
+    m_Key: Blood Sample Tube
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039374
+    m_Key: Disinfectant Spray
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039375
+    m_Key: Emergency Tool kit Blue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039376
+    m_Key: Emergency Tool kit Green
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039377
+    m_Key: Face Mask Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039378
+    m_Key: First Aid Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039379
+    m_Key: Flashlight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039380
+    m_Key: Food Rations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039381
+    m_Key: Gas Mask
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039382
+    m_Key: Hand Sanitizer Bottles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039383
+    m_Key: IV Bag
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039384
+    m_Key: Medical Test Kit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039385
+    m_Key: Medicine Bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039386
+    m_Key: Micro Scope Big
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039387
+    m_Key: Micro Scope
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039388
+    m_Key: Oxygen Cylinder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039389
+    m_Key: Painkiller
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039390
+    m_Key: Protein Bar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039391
+    m_Key: Radio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039392
+    m_Key: Surgical Gloves Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039393
+    m_Key: Test Tube
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039394
+    m_Key: Thermal Blanket
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039395
+    m_Key: Thermometer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039396
+    m_Key: Vitamin Bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039397
+    m_Key: Wakie Takie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039398
+    m_Key: Water Purification
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8755960463360
+    m_Key: LOOK SENSITIVITY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753684721664
+    m_Key: Slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636224
+    m_Key: lost items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636225
+    m_Key: lost item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636226
+    m_Key: to the safe area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636227
+    m_Key: WASD move / drag right to look
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636228
+    m_Key: E pick / F place / Q drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636229
+    m_Key: Tab cycle held item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636230
+    m_Key: R search / M magnet / U upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636231
+    m_Key: Unable to load the lab.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10657347518464
+    m_Key: Pick an item, then assign an empty rack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10657406238720
+    m_Key: Privacy service unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10657406238721
+    m_Key: No privacy form is required for this session.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18270999134208
+    m_Key: UPPER FLOOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18271053660160
+    m_Key: LOWER FLOOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18271053660161
+    m_Key: SAME FLOOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18271053660162
+    m_Key: HERE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18271053660163
+    m_Key: Category complete!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45966596620288
+    m_Key: GOAL COMPLETE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45966634369024
+    m_Key: new items to next reward
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 6082169848036065455
+  references:
+    version: 2
+    RefIds:
+    - rid: 6082169848036065455
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1794464171151

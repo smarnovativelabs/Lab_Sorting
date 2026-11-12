@@ -386,7 +386,9 @@ namespace LabSorting.Player
                             Vector3 targetMovementVelocity = reorientedInput * MaxStableMoveSpeed;
 
                             // Smooth movement Velocity
-                            currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity, 1f - Mathf.Exp(-StableMovementSharpness * deltaTime));
+                            float sharpness=_moveInputVector.sqrMagnitude<.0001f?Mathf.Max(35,StableMovementSharpness):StableMovementSharpness;
+                            currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity, 1f - Mathf.Exp(-sharpness * deltaTime));
+                            if(_moveInputVector.sqrMagnitude<.0001f&&currentVelocity.sqrMagnitude<.0004f)currentVelocity=Vector3.zero;
                         }
                         // Air movement
                         else
@@ -554,7 +556,7 @@ namespace LabSorting.Player
 
         public bool IsColliderValidForCollisions(Collider coll)
         {
-            if (SortingColliders.Contains(coll) || IgnoredColliders.Contains(coll))
+            if (SortingColliders.Contains(coll) || IgnoredColliders.Contains(coll) || coll.GetComponentInParent<LabSorting.Sorting.SortItem>())
             {
                 return false;
             }

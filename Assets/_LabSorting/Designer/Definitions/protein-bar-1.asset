@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-protein-bar-1
   displayName: Protein Bar 1
+  icon: {fileID: -1271863854, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
+  placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}
   shelfEuler: {x: 0, y: 0, z: 0}
+  center: {x: 0.000000029802322, y: 0.015475726, z: 0}
+  size: {x: 0.3851418, y: 0.030951452, z: 0.1407733}

@@ -827,8 +827,9 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED;APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED
+    Android: MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED;APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED;tenjin_admob_enabled;tenjin_applovin_enabled
     Standalone: APP_UI_EDITOR_ONLY;MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED;SENTIS_ANALYTICS_ENABLED
+    iPhone: tenjin_admob_enabled;tenjin_applovin_enabled
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

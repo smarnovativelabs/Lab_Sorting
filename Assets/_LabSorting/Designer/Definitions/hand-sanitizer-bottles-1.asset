@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d01126ac2bf57443a275d5b47447a70, type: 3}
+  m_Name: hand-sanitizer-bottles-1
+  m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
+  id: lab-hand-sanitizer-bottles-1
+  displayName: Hand Sanitizer Bottles 1
+  icon: {fileID: 637257942, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
+  placementMaterial: 2
+  color: {r: 1, g: 1, b: 1, a: 1}
+  shelfEuler: {x: 0, y: 0, z: 0}
+  center: {x: 0.000000059604645, y: 0.11894827, z: 0}
+  size: {x: 0.12808263, y: 0.23789655, z: 0.09156966}

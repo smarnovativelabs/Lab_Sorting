@@ -24,7 +24,7 @@ namespace LabSorting.Prototype
                 check(s.TargetItem==item&&ui.pick.alpha==1&&ui.place.alpha==0,"Hover exposes Pick only");
                 yield return new WaitForSecondsRealtime(.3f);
                 var pointer=new PointerEventData(EventSystem.current){pointerId=71,button=PointerEventData.InputButton.Left};ui.pickHold.OnPointerDown(pointer);s.RefreshTarget();ui.Refresh();
-                check(s.carried.Count==1&&ui.pick.alpha==0&&ui.place.alpha==1&&ui.drop.alpha==1,"Pickup hides unavailable Pick and exposes Place/Throw");
+                check(s.carried.Count==1&&ui.pick.alpha==0&&ui.place.alpha==0&&ui.drop.alpha==1,"Pickup hides unavailable Pick/Place and exposes DROP away from racks");
                 check(s.Holding&&ui.pickHold.PointerHeld&&ui.pick.blocksRaycasts,"Hidden Pick preserves existing hold pointer between targets");ui.pickHold.OnPointerUp(pointer);ui.Refresh();check(!s.Holding&&!ui.pick.blocksRaycasts,"Releasing hidden Pick releases capture without a stuck hold");
                 s.player.SetBlocked(true);s.RefreshTarget();ui.Refresh();check(ui.place.alpha==0&&ui.drop.alpha==0,"Modal blocking hides contextual carry actions");s.player.SetBlocked(false);s.Restore(initial);
                 for(int i=0;i<24;i++){s.TryPick(s.items[i]);DOTween.CompleteAll();s.TryPlace(s.racks[i%5]);DOTween.CompleteAll();}

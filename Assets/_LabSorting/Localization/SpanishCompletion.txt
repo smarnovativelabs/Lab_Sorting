@@ -1,0 +1,233 @@
+DROP|SOLTAR
+PREVIOUS|ANTERIOR
+GOT IT|ENTENDIDO
+CONTINUE EXPLORING|SEGUIR EXPLORANDO
+LAB ORGANIZED!|¡LABORATORIO ORDENADO!
+WELCOME TO LAB SORTING|BIENVENIDO A LAB SORTING
+LET'S SORT|A ORDENAR
+ITEM PROGRESS|PROGRESO DE OBJETOS
+ITEMS SORTED|OBJETOS ORDENADOS
+ITEMS|OBJETOS
+SORTED|ORDENADOS
+Sorted|Ordenados
+sorted|ordenados
+Remaining|Restantes
+remaining|restantes
+held|en mano
+SELECTED|SELECCIONADO
+SELECT AN ITEM|ELIGE UN OBJETO
+Hands|En mano
+FULL|LLENO
+SLOTS LEFT|ESPACIOS LIBRES
+SLOT LEFT|ESPACIO LIBRE
+EMPTY / ANY ITEM|VACÍO / CUALQUIER OBJETO
+Empty rack — assign selected item|Estante vacío: coloca el objeto seleccionado
+Rack full|Estante lleno
+Wrong item|Tipo incorrecto
+Too big for this rack|No cabe en este estante
+This rack holds|Este estante contiene
+Select a carried item first|Primero selecciona un objeto de tu inventario
+Search already active — no charge|La búsqueda ya está activa: sin coste
+No loose|No quedan objetos sueltos de tipo
+remaining — no charge|sin recoger: sin coste
+available — no charge|disponibles: sin coste
+Get search uses with cash, a rewarded ad or the store|Consigue búsquedas con dinero, un anuncio o en la tienda
+Get magnet uses with cash, a rewarded ad or the store|Consigue imanes con dinero, un anuncio o en la tienda
+Get a slot with cash, a rewarded ad or the store|Consigue un espacio con dinero, un anuncio o en la tienda
+Hands full — magnet not charged|Inventario lleno: no se cobra el imán
+Wait for pickup to finish — no charge|Espera a terminar de recoger: sin coste
+Nothing collected — no charge|No se recogió nada: sin coste
+COLLECTED|RECOGIDOS
+NO MATCH|SIN COINCIDENCIAS
+Magnet collected|El imán recogió
+Maximum capacity reached — no charge|Capacidad máxima alcanzada: sin coste
+Capacity upgraded to|Capacidad ampliada a
+Not enough cash|Dinero insuficiente
+Progress saved|Progreso guardado
+Save delayed — retrying. Keep the game open.|Guardado pendiente. Reintentando; mantén el juego abierto.
+No available item in reach|No hay objetos al alcance
+Hands full — place or throw an item|Inventario lleno: coloca o suelta un objeto
+Picked|Recogido:
+Selected|Seleccionado:
+Placed|Colocado:
+Dropped|Soltado:
+Pick an item first|Recoge un objeto primero
+Aim at a rack|Apunta a un estante
+Nice shot!|¡Buen lanzamiento!
+Recovered|Recuperados:
+lost item(s) to the safe area|objetos perdidos en la zona segura
+SHORT GOALS COMPLETE|OBJETIVOS COMPLETADOS
+SHORT GOAL|OBJETIVO
+Sort new items|Ordena objetos nuevos
+Sorting goal complete!|¡Objetivo completado!
+Rack complete!|¡Estante completado!
+First category complete|Primera categoría completada
+Lab 50% sorted|Laboratorio ordenado al 50 %
+Lab fully sorted|Laboratorio totalmente ordenado
+Complete any item type|Completa cualquier tipo de objeto
+ALL MILESTONES COMPLETE|TODAS LAS METAS COMPLETADAS
+CAPACITY MAX|CAPACIDAD MÁXIMA
+CAPACITY|CAPACIDAD
+SLOT|ESPACIO
+low cash|dinero insuficiente
+TURN AROUND|DATE LA VUELTA
+LEFT|IZQUIERDA
+RIGHT|DERECHA
+AHEAD|DELANTE
+Select an item|Elige un objeto
+categories organized|categorías ordenadas
+milestones unlocked|metas alcanzadas
+Cash balance|Dinero disponible
+Completion milestone secured!|¡Meta final alcanzada!
+Use the joystick to walk around the lab.|Usa el joystick para moverte por el laboratorio.
+Drag on the right side of the screen to look around.|Arrastra el lado derecho de la pantalla para mirar alrededor.
+drag with mouse or touchpad|arrastra con el ratón o el panel táctil
+Tap PICK to grab the item you are aiming at.|Toca RECOGER para tomar el objeto al que apuntas.
+Aim the + at any item on the floor. PICK appears when you can grab it.|Apunta con + a un objeto del suelo. RECOGER aparece cuando está al alcance.
+Pick up an item first.|Recoge un objeto primero.
+Tap PLACE. The first item on a rack decides what that rack holds.|Toca COLOCAR. El primer objeto determina el tipo de todo el estante.
+Walk to the marked rack|Acércate al estante marcado
+m), then aim the + anywhere on it.|m) y apunta con + a cualquier parte del estante.
+Find an empty rack on this floor, or one holding the same item.|Busca un estante vacío en esta planta o uno con el mismo tipo de objeto.
+Pick up another item first.|Recoge otro objeto primero.
+Tap DROP to throw one item gently forward.|Toca SOLTAR para lanzar suavemente un objeto hacia delante.
+Your item will drop forward when there is room.|El objeto caerá delante cuando haya espacio.
+Nice! This rack now holds that item type.|¡Bien! Este estante ya está asignado a ese tipo de objeto.
+DROP throws one item gently forward. Select a type in your hand to use SEARCH or MAGNET. Get tools with cash, optional reward videos or the store. Tap GOT IT to continue.|SOLTAR lanza un objeto suavemente hacia delante. Elige un tipo en tu inventario para BUSCAR o usar el IMÁN. Consigue herramientas con dinero, anuncios opcionales o en la tienda. Toca ENTENDIDO para continuar.
+Well done!|¡Muy bien!
+Now sort every item to finish the lab.|Ahora ordena todos los objetos para completar el laboratorio.
+STEP|PASO
+RACK|ESTANTE
+MOVE & LOOK|MOVERSE Y MIRAR
+Use the left joystick to move. Drag the right side to look around.|Usa el joystick izquierdo para moverte. Arrastra el lado derecho para mirar.
+On desktop: WASD to move, drag to look. Adjust look sensitivity in Settings.|En ordenador: WASD para moverte y arrastra para mirar. Ajusta la sensibilidad en Ajustes.
+PICK & DROP|RECOGER Y SOLTAR
+Aim at an outlined item. Tap PICK for one item, or hold to collect more of that type.|Apunta a un objeto resaltado. Toca RECOGER para tomar uno o mantén pulsado para recoger más del mismo tipo.
+Hands start with 10 slots. DROP drops one selected item per tap.|Empiezas con 10 espacios. SOLTAR lanza un objeto seleccionado por toque.
+SORT YOUR RACKS|ORDENA LOS ESTANTES
+Tap an inventory category to select it. Aim at a green rack and tap or hold PLACE.|Toca una categoría del inventario para elegirla. Apunta a un estante verde y toca o mantén COLOCAR.
+The first item assigns the whole rack. Pick all its items back up to reset it.|El primer objeto asigna todo el estante. Recoge todos sus objetos para dejarlo libre.
+TOOLS & REWARDS|HERRAMIENTAS Y RECOMPENSAS
+SEARCH and MAGNET use your selected category anywhere in the lab. Full hands never charge for magnet.|BUSCAR e IMÁN usan la categoría seleccionada en todo el laboratorio. No se cobra el imán si el inventario está lleno.
+Small milestone rewards help you progress. Get tools with cash, optional reward videos or the store. ITEM PROGRESS shows what remains.|Las metas dan pequeñas recompensas. Consigue herramientas con dinero, anuncios opcionales o en la tienda. PROGRESO DE OBJETOS muestra lo que falta.
+Changes save automatically. Close this panel to try your look speed.|Los cambios se guardan automáticamente. Cierra este panel para probar la sensibilidad.
+Reset changes controls and feedback only; sorting progress stays safe.|Restablecer solo cambia controles y efectos; tu progreso se conserva.
+Remaining includes floor items and items in your hand.|Restantes incluye los objetos del suelo y los que llevas en la mano.
+Remove Ads disables automatic ads. Reward videos remain optional.|Quitar anuncios desactiva los anuncios automáticos. Los vídeos con recompensa siguen siendo opcionales.
+Offline — sorting is still available.|Sin conexión: puedes seguir ordenando.
+Language|Idioma
+Analytics|Estadísticas
+Attribution|Atribución
+Crash reports|Informes de errores
+SOUND: ON|SONIDO: SÍ
+SOUND: OFF|SONIDO: NO
+HAPTICS: ON|VIBRACIÓN: SÍ
+HAPTICS: OFF|VIBRACIÓN: NO
+Look sensitivity|Sensibilidad de cámara
+slow|lento
+default|normal
+fast|rápido
+Store unavailable. Please try later.|Tienda no disponible. Inténtalo más tarde.
+Store unavailable.|Tienda no disponible.
+Purchase cancelled or unsuccessful.|Compra cancelada o fallida.
+Purchase awaiting approval.|Compra pendiente de aprobación.
+Purchase delivered.|Compra entregada.
+Purchase confirmation pending.|Confirmación de compra pendiente.
+Could not restore pending purchases.|No se pudieron restaurar las compras pendientes.
+Purchase delivery pending.|Entrega de compra pendiente.
+Ads removed. Optional reward videos remain available.|Anuncios eliminados. Los vídeos con recompensa siguen disponibles.
+Saving purchase. Delivery will retry.|Guardando la compra. Se reintentará la entrega.
+Purchase verification pending. Please retry later.|Verificación pendiente. Inténtalo más tarde.
+Opening store...|Abriendo la tienda...
+No video available or capacity is full.|No hay vídeos disponibles o la capacidad está llena.
+Watching reward video...|Reproduciendo el vídeo...
+Video unavailable.|Vídeo no disponible.
+Reward added!|¡Recompensa añadida!
+Reward saving. Please wait.|Guardando la recompensa. Espera.
+Video closed. Reward requires completion.|Vídeo cerrado. Debes terminarlo para recibir la recompensa.
+Video could not play. No reward used.|No se pudo reproducir el vídeo. No se consumió ninguna recompensa.
+Store unavailable or already owned.|Tienda no disponible o producto ya adquirido.
+Restore requested.|Restauración solicitada.
+Restore unavailable.|Restauración no disponible.
+Restore verification pending.|Verificación de restauración pendiente.
+Added to your supplies|Añadido a tus suministros
+Not enough cash or capacity is full|Dinero insuficiente o capacidad llena
+Video and store offers are currently unavailable.|Los vídeos y la tienda no están disponibles en este momento.
+Capacity|Capacidad
+Slot tokens|Ampliaciones disponibles
+Uses owned:|Usos disponibles:
+Cash|Dinero
+CASH|DINERO
+Search|Búsqueda
+Magnet|Imán
+Slot|Espacio
+BUY 1|COMPRAR 1
+BIG PACK|PAQUETE GRANDE
+PACK|PAQUETE
+WATCH AD|VER ANUNCIO
+USE 1|USAR 1
+USE FOR|USAR POR
+Added 1|Añadido: 1
+Received|Recibido:
+Search:|Búsqueda:
+loose|sueltos de tipo
+found|encontrados
+First|Primeros
+items|objetos
+TOSS into|LANZAR al
+empty rack|estante vacío
+rack|estante
+Antibiotic|Antibiótico
+Bandage Rolls|Rollos de vendas
+Batteries large|Pilas grandes
+Batteries Small|Pilas pequeñas
+Blood Bag|Bolsa de sangre
+Blood Sample Tube|Tubo de muestra de sangre
+Disinfectant Spray|Desinfectante en aerosol
+Emergency Tool kit Blue|Kit de emergencia azul
+Emergency Tool kit Green|Kit de emergencia verde
+Face Mask Box|Caja de mascarillas
+First Aid Box|Botiquín
+Flashlight|Linterna
+Food Rations|Raciones de comida
+Gas Mask|Máscara antigás
+Hand Sanitizer Bottles|Botellas de gel desinfectante
+IV Bag|Bolsa de suero
+Medical Test Kit|Kit de pruebas médicas
+Medicine Bottle|Frasco de medicina
+Micro Scope Big|Microscopio grande
+Micro Scope|Microscopio
+Oxygen Cylinder|Bombona de oxígeno
+Painkiller|Analgésico
+Protein Bar|Barrita de proteínas
+Radio|Radio
+Surgical Gloves Box|Caja de guantes quirúrgicos
+Test Tube|Tubo de ensayo
+Thermal Blanket|Manta térmica
+Thermometer|Termómetro
+Vitamin Bottle|Frasco de vitaminas
+Wakie Takie|Walkie-talkie
+Water Purification|Purificador de agua
+LOOK SENSITIVITY|SENSIBILIDAD DE CÁMARA
+Slots|Espacios
+TOSS!|¡LANZAR!
+lost items|objetos perdidos
+lost item|objeto perdido
+to the safe area|en la zona segura
+WASD move / drag right to look|WASD moverse / arrastra a la derecha para mirar
+E pick / F place / Q drop|E recoger / F colocar / Q soltar
+Tab cycle held item|Tab cambiar objeto en mano
+R search / M magnet / U upgrade|R buscar / M imán / U ampliar
+Loading lab…|Cargando laboratorio…
+Unable to load the lab.|No se pudo cargar el laboratorio.
+Pick an item, then assign an empty rack.|Recoge un objeto y asígnalo a un estante vacío.
+Privacy service unavailable.|Servicio de privacidad no disponible.
+No privacy form is required for this session.|No se necesita un formulario de privacidad en esta sesión.
+UPPER FLOOR|PLANTA SUPERIOR
+LOWER FLOOR|PLANTA INFERIOR
+SAME FLOOR|MISMA PLANTA
+HERE|AQUÍ
+Category complete!|¡Categoría completada!
+Select item|Elige un objeto
+GOAL COMPLETE|OBJETIVO COMPLETADO
+new items to next reward|objetos nuevos para la próxima recompensa

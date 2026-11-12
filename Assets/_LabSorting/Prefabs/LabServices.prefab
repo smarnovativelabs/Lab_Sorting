@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1554245312843050117
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2163244684542635209}
+  - component: {fileID: 6030164789866957657}
+  - component: {fileID: 7546443824481791830}
+  - component: {fileID: 6610531998888380345}
+  - component: {fileID: 598156782015225324}
+  - component: {fileID: 2382650267222237663}
+  m_Layer: 0
+  m_Name: LabServices
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2163244684542635209
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554245312843050117}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6030164789866957657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554245312843050117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca452924adcc70a46b90c5e46d2a58f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Services.LabServiceRoot
+  commerce: {fileID: 7546443824481791830}
+  telemetry: {fileID: 6610531998888380345}
+  internet: {fileID: 598156782015225324}
+--- !u!114 &7546443824481791830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554245312843050117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfb7887648865e94f9a5eccc667046bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Services.SupplyCommerce
+  settings: {fileID: 11400000, guid: fe2b7caf1138168478702b008287f9c8, type: 2}
+  session: {fileID: 0}
+--- !u!114 &6610531998888380345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554245312843050117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c57ab4298f27dd43a6e289bcf0d5c31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Services.LabTelemetry
+  settings: {fileID: 11400000, guid: fe2b7caf1138168478702b008287f9c8, type: 2}
+  session: {fileID: 0}
+--- !u!114 &598156782015225324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554245312843050117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a01445876133124d98cc95322f58bee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Services.InternetConnectivity
+  probeUrl: 
+  expectedResponseCode: 204
+  fallbackProbeUrl: 
+  fallbackExpectedResponseCode: 200
+  checkIntervalSeconds: 15
+  maximumBackoffSeconds: 120
+  requestTimeoutSeconds: 5
+--- !u!114 &2382650267222237663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554245312843050117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1166c6b2d65315d48845e462d6f93fa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Services.LabConsent

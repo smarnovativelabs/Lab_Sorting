@@ -1,0 +1,1098 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: LabUI_es
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: es
+  m_SharedData: {fileID: 11400000, guid: 373158e928ff66144a66e092cf5965be, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 5191090189
+    m_Localized: RECOGER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090190
+    m_Localized: COLOCAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090191
+    m_Localized: SOLTAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564235
+    m_Localized: BUSCAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564236
+    m_Localized: "IM\xC1N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507269
+    m_Localized: AJUSTES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507273
+    m_Localized: SIGUIENTE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090192
+    m_Localized: "ATR\xC1S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090193
+    m_Localized: OMITIR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090194
+    m_Localized: "C\xD3MO JUGAR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090195
+    m_Localized: REPETIR TUTORIAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090196
+    m_Localized: RESTABLECER AJUSTES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090197
+    m_Localized: TIENDA Y PRIVACIDAD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090198
+    m_Localized: QUITAR ANUNCIOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118661
+    m_Localized: ANUNCIOS ELIMINADOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090199
+    m_Localized: RESTAURAR COMPRAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090200
+    m_Localized: "REINTENTAR CONEXI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090201
+    m_Localized: PRIVACIDAD DE ANUNCIOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090202
+    m_Localized: "POL\xCDTICA DE PRIVACIDAD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5170118663
+    m_Localized: No disponible
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090178
+    m_Localized: CAPACIDAD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090186
+    m_Localized: "CAPACIDAD M\xC1XIMA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090203
+    m_Localized: "Estad\xEDsticas: S\xCD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090204
+    m_Localized: "Estad\xEDsticas: NO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090205
+    m_Localized: "Atribuci\xF3n: S\xCD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090206
+    m_Localized: "Atribuci\xF3n: NO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090207
+    m_Localized: "Informes de errores: S\xCD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090208
+    m_Localized: 'Informes de errores: NO'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090209
+    m_Localized: Resalta el tipo seleccionado en todo el laboratorio.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090210
+    m_Localized: Trae a tus manos los objetos del mismo tipo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090211
+    m_Localized: "A\xF1ade un espacio permanente para llevar objetos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090212
+    m_Localized: Usa dinero para buscar, atraer objetos y ampliar la capacidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5128175617
+    m_Localized: SOLTAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216912707584
+    m_Localized: ANTERIOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216958844928
+    m_Localized: ENTENDIDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216958844929
+    m_Localized: SEGUIR EXPLORANDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216958844930
+    m_Localized: "\xA1LABORATORIO ORDENADO!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507270
+    m_Localized: BIENVENIDO A LAB SORTING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5178507272
+    m_Localized: A ORDENAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039232
+    m_Localized: PROGRESO DE OBJETOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039233
+    m_Localized: OBJETOS ORDENADOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039234
+    m_Localized: OBJETOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039235
+    m_Localized: ORDENADOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039236
+    m_Localized: Ordenados
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039237
+    m_Localized: ordenados
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039238
+    m_Localized: Restantes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039239
+    m_Localized: restantes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039240
+    m_Localized: en mano
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039241
+    m_Localized: SELECCIONADO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039242
+    m_Localized: ELIGE UN OBJETO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039243
+    m_Localized: En mano
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5123981316
+    m_Localized: LLENO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039244
+    m_Localized: ESPACIOS LIBRES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039245
+    m_Localized: ESPACIO LIBRE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039246
+    m_Localized: "VAC\xCDO / CUALQUIER OBJETO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701571
+    m_Localized: "Estante vac\xEDo: coloca el objeto seleccionado"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398407
+    m_Localized: Estante lleno
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039247
+    m_Localized: Tipo incorrecto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398408
+    m_Localized: No cabe en este estante
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039248
+    m_Localized: Este estante contiene
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843973
+    m_Localized: Primero selecciona un objeto de tu inventario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843974
+    m_Localized: "La b\xFAsqueda ya est\xE1 activa: sin coste"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039249
+    m_Localized: No quedan objetos sueltos de tipo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039250
+    m_Localized: 'sin recoger: sin coste'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039251
+    m_Localized: 'disponibles: sin coste'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843977
+    m_Localized: "Consigue b\xFAsquedas con dinero, un anuncio o en la tienda"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843987
+    m_Localized: Consigue imanes con dinero, un anuncio o en la tienda
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843992
+    m_Localized: Consigue un espacio con dinero, un anuncio o en la tienda
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843981
+    m_Localized: "Inventario lleno: no se cobra el im\xE1n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843984
+    m_Localized: 'Espera a terminar de recoger: sin coste'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843988
+    m_Localized: "No se recogi\xF3 nada: sin coste"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039252
+    m_Localized: RECOGIDOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843986
+    m_Localized: SIN COINCIDENCIAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039253
+    m_Localized: "El im\xE1n recogi\xF3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077843991
+    m_Localized: "Capacidad m\xE1xima alcanzada: sin coste"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039254
+    m_Localized: Capacidad ampliada a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815499
+    m_Localized: Dinero insuficiente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5103009794
+    m_Localized: Progreso guardado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039255
+    m_Localized: "Guardado pendiente. Reintentando; mant\xE9n el juego abierto."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398400
+    m_Localized: No hay objetos al alcance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398401
+    m_Localized: 'Inventario lleno: coloca o suelta un objeto'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039256
+    m_Localized: 'Recogido:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039257
+    m_Localized: 'Seleccionado:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039258
+    m_Localized: 'Colocado:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039259
+    m_Localized: 'Soltado:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398404
+    m_Localized: Recoge un objeto primero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5111398405
+    m_Localized: Apunta a un estante
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039260
+    m_Localized: "\xA1Buen lanzamiento!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039261
+    m_Localized: 'Recuperados:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039262
+    m_Localized: objetos perdidos en la zona segura
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5082038272
+    m_Localized: OBJETIVOS COMPLETADOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039263
+    m_Localized: OBJETIVO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039264
+    m_Localized: Ordena objetos nuevos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5086232576
+    m_Localized: "\xA1Objetivo completado!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5086232577
+    m_Localized: "\xA1Estante completado!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815493
+    m_Localized: "Primera categor\xEDa completada"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815494
+    m_Localized: Laboratorio ordenado al 50 %
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815495
+    m_Localized: Laboratorio totalmente ordenado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815496
+    m_Localized: Completa cualquier tipo de objeto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5098815498
+    m_Localized: TODAS LAS METAS COMPLETADAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564232
+    m_Localized: "CAPACIDAD M\xC1XIMA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039265
+    m_Localized: CAPACIDAD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039266
+    m_Localized: ESPACIO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039267
+    m_Localized: dinero insuficiente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564237
+    m_Localized: DATE LA VUELTA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039268
+    m_Localized: IZQUIERDA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039269
+    m_Localized: DERECHA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564240
+    m_Localized: DELANTE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039270
+    m_Localized: Elige un objeto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039271
+    m_Localized: "categor\xEDas ordenadas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039272
+    m_Localized: metas alcanzadas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039273
+    m_Localized: Dinero disponible
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039274
+    m_Localized: "\xA1Meta final alcanzada!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039275
+    m_Localized: Usa el joystick para moverte por el laboratorio.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039276
+    m_Localized: Arrastra el lado derecho de la pantalla para mirar alrededor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039277
+    m_Localized: "arrastra con el rat\xF3n o el panel t\xE1ctil"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039278
+    m_Localized: Toca RECOGER para tomar el objeto al que apuntas.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039279
+    m_Localized: "Apunta con + a un objeto del suelo. RECOGER aparece cuando est\xE1
+      al alcance."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039280
+    m_Localized: Recoge un objeto primero.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039281
+    m_Localized: Toca COLOCAR. El primer objeto determina el tipo de todo el estante.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039282
+    m_Localized: "Ac\xE9rcate al estante marcado"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039283
+    m_Localized: m) y apunta con + a cualquier parte del estante.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039284
+    m_Localized: "Busca un estante vac\xEDo en esta planta o uno con el mismo tipo
+      de objeto."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039285
+    m_Localized: Recoge otro objeto primero.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039286
+    m_Localized: Toca SOLTAR para lanzar suavemente un objeto hacia delante.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039287
+    m_Localized: "El objeto caer\xE1 delante cuando haya espacio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039288
+    m_Localized: "\xA1Bien! Este estante ya est\xE1 asignado a ese tipo de objeto."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039289
+    m_Localized: "SOLTAR lanza un objeto suavemente hacia delante. Elige un tipo
+      en tu inventario para BUSCAR o usar el IM\xC1N. Consigue herramientas con dinero,
+      anuncios opcionales o en la tienda. Toca ENTENDIDO para continuar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039290
+    m_Localized: "\xA1Muy bien!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039291
+    m_Localized: Ahora ordena todos los objetos para completar el laboratorio.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039292
+    m_Localized: PASO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039293
+    m_Localized: ESTANTE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039294
+    m_Localized: MOVERSE Y MIRAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039295
+    m_Localized: Usa el joystick izquierdo para moverte. Arrastra el lado derecho
+      para mirar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039296
+    m_Localized: 'En ordenador: WASD para moverte y arrastra para mirar. Ajusta la
+      sensibilidad en Ajustes.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039297
+    m_Localized: RECOGER Y SOLTAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039298
+    m_Localized: "Apunta a un objeto resaltado. Toca RECOGER para tomar uno o mant\xE9n
+      pulsado para recoger m\xE1s del mismo tipo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039299
+    m_Localized: Empiezas con 10 espacios. SOLTAR lanza un objeto seleccionado por
+      toque.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039300
+    m_Localized: ORDENA LOS ESTANTES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039301
+    m_Localized: "Toca una categor\xEDa del inventario para elegirla. Apunta a un
+      estante verde y toca o mant\xE9n COLOCAR."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039302
+    m_Localized: El primer objeto asigna todo el estante. Recoge todos sus objetos
+      para dejarlo libre.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039303
+    m_Localized: HERRAMIENTAS Y RECOMPENSAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039304
+    m_Localized: "BUSCAR e IM\xC1N usan la categor\xEDa seleccionada en todo el laboratorio.
+      No se cobra el im\xE1n si el inventario est\xE1 lleno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039305
+    m_Localized: "Las metas dan peque\xF1as recompensas. Consigue herramientas con
+      dinero, anuncios opcionales o en la tienda. PROGRESO DE OBJETOS muestra lo
+      que falta."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039306
+    m_Localized: "Los cambios se guardan autom\xE1ticamente. Cierra este panel para
+      probar la sensibilidad."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039307
+    m_Localized: Restablecer solo cambia controles y efectos; tu progreso se conserva.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039308
+    m_Localized: Restantes incluye los objetos del suelo y los que llevas en la mano.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039309
+    m_Localized: "Quitar anuncios desactiva los anuncios autom\xE1ticos. Los v\xEDdeos
+      con recompensa siguen siendo opcionales."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039310
+    m_Localized: "Sin conexi\xF3n: puedes seguir ordenando."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039311
+    m_Localized: Idioma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039312
+    m_Localized: "Estad\xEDsticas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039313
+    m_Localized: "Atribuci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039314
+    m_Localized: Informes de errores
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039315
+    m_Localized: "SONIDO: S\xCD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039316
+    m_Localized: 'SONIDO: NO'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039317
+    m_Localized: "VIBRACI\xD3N: S\xCD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039318
+    m_Localized: "VIBRACI\xD3N: NO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039319
+    m_Localized: "Sensibilidad de c\xE1mara"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039320
+    m_Localized: lento
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039321
+    m_Localized: normal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039322
+    m_Localized: "r\xE1pido"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039323
+    m_Localized: "Tienda no disponible. Int\xE9ntalo m\xE1s tarde."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039324
+    m_Localized: Tienda no disponible.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039325
+    m_Localized: Compra cancelada o fallida.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039326
+    m_Localized: "Compra pendiente de aprobaci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039327
+    m_Localized: Compra entregada.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039328
+    m_Localized: "Confirmaci\xF3n de compra pendiente."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039329
+    m_Localized: No se pudieron restaurar las compras pendientes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039330
+    m_Localized: Entrega de compra pendiente.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039331
+    m_Localized: "Anuncios eliminados. Los v\xEDdeos con recompensa siguen disponibles."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039332
+    m_Localized: "Guardando la compra. Se reintentar\xE1 la entrega."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039333
+    m_Localized: "Verificaci\xF3n pendiente. Int\xE9ntalo m\xE1s tarde."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039334
+    m_Localized: Abriendo la tienda...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039335
+    m_Localized: "No hay v\xEDdeos disponibles o la capacidad est\xE1 llena."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039336
+    m_Localized: "Reproduciendo el v\xEDdeo..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039337
+    m_Localized: "V\xEDdeo no disponible."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5040095239
+    m_Localized: "\xA1Recompensa a\xF1adida!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039338
+    m_Localized: Guardando la recompensa. Espera.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039339
+    m_Localized: "V\xEDdeo cerrado. Debes terminarlo para recibir la recompensa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039340
+    m_Localized: "No se pudo reproducir el v\xEDdeo. No se consumi\xF3 ninguna recompensa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039341
+    m_Localized: Tienda no disponible o producto ya adquirido.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039342
+    m_Localized: "Restauraci\xF3n solicitada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039343
+    m_Localized: "Restauraci\xF3n no disponible."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039344
+    m_Localized: "Verificaci\xF3n de restauraci\xF3n pendiente."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090176
+    m_Localized: "A\xF1adido a tus suministros"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090177
+    m_Localized: Dinero insuficiente o capacidad llena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039345
+    m_Localized: "Los v\xEDdeos y la tienda no est\xE1n disponibles en este momento."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039346
+    m_Localized: Capacidad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039347
+    m_Localized: Ampliaciones disponibles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039348
+    m_Localized: 'Usos disponibles:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039349
+    m_Localized: Dinero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039350
+    m_Localized: DINERO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039351
+    m_Localized: "B\xFAsqueda"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039352
+    m_Localized: "Im\xE1n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039353
+    m_Localized: Espacio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039354
+    m_Localized: COMPRAR 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039355
+    m_Localized: PAQUETE GRANDE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039356
+    m_Localized: PAQUETE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039357
+    m_Localized: VER ANUNCIO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5191090187
+    m_Localized: USAR 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039358
+    m_Localized: USAR POR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039359
+    m_Localized: "A\xF1adido: 1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039360
+    m_Localized: 'Recibido:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039361
+    m_Localized: "B\xFAsqueda:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039362
+    m_Localized: sueltos de tipo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039363
+    m_Localized: encontrados
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039364
+    m_Localized: Primeros
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039365
+    m_Localized: objetos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039366
+    m_Localized: LANZAR al
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5182701570
+    m_Localized: "estante vac\xEDo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039367
+    m_Localized: estante
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039368
+    m_Localized: "Antibi\xF3tico"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039369
+    m_Localized: Rollos de vendas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039370
+    m_Localized: Pilas grandes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039371
+    m_Localized: "Pilas peque\xF1as"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039372
+    m_Localized: Bolsa de sangre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039373
+    m_Localized: Tubo de muestra de sangre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039374
+    m_Localized: Desinfectante en aerosol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039375
+    m_Localized: Kit de emergencia azul
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039376
+    m_Localized: Kit de emergencia verde
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039377
+    m_Localized: Caja de mascarillas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039378
+    m_Localized: "Botiqu\xEDn"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039379
+    m_Localized: Linterna
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039380
+    m_Localized: Raciones de comida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039381
+    m_Localized: "M\xE1scara antig\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039382
+    m_Localized: Botellas de gel desinfectante
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039383
+    m_Localized: Bolsa de suero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039384
+    m_Localized: "Kit de pruebas m\xE9dicas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039385
+    m_Localized: Frasco de medicina
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039386
+    m_Localized: Microscopio grande
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039387
+    m_Localized: Microscopio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039388
+    m_Localized: "Bombona de ox\xEDgeno"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039389
+    m_Localized: "Analg\xE9sico"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039390
+    m_Localized: "Barrita de prote\xEDnas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039391
+    m_Localized: Radio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039392
+    m_Localized: "Caja de guantes quir\xFArgicos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039393
+    m_Localized: Tubo de ensayo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039394
+    m_Localized: "Manta t\xE9rmica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039395
+    m_Localized: "Term\xF3metro"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039396
+    m_Localized: Frasco de vitaminas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039397
+    m_Localized: Walkie-talkie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8216963039398
+    m_Localized: Purificador de agua
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8755960463360
+    m_Localized: "SENSIBILIDAD DE C\xC1MARA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753684721664
+    m_Localized: Espacios
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5128175618
+    m_Localized: "\xA1LANZAR!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636224
+    m_Localized: objetos perdidos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636225
+    m_Localized: objeto perdido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636226
+    m_Localized: en la zona segura
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636227
+    m_Localized: WASD moverse / arrastra a la derecha para mirar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636228
+    m_Localized: E recoger / F colocar / Q soltar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636229
+    m_Localized: Tab cambiar objeto en mano
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636230
+    m_Localized: "R buscar / M im\xE1n / U ampliar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5031706625
+    m_Localized: "Cargando laboratorio\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9753747636231
+    m_Localized: No se pudo cargar el laboratorio.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10657347518464
+    m_Localized: "Recoge un objeto y as\xEDgnalo a un estante vac\xEDo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10657406238720
+    m_Localized: Servicio de privacidad no disponible.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10657406238721
+    m_Localized: "No se necesita un formulario de privacidad en esta sesi\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18270999134208
+    m_Localized: PLANTA SUPERIOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18271053660160
+    m_Localized: PLANTA INFERIOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18271053660161
+    m_Localized: MISMA PLANTA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18271053660162
+    m_Localized: "AQU\xCD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18271053660163
+    m_Localized: "\xA1Categor\xEDa completada!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5136564224
+    m_Localized: Elige un objeto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45966596620288
+    m_Localized: OBJETIVO COMPLETADO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45966634369024
+    m_Localized: "objetos nuevos para la pr\xF3xima recompensa"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

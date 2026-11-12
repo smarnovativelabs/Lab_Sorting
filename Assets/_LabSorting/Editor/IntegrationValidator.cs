@@ -52,7 +52,7 @@ namespace LabSorting.Editor
                 if(item.transform.parent&&!Unit(item.transform.parent))Add(r,"ITEM_PARENT_SCALE","Scaled item parents can change held/restored dimensions. Use unit-scale content roots.",item,true);
             }
             foreach(var item in UnityEngine.Object.FindObjectsByType<SortItem>(FindObjectsInactive.Include,FindObjectsSortMode.None))if(item.gameObject.scene==s.gameObject.scene&&!registered.Contains(item))Add(r,"ITEM_UNREGISTERED","Scene item is not registered and will be omitted from progress/save.",item);
-            ids.Clear();var slots=new HashSet<Transform>();var registeredRacks=new HashSet<SortRack>();int capacity=0;
+            ids.Clear();var slots=new HashSet<Transform>();var registeredRacks=new HashSet<SortRack>();var sizeRacks=new List<SortRack>();int capacity=0;
             if(s.racks==null||s.racks.Length==0)Add(r,"RACKS_EMPTY","No racks registered.",s);
             else foreach(var rack in s.racks)
             {
@@ -61,11 +61,26 @@ namespace LabSorting.Editor
                 if(!Unit(rack.transform))Add(r,"RACK_SCALE","Check scaled rack hierarchy and slot spacing.",rack,true);
                 if(!rack.GetComponentsInChildren<Collider>().Any(c=>c.enabled&&!c.isTrigger&&c.gameObject.layer!=2))Add(r,"RACK_COLLIDER","Rack needs a solid targetable collider.",rack);
                 if(!rack.label||!rack.indicator||!rack.neutral||!rack.valid||!rack.invalid)Add(r,"RACK_FEEDBACK","Rack label/indicator/material wiring incomplete.",rack);
-                if(rack.slots==null||rack.slots.Length==0)Add(r,"RACK_SLOTS","Rack has no slots.",rack);
+                if(rack.SizeBased){sizeRacks.Add(rack);foreach(var shelf in rack.shelves)if(shelf.x.y<=shelf.x.x||shelf.z.y<=shelf.z.x||shelf.clearance<=0)Add(r,"RACK_SHELF","Shelf has no usable area or height; rerun the designer rack setup.",rack);}
+                else if(rack.slots==null||rack.slots.Length==0)Add(r,"RACK_SLOTS","Rack has no slots.",rack);
                 else foreach(var slot in rack.slots){if(!slot){Add(r,"SLOT_NULL","Missing rack slot.",rack);continue;}capacity++;if(!slots.Add(slot))Add(r,"SLOT_DUPLICATE","Slot transform is used more than once.",slot);if(!slot.IsChildOf(rack.transform))Add(r,"SLOT_PARENT","Slot must belong to its rack hierarchy.",slot);}
             }
             foreach(var rack in UnityEngine.Object.FindObjectsByType<SortRack>(FindObjectsInactive.Include,FindObjectsSortMode.None))if(rack.gameObject.scene==s.gameObject.scene&&!registeredRacks.Contains(rack))Add(r,"RACK_UNREGISTERED","Scene rack is not registered for saving.",rack);
-            if(capacity<total)Add(r,"TOTAL_CAPACITY","Not enough rack slots for all registered items.",s);
+            if(sizeRacks.Count>0)
+            {
+                // Size-based racks hold one type each, so count how many full racks every type needs.
+                int needed=0;
+                foreach(var group in (s.items??Array.Empty<SortItem>()).Where(i=>i&&i.definition).GroupBy(i=>i.definition))
+                {
+                    var type=group.Key;
+                    if(type.size.x<=0||type.size.y<=0||type.size.z<=0){Add(r,"TYPE_SIZE","Item size not measured; run Tools > Lab Sorting > Designer > Rebuild Rack Points and Item Piles.",type);continue;}
+                    int perRack=sizeRacks.Min(k=>k.CapacityFor(type));
+                    if(perRack==0){Add(r,"TYPE_TOO_BIG",type.displayName+" does not fit on the rack shelves.",type);continue;}
+                    needed+=Mathf.CeilToInt(group.Count()/(float)perRack);
+                }
+                if(needed>sizeRacks.Count)Add(r,"RACK_CAPACITY","Items need "+needed+" full racks but only "+sizeRacks.Count+" exist.",s);
+            }
+            else if(capacity<total)Add(r,"TOTAL_CAPACITY","Not enough rack slots for all registered items.",s);
             if(definitions.Count>registeredRacks.Count)Add(r,"CATEGORY_CAPACITY","Need at least one rack per item category.",s);
             var recovery=s.GetComponent<ItemRecovery>();
             if(!recovery||!recovery.Configured)Add(r,"RECOVERY_CONFIG","Configure playable bounds and recovery points.",s);

@@ -22,11 +22,19 @@ namespace LabSorting.UI
         CursorLockMode previousCursor;
         static readonly string[] cards={
             "MOVE & LOOK\n\nUse the left joystick to move. Drag the right side to look around.\n\nOn desktop: WASD to move, drag to look. Adjust look sensitivity in Settings.",
-            "PICK & THROW\n\nAim at an outlined item. Tap PICK for one item, or hold to collect more of that type.\n\nHands start with 10 slots. THROW drops one selected item per tap.",
+            "PICK & DROP\n\nAim at an outlined item. Tap PICK for one item, or hold to collect more of that type.\n\nHands start with 10 slots. DROP drops one selected item per tap.",
             "SORT YOUR RACKS\n\nTap an inventory category to select it. Aim at a green rack and tap or hold PLACE.\n\nThe first item assigns the whole rack. Pick all its items back up to reset it.",
-            "TOOLS & REWARDS\n\nSEARCH and MAGNET use cash and your selected category, anywhere in the lab. Full hands never charge for magnet.\n\nSort items for rewards. ITEM PROGRESS shows what remains. Upgrade capacity when needed."
+            "TOOLS & REWARDS\n\nSEARCH and MAGNET use your selected category anywhere in the lab. Full hands never charge for magnet.\n\nSmall milestone rewards help you progress. Get tools with cash, optional reward videos or the store. ITEM PROGRESS shows what remains."
         };
-        void Start(){root.SetActive(false);LoadPreferences();if(autoTutorial&&!TutorialCompleted)OpenTutorial(false);}
+        // Scenes with a GuidedTutorial use it on first launch; the cards stay available as "How to play".
+        GuidedTutorial Guided=>GetComponent<GuidedTutorial>();
+        void Start()
+        {
+            root.SetActive(false);LoadPreferences();if(!autoTutorial)return;
+            var guided=Guided;
+            if(guided){if(!guided.Completed)guided.Begin(false);}
+            else if(!TutorialCompleted)OpenTutorial(false);
+        }
         void Update()
         {
             if(saveAt>=0&&Time.unscaledTime>=saveAt)FlushSettings();
@@ -48,8 +56,9 @@ namespace LabSorting.UI
             session.CancelHold();session.player.SetBlocked(true);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
             IsOpen=true;root.SetActive(true);root.transform.SetAsLastSibling();
         }
-        public void OpenSettings(){var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;Show();ShowingTutorial=false;title.text="SETTINGS";settingsContent.SetActive(true);tutorialContent.SetActive(false);RefreshSettings();}
-        public void ReplayTutorial(){OpenTutorial(true);}
+        public void OpenSettings(){var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;Show();ShowingTutorial=false;title.text="SETTINGS";settingsContent.SetActive(true);tutorialContent.SetActive(false);RefreshSettings();var commerce=UnityEngine.Object.FindFirstObjectByType<LabSorting.Services.SupplyCommerce>();if(commerce)commerce.TryInterstitialAtBreak();}
+        public void ReplayTutorial(){var guided=Guided;if(guided){Close();guided.Begin(true);}else OpenTutorial(true);}
+        public void OpenHowToPlay(){OpenTutorial(true);}
         public void OpenTutorial(bool restart)
         {
             var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;

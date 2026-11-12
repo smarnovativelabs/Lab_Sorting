@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d01126ac2bf57443a275d5b47447a70, type: 3}
+  m_Name: medicine-bottle-2
+  m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
+  id: lab-medicine-bottle-2
+  displayName: Medicine Bottle 2
+  icon: {fileID: 1796603859, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
+  placementMaterial: 2
+  color: {r: 1, g: 1, b: 1, a: 1}
+  shelfEuler: {x: 0, y: 0, z: 0}
+  center: {x: 0, y: 0.16274095, z: -0.000000007450581}
+  size: {x: 0.14538568, y: 0.3254819, z: 0.14529474}

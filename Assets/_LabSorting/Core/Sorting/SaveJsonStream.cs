@@ -43,18 +43,24 @@ namespace LabSorting.Sorting
             try
             {
                 output.Write("{\"version\":");Int(snapshot.version);
+                output.Write(",\"layoutRevision\":");Int(snapshot.layoutRevision);
                 output.Write(",\"completedRacks\":");Strings(snapshot.completedRacks);
                 output.Write(",\"searchId\":");String(snapshot.searchId);
                 output.Write(",\"searchRemaining\":");Float(snapshot.searchRemaining);
                 output.Write(",\"completionAcknowledged\":");output.Write(snapshot.completionAcknowledged?"true":"false");
                 output.Write(",\"milestones\":");Strings(snapshot.milestones);
                 output.Write(",\"cash\":");Int(snapshot.cash);
+                output.Write(",\"searchCredits\":");Int(snapshot.searchCredits);
+                output.Write(",\"magnetCredits\":");Int(snapshot.magnetCredits);
+                output.Write(",\"slotCredits\":");Int(snapshot.slotCredits);
+                output.Write(",\"supplyReceipts\":");Strings(snapshot.supplyReceipts);
                 output.Write(",\"rewarded\":");Strings(snapshot.rewarded);
                 output.Write(",\"capacity\":");Int(snapshot.capacity);
                 output.Write(",\"playerPosition\":");Vector(snapshot.playerPosition);
                 output.Write(",\"look\":{\"x\":");Float(snapshot.look.x);output.Write(",\"y\":");Float(snapshot.look.y);output.Write('}');
                 output.Write(",\"active\":");String(snapshot.active);
                 output.Write(",\"hand\":");Strings(snapshot.hand);
+                output.Write(",\"tutorialRewarded\":");output.Write(snapshot.tutorialRewarded?"true":"false");
                 output.Write(",\"items\":[");
                 for(int i=0;i<snapshot.items.Count;i++)
                 {

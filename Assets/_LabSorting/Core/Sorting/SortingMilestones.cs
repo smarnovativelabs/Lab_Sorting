@@ -5,7 +5,7 @@ namespace LabSorting.Sorting
 {
     public sealed partial class SortingSession
     {
-        [Min(0)] public int firstTenBonus=25,categoryBonus=40,halfBonus=60,completeBonus=100;
+        [Min(0)] public int firstTenBonus=2,categoryBonus=3,halfBonus=5,completeBonus=10;
         HashSet<string> claimedMilestones=new HashSet<string>();
         public event Action<string,int> MilestoneEarned;
         public event Action<ItemDefinition,int> SearchStarted;

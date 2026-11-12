@@ -36,6 +36,7 @@ namespace LabSorting.UI
         }
         void Show()
         {
+            LabSorting.Services.LabTelemetry.Event("lab_completion_viewed");
             if(!Complete||session.CompletionAcknowledged)return;
             pending=false;previousBlocked=session.player.blocked;previousCursor=Cursor.lockState;previousVisible=Cursor.visible;
             session.CancelHold();session.player.SetBlocked(true);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;IsOpen=true;root.SetActive(true);root.transform.SetAsLastSibling();

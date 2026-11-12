@@ -14,6 +14,7 @@ namespace LabSorting.UI
         public RectTransform card;
         public Text summary,pageLabel,soundLabel,hapticsLabel;
         public Text[] rows;
+        public UnityEngine.UI.Image[] rowIcons;
         public Button openButton,closeButton,previousButton,nextButton;
         public bool IsOpen {get;private set;}
         int page,revision=-1;
@@ -53,7 +54,8 @@ namespace LabSorting.UI
             {
                 int index=page*rows.Length+i;rows[i].transform.parent.gameObject.SetActive(index<data.Count);
                 if(index>=data.Count) continue;var row=data[index];
-                rows[i].text=row.type.displayName+"     "+row.sorted+" / "+row.total+" sorted     "+row.Remaining+" remaining     "+row.held+" held";
+                if(rowIcons!=null&&i<rowIcons.Length&&rowIcons[i]){rowIcons[i].sprite=row.type.icon;rowIcons[i].enabled=row.type.icon;}
+                rows[i].text=row.type.displayName+"\n"+row.sorted+" / "+row.total+" sorted     "+row.Remaining+" remaining     "+row.held+" held";
             }
             pageLabel.text=(page+1)+" / "+pages;previousButton.interactable=page>0;nextButton.interactable=page<pages-1;revision=session.Revision;
         }

@@ -17,9 +17,10 @@ namespace LabSorting.Editor
         public static void Install()
         {
             var drive=new DriveInfo(Path.GetPathRoot(Application.dataPath));
-            if(drive.AvailableFreeSpace<10L*1024*1024*1024)
-                throw new InvalidOperationException("Free at least 10 GiB before SDK resolution/import.");
-            request=Client.AddAndRemove(new[]{"com.unity.purchasing","com.unity.external-dependency-manager"});
+            if(drive.AvailableFreeSpace<1024L*1024*1024)
+                throw new InvalidOperationException("Free at least 1 GiB before package resolution.");
+            // Vendor imports already provide EDM4U. Do not install a second resolver.
+            request=Client.AddAndRemove(new[]{"com.unity.purchasing@5.5.0","com.unity.localization@1.5.14"});
             deadline=EditorApplication.timeSinceStartup+600;
             EditorApplication.update+=Poll;
         }

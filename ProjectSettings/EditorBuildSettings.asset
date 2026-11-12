@@ -18,6 +18,8 @@ EditorBuildSettings:
     path: Assets/_LabSorting/Prototype/Scenes/SortingTest.unity
     guid: 204e9623b08217b40bb97ea87e909754
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: b86b1370c34c2314d8fe8313f6977870, type: 2}
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.localization.settings: {fileID: 11400000, guid: d72a4a94acb2c5a47a2c9c9ddbcef0d6, type: 2}
   m_UseUCBPForAssetBundles: 0

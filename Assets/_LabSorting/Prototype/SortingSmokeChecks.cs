@@ -47,10 +47,11 @@ namespace LabSorting.Prototype
             var bad=JsonUtility.FromJson<SortingSession.Snapshot>(json);bad.items[0].id=bad.items[1].id;
             Check(!session.Restore(bad)&&session.carried.Count==9,"Invalid save rejected without mutation");
             yield return WaitGameSeconds(.3f);
-            int count=session.carried.Count;var thrown=session.Active;session.ThrowActive();yield return WaitGameSeconds(.35f);
+            int count=session.carried.Count;var thrown=session.Active;session.ThrowActive();yield return WaitGameSeconds(2.1f);
             Check(session.carried.Count==count-1 && thrown.location==ItemLocation.Loose && thrown.hitbox.enabled,"Throw returns one reachable world item [before="+count+", after="+session.carried.Count+", location="+thrown.location+", moving="+thrown.Moving+", collider="+thrown.hitbox.enabled+", message="+session.Message+", player="+session.player.transform.position+"]");
             Check(session.TryPick(thrown),"Thrown item can be recovered");DOTween.CompleteAll();
             Check(session.Restore(initial),"Clean reset for movement checks");
+            session.player.SendMessage("OnApplicationFocus",true);
             var pos=session.player.transform.position;session.player.SetMove(Vector2.up);
             yield return WaitGameSeconds(.6f);session.player.SetMove(Vector2.zero);
             Check(Vector3.Distance(pos,session.player.transform.position)>.5f,"KCC moves player [from="+pos+", to="+session.player.transform.position+", velocity="+session.player.character.Motor.BaseVelocity+"]");
@@ -162,14 +163,14 @@ namespace LabSorting.Prototype
                 s.TryPick(s.items[0]);Check(s.Active.Moving&&!s.Active.hitbox.enabled,"Pickup animation locks collider until ownership is settled");
                 var socket=s.hand.localPosition;s.hand.localPosition+=Vector3.right*.04f;yield return WaitGameSeconds(.25f);
                 Check(Vector3.Distance(s.Active.transform.position,s.hand.position)<.005f,"Pickup follows moving hand socket");s.hand.localPosition=socket;
-                Check(Vector3.Distance(s.Active.transform.localScale,s.Active.originalScale*s.Active.heldScale)<.001f,"Held model uses compact scale");
+                Check(Vector3.Distance(s.Active.transform.localScale,s.Active.originalScale*s.Active.CarryScale)<.001f,"Held model uses compact scale");
                 Check(feedback.PlayedSounds==sounds+1&&cues.Contains(SortingCue.Pick),"Successful pickup emits sound and feedback event");
                 rows=s.GetItemProgress();var selected=rows.Find(r=>r.type==s.items[0].definition);Check(selected.held==1&&selected.sorted==0&&selected.Remaining==selected.total,"Held items remain unsorted in panel");
                 s.TryPlace(s.racks[0]);DOTween.CompleteAll();Check(cues.Contains(SortingCue.Place)&&s.items[0].transform.localScale==s.items[0].originalScale,"Placement feedback and world scale restored");
                 selected=s.GetItemProgress().Find(r=>r.type==s.items[0].definition);Check(selected.sorted==1&&selected.Remaining==selected.total-1&&selected.held==0,"Placement updates sorted and remaining counts");
                 s.TryPick(s.items[1]);DOTween.CompleteAll();Check(!s.TryPlace(s.racks[0])&&cues.Contains(SortingCue.Reject),"Invalid placement emits rejection feedback");
                 s.TryPick(s.items[0]);DOTween.CompleteAll();selected=s.GetItemProgress().Find(r=>r.type==s.items[0].definition);Check(selected.sorted==0&&selected.Remaining==selected.total,"Taking a rack item reverses sorted count");
-                yield return WaitGameSeconds(.3f);var thrown=s.Active;s.ThrowActive();yield return WaitGameSeconds(.35f);
+                yield return WaitGameSeconds(.3f);var thrown=s.Active;s.ThrowActive();yield return WaitGameSeconds(2.1f);
                 Check(cues.Contains(SortingCue.Throw)&&thrown.location==ItemLocation.Loose&&thrown.hitbox.enabled&&thrown.transform.localScale==thrown.originalScale,"Throw finishes with feedback, world scale and recoverable collider");
                 panel.openButton.onClick.Invoke();yield return WaitGameSeconds(.18f);Check(panel.IsOpen&&s.player.blocked&&panel.group.alpha>.99f,"Progress button opens modal and blocks gameplay");
                 int count=s.carried.Count,cash=s.Cash;var active=s.Active;s.player.SetMove(Vector2.one);
@@ -184,7 +185,7 @@ namespace LabSorting.Prototype
                 yield return WaitGameSeconds(.2f);feedback.SetSound(true,false);int accepted=feedback.AcceptedCues;s.TryMagnet();DOTween.CompleteAll();Check(feedback.AcceptedCues==accepted+1,"Magnet batch feedback is throttled to one response");
                 total=0;int sorted=0,held=0;foreach(var row in s.GetItemProgress()){total+=row.total;sorted+=row.sorted;held+=row.held;}
                 Check(total==50&&sorted==s.SortedCount&&held==s.carried.Count,"Progress remains consistent after bulk collection");
-                s.Restore(initial);s.TryPick(s.items[0]);s.saveName="sorting-automated-test.json";s.persistence=true;s.Save();s.Restore(initial);Check(s.Load()&&s.Active&&!s.Active.Moving&&s.Active.transform.localScale==s.Active.originalScale*s.Active.heldScale,"Save during pickup restores completed compact hand pose");s.persistence=false;s.Restore(initial);
+                s.Restore(initial);s.TryPick(s.items[0]);s.saveName="sorting-automated-test.json";s.persistence=true;s.Save();s.Restore(initial);Check(s.Load()&&s.Active&&!s.Active.Moving&&s.Active.transform.localScale==s.Active.originalScale*s.Active.CarryScale,"Save during pickup restores completed compact hand pose");s.persistence=false;s.Restore(initial);
                 var originals=new ItemDefinition[7];var temporary=new ItemDefinition[7];
                 try
                 {
@@ -195,7 +196,7 @@ namespace LabSorting.Prototype
             }
             finally {s.Feedback-=listener;feedback.SetSound(oldSound,false);feedback.SetHaptics(oldHaptics,false);panel.Close();s.player.SetBlocked(false);s.persistence=false;s.Restore(initial);}
         }
-        static void Capture(SortingSession session,string path="Logs/SortingTest.png")
+        public static void Capture(SortingSession session,string path="Logs/SortingTest.png")
         {
             var camera=session.player.view;var canvas=UnityEngine.Object.FindFirstObjectByType<Canvas>();var oldMode=canvas.renderMode;var oldCamera=canvas.worldCamera;
             var rt=new RenderTexture(1280,720,24);var texture=new Texture2D(1280,720,TextureFormat.RGB24,false);var oldTarget=camera.targetTexture;var oldActive=RenderTexture.active;

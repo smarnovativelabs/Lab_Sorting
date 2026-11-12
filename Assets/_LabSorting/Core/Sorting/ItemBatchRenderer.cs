@@ -65,6 +65,11 @@ namespace LabSorting.Sorting
             long started=System.Diagnostics.Stopwatch.GetTimestamp();SubmittedBatches=VisibleInstances=0;
             if(!targetCamera&&session)targetCamera=session.player.view;
             if(!targetCamera||!targetCamera.isActiveAndEnabled){RestoreSources();dirty=true;return;}
+            if(session&&session.SearchType)
+            {
+                float strength=.58f+.12f*Mathf.Sin(Time.unscaledTime*4);
+                foreach(var pair in materials)pair.Value[1].SetColor("_BaseColor",Color.Lerp(pair.Key.GetColor("_BaseColor"),new Color(1f,.72f,.12f),strength));
+            }
             if(dirty)
             {
             BatchedItems=0;FallbackItems=session&&session.items!=null?session.items.Length:0;

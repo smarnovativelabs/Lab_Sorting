@@ -13,6 +13,10 @@ MonoBehaviour:
   m_Name: micro-scope
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-micro-scope
-  displayName: micro scope
+  displayName: Micro Scope
+  icon: {fileID: 751813888, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
+  placementMaterial: 3
   color: {r: 1, g: 1, b: 1, a: 1}
   shelfEuler: {x: 0, y: 0, z: 0}
+  center: {x: 0, y: 0.20999995, z: 0}
+  size: {x: 0.18429789, y: 0.4199999, z: 0.22610837}

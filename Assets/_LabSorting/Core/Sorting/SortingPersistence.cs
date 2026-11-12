@@ -42,7 +42,7 @@ namespace LabSorting.Sorting
         Entry CaptureEntry(SortItem item)
         {
             Vector3 position=item.SavedPosition;Quaternion rotation=item.SavedRotation;
-            if(item.location==ItemLocation.Rack){position=item.rack.slots[item.slot].position;rotation=item.rack.slots[item.slot].rotation*Quaternion.Euler(item.definition.shelfEuler);}
+            if(item.location==ItemLocation.Rack){var pose=item.rack.SlotPose(item.slot);position=pose.position;rotation=pose.rotation;}
             return new Entry{id=item.id,rack=item.rack?item.rack.id:null,slot=item.slot,location=item.location,position=position,rotation=rotation};
         }
         Snapshot CaptureSave(bool refreshAll)
@@ -55,8 +55,8 @@ namespace LabSorting.Sorting
             dirtySaveItems.Clear();
             if(changed){publishedEntries=new List<Entry>(cachedEntries);SaveCatalogCopies++;}
             // Entries are immutable once published. Updating an item replaces its entry.
-            var snapshot=new Snapshot{completedRacks=Publish(completedRacks,ref rackSource,ref publishedRacks),items=publishedEntries,searchId=SearchType?SearchType.id:null,searchRemaining=SearchSeconds,completionAcknowledged=CompletionAcknowledged,milestones=Publish(claimedMilestones,ref milestoneSource,ref publishedMilestones),cash=cash,rewarded=Publish(rewardedItems,ref rewardSource,ref publishedRewards),capacity=capacity,playerPosition=player.transform.position,look=new Vector2(player.look.Yaw,player.look.Pitch),active=Active?Active.id:null};
-            foreach(var item in carried)snapshot.hand.Add(item.id);
+            var snapshot=new Snapshot{layoutRevision=layoutRevision,completedRacks=Publish(completedRacks,ref rackSource,ref publishedRacks),items=publishedEntries,searchId=SearchType?SearchType.id:null,searchRemaining=SearchSeconds,completionAcknowledged=CompletionAcknowledged,milestones=Publish(claimedMilestones,ref milestoneSource,ref publishedMilestones),cash=cash,rewarded=Publish(rewardedItems,ref rewardSource,ref publishedRewards),capacity=capacity,playerPosition=player.transform.position,look=new Vector2(player.look.Yaw,player.look.Pitch),active=Active?Active.id:null,tutorialRewarded=TutorialRewarded};
+            CaptureSupplies(snapshot);foreach(var item in carried)snapshot.hand.Add(item.id);
             return snapshot;
         }
         public bool RequestSave(bool refreshAll=false)
@@ -91,4 +91,5 @@ namespace LabSorting.Sorting
         void OnDestroy(){FlushSaves();ClearSaveCache();}
     }
 }
+
 

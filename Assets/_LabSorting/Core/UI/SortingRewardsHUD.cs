@@ -7,28 +7,55 @@ namespace LabSorting.UI
     public sealed class SortingRewardsHUD : MonoBehaviour
     {
         public SortingSession session;
+        public bool showMagnetChips=true;
         public RectTransform safeArea;
         public UnityEngine.UI.Text milestone,toast,ability;
         public UnityEngine.UI.Image selectedSwatch;
+        public RectTransform shortGoalFill;
+        float goalCompleteUntil,shownGoalProgress;
+        int goalOrdinal=-1;
+        bool showingGoalCompletion;
         readonly Queue<string> announcements=new Queue<string>();
         readonly List<RectTransform> chips=new List<RectTransform>();
         readonly List<Tween> flights=new List<Tween>();
-        Tween toastTween,abilityTween,rackTween;
+        Tween toastTween,abilityTween;
         int revision=-1;
+        readonly HashSet<ItemDefinition> celebratedCategories=new HashSet<ItemDefinition>();
         public int ActiveFlights { get {int count=0;foreach(var chip in chips)if(chip&&chip.gameObject.activeSelf)count++;return count;} }
-        void OnEnable(){if(!session)return;session.MilestoneEarned+=Earned;session.SmallGoalEarned+=Earned;session.RackCompleted+=CelebrateRack;session.SearchStarted+=Search;session.MagnetCollected+=Magnet;session.VisualsReset+=ResetVisuals;}
-        void OnDisable(){if(session){session.MilestoneEarned-=Earned;session.SmallGoalEarned-=Earned;session.RackCompleted-=CelebrateRack;session.SearchStarted-=Search;session.MagnetCollected-=Magnet;session.VisualsReset-=ResetVisuals;}ResetVisuals();}
+        void OnEnable(){if(!session)return;session.Backgrounded+=ResetVisuals;session.ItemPlaced+=CategoryPlaced;session.MilestoneEarned+=Earned;session.SmallGoalEarned+=Earned;session.SearchStarted+=Search;session.MagnetCollected+=Magnet;session.TossScored+=Tossed;session.VisualsReset+=ResetVisuals;}
+        void OnDisable(){if(session){session.Backgrounded-=ResetVisuals;session.ItemPlaced-=CategoryPlaced;session.MilestoneEarned-=Earned;session.SmallGoalEarned-=Earned;session.SearchStarted-=Search;session.MagnetCollected-=Magnet;session.TossScored-=Tossed;session.VisualsReset-=ResetVisuals;}ResetVisuals();}
+        // Trick shot popup: streak count and bonus (no bonus when the item was already rewarded before).
+        void Tossed(int streak,int bonus)
+        {
+            string text=streak>=3?"STREAK x"+streak+"!":"NICE SHOT!";if(bonus>0)text+="   +$"+bonus;
+            Ability(text,streak>=3?new Color(1,.55f,.15f):new Color(1,.8f,.3f));
+        }
         void Update()
         {
-            if(revision!=session.Revision){revision=session.Revision;milestone.text=session.ShortGoalText+"\n"+session.NextMilestoneText;selectedSwatch.color=session.Active?session.Active.definition.color:new Color(.3f,.35f,.4f);}
+            bool completing=Time.unscaledTime<goalCompleteUntil;
+            if(revision!=session.Revision||completing!=showingGoalCompletion)
+            {
+                bool first=revision<0;revision=session.Revision;showingGoalCompletion=completing;
+                milestone.text=completing?"✓ GOAL COMPLETE   +$"+SortingSession.ShortGoalBonus:session.ShortGoalsComplete?"SHORT GOALS COMPLETE":
+                    "SHORT GOAL   "+session.ShortGoalProgress+" / "+session.ShortGoalTarget+"   |   +$"+SortingSession.ShortGoalBonus+"\n"+(session.ShortGoalTarget-session.ShortGoalProgress)+" new items to next reward";
+                selectedSwatch.color=session.Active?session.Active.definition.color:new Color(.3f,.35f,.4f);
+                if(first)shownGoalProgress=session.ShortGoalFraction;else if(!completing&&goalOrdinal!=session.ShortGoalOrdinal)shownGoalProgress=0;
+                if(!completing)goalOrdinal=session.ShortGoalOrdinal;
+            }
+            if(shortGoalFill){shownGoalProgress=Mathf.MoveTowards(shownGoalProgress,completing?1:session.ShortGoalFraction,Time.unscaledDeltaTime*3);if(!Mathf.Approximately(shortGoalFill.anchorMax.x,shownGoalProgress))shortGoalFill.anchorMax=new Vector2(shownGoalProgress,1);}
             if(announcements.Count>0&&(toastTween==null||!toastTween.IsActive()))
             {
                 toast.text=announcements.Dequeue();toast.color=new Color(.5f,1,.75f,1);toast.transform.localScale=Vector3.one*.94f;
                 toastTween=DOTween.Sequence().Append(toast.transform.DOScale(1,.18f).SetEase(Ease.OutCubic)).AppendInterval(2.5f).Append(toast.DOFade(0,.3f)).SetUpdate(true);
             }
         }
-        void CelebrateRack(SortRack rack){rackTween?.Kill(true);if(!rack.label)return;var label=rack.label.transform;var scale=label.localScale;rackTween=DOTween.Sequence().AppendInterval(.26f).AppendCallback(()=>{var feedback=session.GetComponent<SortingFeedback>();if(feedback)feedback.Play(SortingCue.RackComplete);}).Append(label.DOScale(scale*1.08f,.16f)).Append(label.DOScale(scale,.24f)).SetUpdate(true).OnKill(()=>{if(label)label.localScale=scale;});}
-        void Earned(string goal,int reward){announcements.Enqueue(goal+"   +$"+reward);}
+        void Earned(string goal,int reward){if(goal=="Rack complete!"){Ability("✓ "+goal+"   +$"+reward,new Color(.5f,1,.75f));return;}if(goal=="Sorting goal complete!"){goalCompleteUntil=Time.unscaledTime+1.1f;return;}announcements.Enqueue(goal+"   +$"+reward);}
+        void CategoryPlaced(SortItem item)
+        {
+            if(celebratedCategories.Contains(item.definition))return;
+            foreach(var candidate in session.ItemsOfType(item.definition))if(candidate.location!=ItemLocation.Rack)return;
+            celebratedCategories.Add(item.definition);announcements.Enqueue("✓ Category complete!  "+item.definition.displayName);
+        }
         void Ability(string text,Color color)
         {
             abilityTween?.Kill();ability.text=text;ability.color=color;ability.transform.localScale=Vector3.one*.9f;
@@ -38,6 +65,7 @@ namespace LabSorting.UI
         void Magnet(ItemDefinition type,Vector3[] origins)
         {
             ClearFlights();Ability("MAGNET  +"+origins.Length+" "+type.displayName,new Color(.4f,1,.9f));
+            if(!showMagnetChips)return;
             var canvas=safeArea.GetComponentInParent<Canvas>();var uiCamera=canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera;
             int count=Mathf.Min(origins.Length,30);
             for(int i=0;i<count;i++)
@@ -55,7 +83,7 @@ namespace LabSorting.UI
             }
         }
         void ClearFlights(){foreach(var flight in flights)flight?.Kill();flights.Clear();foreach(var chip in chips)if(chip)chip.gameObject.SetActive(false);}
-        void ResetVisuals(){rackTween?.Kill();ClearFlights();announcements.Clear();toastTween?.Kill();abilityTween?.Kill();if(toast)toast.text="";if(ability)ability.text="";revision=-1;}
+        void ResetVisuals(){ClearFlights();announcements.Clear();toastTween?.Kill();abilityTween?.Kill();if(toast)toast.text="";if(ability)ability.text="";goalCompleteUntil=0;showingGoalCompletion=false;goalOrdinal=-1;revision=-1;}
     }
 }
 
