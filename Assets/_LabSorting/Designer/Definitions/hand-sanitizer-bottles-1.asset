@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: hand-sanitizer-bottles-1
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-hand-sanitizer-bottles-1
-  displayName: Hand Sanitizer Bottles 1
+  displayName: Hand Sanitizer Bottles
   icon: {fileID: 637257942, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 2
   color: {r: 1, g: 1, b: 1, a: 1}

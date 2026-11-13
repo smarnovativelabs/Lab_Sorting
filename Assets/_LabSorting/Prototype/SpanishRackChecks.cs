@@ -17,6 +17,17 @@ namespace LabSorting.Prototype
     {
         static void Check(bool ok,string message){if(!ok)throw new Exception("SPANISH RACK: "+message);Debug.Log("SPANISH RACK PASS: "+message);}
         static readonly List<string> clipping=new List<string>();
+        static void CheckInventoryNames(SortingSession session,SortingHUD hud)
+        {
+            var label=hud.inventoryLabels[0];var generation=label.GetGenerationSettings(label.rectTransform.rect.size);generation.resizeTextForBestFit=false;generation.fontSize=label.resizeTextMinSize;
+            foreach(var type in session.items.Select(i=>i.definition).Distinct())
+            foreach(var name in new[]{type.displayName,LabLocalization.Text(type.displayName)})
+            {
+                float height=label.cachedTextGeneratorForLayout.GetPreferredHeight(name,generation)/label.pixelsPerUnit;
+                Check(height<=label.rectTransform.rect.height+1,"Full item name fits without sharing count space: "+name);
+            }
+            Check(LabLocalization.Text("MATCHING RACK")=="ESTANTE ASIGNADO","Rack guidance Spanish translation available");
+        }
         static void Measure(string panel)
         {
             Canvas.ForceUpdateCanvases();
@@ -36,14 +47,14 @@ namespace LabSorting.Prototype
             try
             {
                 scaler.enabled=false;safe.enabled=false;canvas.renderMode=RenderMode.ScreenSpaceCamera;canvas.worldCamera=camera;canvas.planeDistance=camera.nearClipPlane+.01f;
-                foreach(int width in new[]{1280,1440,1560,1600})
+                foreach(var size in new[]{new Vector2Int(960,540),new Vector2Int(1024,768),new Vector2Int(1280,720),new Vector2Int(1440,720),new Vector2Int(1560,720),new Vector2Int(1600,720)})
                 {
-                    var rt=new RenderTexture(width,720,24);camera.targetTexture=rt;
+                    int width=size.x,height=size.y;var rt=new RenderTexture(width,height,24);camera.targetTexture=rt;
                     try
                     {
-                        canvas.scaleFactor=Mathf.Pow(2,Mathf.Lerp(Mathf.Log(width/scaler.referenceResolution.x,2),Mathf.Log(720/scaler.referenceResolution.y,2),scaler.matchWidthOrHeight));
-                        safe.ApplySample(new Rect(48,24,width-96,696),new Vector2Int(width,720));Canvas.ForceUpdateCanvases();yield return null;yield return null;
-                        measure(width+"x720");
+                        canvas.scaleFactor=Mathf.Min(width/scaler.referenceResolution.x,height/scaler.referenceResolution.y);
+                        safe.ApplySample(new Rect(48,24,width-96,height-48),size);Canvas.ForceUpdateCanvases();yield return null;yield return null;
+                        measure(width+"x"+height);
                     }
                     finally{camera.targetTexture=target;UnityEngine.Object.Destroy(rt);}
                 }
@@ -71,7 +82,7 @@ namespace LabSorting.Prototype
                 Check(LabLocalization.Text("SORTED  12 / 4032")=="ORDENADOS  12 / 4032","Dynamic counts retain numbers");
                 Check(LabLocalization.Text("PACK +25\nRs 1,100.00").Contains("Rs 1,100.00"),"Store price remains unchanged");
                 Check(LabLocalization.Text(s.Message)=="Recoge un objeto y asígnalo a un estante vacío.","Initial gameplay hint fully translated");
-                yield return null;yield return null;Measure("HUD");
+                yield return null;yield return null;CheckInventoryNames(s,hud);Measure("HUD");
                 settings.OpenSettings();yield return null;yield return null;Measure("Settings");SortingSmokeChecks.Capture(s,"Logs/SpanishSettings.png");
                 settings.OpenHowToPlay();for(int i=0;i<4;i++){yield return null;yield return null;Measure("Tutorial"+i);if(i<3)settings.Next();}settings.Close();
                 progress.Open();yield return new WaitForSecondsRealtime(.25f);for(int i=0;i<8;i++){yield return null;yield return null;Measure("Items"+i);if(i==0)SortingSmokeChecks.Capture(s,"Logs/SpanishItems.png");if(i==3)yield return Ratios(s,ratio=>Measure("Long item names "+ratio));progress.Next();}progress.Close();
@@ -80,7 +91,7 @@ namespace LabSorting.Prototype
                 yield return (IEnumerator)typeof(DevicePerformanceChecks).GetMethod("Ratios",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{s});
                 File.WriteAllLines("Logs/SpanishClipping.txt",clipping.Distinct());
                 var rack=s.racks.First(r=>r.SizeBased);var item=s.items.First(i=>rack.CanAccept(i.definition));
-                var renderers=rack.GetComponentsInChildren<Renderer>(true).Where(r=>r!=rack.indicator&&!r.GetComponentInParent<SortItem>()&&!r.GetComponent<TextMesh>()).ToArray();
+                var renderers=rack.GetComponentsInChildren<Renderer>(true).Where(r=>r!=rack.indicator&&r!=rack.labelIcon&&!r.GetComponentInParent<SortItem>()&&!r.GetComponent<TextMesh>()).ToArray();
                 var materials=renderers.Select(r=>r.sharedMaterials).ToArray();var itemMaterial=item.visual.sharedMaterial;
                 rack.Preview(item.definition);Check(renderers.All(r=>r.sharedMaterials.All(m=>m==rack.valid)),"Whole rack valid green");
                 Check(item.visual.sharedMaterial==itemMaterial,"Item textures unchanged");

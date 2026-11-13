@@ -7,7 +7,7 @@ namespace LabSorting.Sorting
         [SerializeField] int cash=200;
         [Min(1)] public int searchCost=10,magnetCost=25,upgradeBaseCost=50,upgradeStepCost=25;
         [Min(0)] public int placementReward=0; // Legacy serialized field; placement never awards cash.
-        [Range(10,30)] public int maxCapacity=15;
+        [Range(10,60)] public int maxCapacity=15;
         [Min(1)] public float searchDuration=8;
         HashSet<string> rewardedItems=new HashSet<string>();
         ItemDefinition searchType;
@@ -42,7 +42,7 @@ namespace LabSorting.Sorting
         {
             if(player.blocked) return false;
             if(MagnetSeconds>0)return false;
-            if(carried.Count>=capacity) return Fail("Hands full — magnet not charged");
+            if(carried.Count>=capacity) return FullInventoryNotice();
             if(!Active) return MagnetEmpty("Pick or select an item first — magnet not charged","SELECT ITEM");
             if(Active.Moving) return Fail("Wait for pickup to finish — no charge");
             var type=Active.definition;int available=0;

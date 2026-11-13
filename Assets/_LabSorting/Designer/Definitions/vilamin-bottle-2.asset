@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: vilamin-bottle-2
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-vilamin-bottle-2
-  displayName: Vitamin Bottle 2
+  displayName: Purple Vitamin Bottle
   icon: {fileID: -1626540300, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 2
   color: {r: 1, g: 1, b: 1, a: 1}

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: therometer-1
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-therometer-1
-  displayName: Thermometer 1
+  displayName: Thermometer
   icon: {fileID: 479753931, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}

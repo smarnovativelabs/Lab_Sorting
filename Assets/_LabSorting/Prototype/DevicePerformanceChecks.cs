@@ -54,14 +54,17 @@ namespace LabSorting.Prototype
                 {
                     var rt=new RenderTexture(width,720,24);camera.targetTexture=rt;
                     canvas.scaleFactor=Mathf.Pow(2,Mathf.Lerp(Mathf.Log(width/scaler.referenceResolution.x,2),Mathf.Log(720/scaler.referenceResolution.y,2),scaler.matchWidthOrHeight));
-                    safe.ApplySample(new Rect(48,24,width-96,696),new Vector2Int(width,720));Canvas.ForceUpdateCanvases();yield return null;Canvas.ForceUpdateCanvases();
+                    safe.ApplySample(new Rect(48,24,width-96,696),new Vector2Int(width,720));Canvas.ForceUpdateCanvases();yield return null;
+                    // Screen-space-camera geometry is finalized during rendering after a
+                    // render-target/aspect change. Measure the rendered frame, not stale bounds.
+                    camera.Render();Canvas.ForceUpdateCanvases();
                     var economy=hud.GetComponent<EconomyHUD>();var actions=hud.GetComponent<ContextActionHUD>();
                     var controls=new[]{(RectTransform)economy.searchButton.transform,(RectTransform)economy.magnetButton.transform,(RectTransform)economy.upgradeButton.transform,(RectTransform)actions.pick.transform,(RectTransform)actions.place.transform,(RectTransform)actions.drop.transform};
                     foreach(var control in controls)
                     {
                         control.GetWorldCorners(corners);var min=RectTransformUtility.WorldToScreenPoint(camera,corners[0]);var max=RectTransformUtility.WorldToScreenPoint(camera,corners[2]);
                         Check(min.x>=47&&max.x<=width-47&&min.y>=23&&max.y<=721,"Safe-area control at "+width+"x720: "+control.name);
-                        Check(Mathf.Min(max.x-min.x,max.y-min.y)>=42,"Control touch target remains at least 42px: "+control.name);
+                        Check(Mathf.Min(max.x-min.x,max.y-min.y)>=42,"Control touch target remains at least 42px: "+control.name+" size="+(max-min)+" localScale="+control.localScale);
                         if(control!=(RectTransform)economy.upgradeButton.transform){var center=(min+max)*.5f;Check(center.x>width*.75f&&center.y<720*.65f,"Action remains in right-thumb region: "+control.name);}
                     }
                     var joystick=hud.GetComponentsInChildren<LabSorting.Player.LabTouchArea>().First(t=>t.movement);var joy=RectTransformUtility.WorldToScreenPoint(camera,joystick.transform.position);Check(joy.x<width*.25f&&joy.y<720*.35f,"Joystick remains in lower-left thumb region");

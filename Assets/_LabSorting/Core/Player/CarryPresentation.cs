@@ -16,11 +16,15 @@ namespace LabSorting.Player
             Vector3 desired=transform.parent.TransformPoint(rest),origin=view.transform.position;
             var delta=desired-origin;float distance=delta.magnitude;
             bool blocked=Physics.SphereCast(origin,.20f,delta.normalized,out var hit,distance,mask,QueryTriggerInteraction.Ignore);
-            ClearanceScale=blocked&&hit.distance<.22f?.5f:1;
-            if(ClearanceScale<1)blocked=Physics.SphereCast(origin,.1f,delta.normalized,out hit,distance,mask,QueryTriggerInteraction.Ignore);
-            if(blocked)desired=origin+delta.normalized*Mathf.Max(ClearanceScale<1?.18f:.27f,hit.distance-.025f);
-            // Retract immediately before rendering; ease back only when clearance increases.
-            transform.position=(desired-origin).sqrMagnitude<(transform.position-origin).sqrMagnitude?desired:Vector3.Lerp(transform.position,desired,1-Mathf.Exp(-18*Time.unscaledDeltaTime));
+            float restDepth=Vector3.Dot(delta,view.transform.forward);
+            // Every carried model fits the .18m envelope. Keep its rear edge ahead of
+            // the near plane rather than enforcing a fixed minimum distance from walls.
+            float minimum=Mathf.Clamp01((view.nearClipPlane+.015f)/Mathf.Max(.001f,restDepth-.18f));
+            float target=blocked?Mathf.Clamp((hit.distance-.025f)/Mathf.Max(.001f,distance),minimum,1):1;
+            // Smooth a camera-relative distance, never a world position left behind by a turn.
+            // Size and camera depth change together, preserving the projected size near walls.
+            ClearanceScale=target<ClearanceScale?target:Mathf.Lerp(ClearanceScale,target,1-Mathf.Exp(-18*Time.unscaledDeltaTime));
+            transform.position=origin+delta*ClearanceScale;
             foreach(Transform child in transform)
             {
                 if(!child.gameObject.activeSelf)continue;

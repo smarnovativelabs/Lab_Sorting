@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: water-purification-2
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-water-purification-2
-  displayName: Water Purification 2
+  displayName: White Water Tablets
   icon: {fileID: -1755868091, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}

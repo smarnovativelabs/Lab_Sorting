@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: bandage-rolls-2
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-bandage-rolls-2
-  displayName: Bandage Rolls 2
+  displayName: White Bandage Roll
   icon: {fileID: -414774406, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}

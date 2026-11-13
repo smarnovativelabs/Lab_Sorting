@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: vilamin-bottle-1
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-vilamin-bottle-1
-  displayName: Vitamin Bottle 1
+  displayName: Tall Vitamin Tube
   icon: {fileID: 721940775, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 2
   color: {r: 1, g: 1, b: 1, a: 1}

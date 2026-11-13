@@ -27,10 +27,10 @@ MonoBehaviour:
   searchPackAmount: 25
   magnetPackAmount: 10
   slotPackAmount: 5
-  rewardedCashAmount: 25
-  rewardedSearchAmount: 2
-  rewardedMagnetAmount: 1
-  rewardedSlotAmount: 1
+  rewardedCashAmount: 50
+  rewardedSearchAmount: 3
+  rewardedMagnetAmount: 2
+  rewardedSlotAmount: 2
   smallCashAmount: 500
   largeCashAmount: 1500
   googlePlayPublicKey: 

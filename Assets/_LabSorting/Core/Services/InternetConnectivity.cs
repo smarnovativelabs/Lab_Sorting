@@ -32,6 +32,7 @@ namespace LabSorting.Services
         public bool IsReady { get; private set; }
         public ConnectivityStatus Status { get; private set; } = ConnectivityStatus.Unknown;
         public bool HasNetworkInterface => Status == ConnectivityStatus.NetworkAvailable || Status == ConnectivityStatus.Online;
+        public bool ConnectionProblem => Status == ConnectivityStatus.Offline || consecutiveProbeFailures >= 2;
         public event Action<ConnectivityStatus> StatusChanged;
 
         public IEnumerator InitializeRoutine()
@@ -105,7 +106,7 @@ namespace LabSorting.Services
                 activeRequest.Dispose();
                 activeRequest = null;
             }
-            SetStatus(ConnectivityStatus.Unknown);
+            // Suspending a probe does not mean internet was lost; retain the last result.
         }
 
         private IEnumerator PollRoutine()
@@ -178,6 +179,7 @@ namespace LabSorting.Services
         {
             if (Status == value) return;
             Status = value;
+            LabTelemetry.Event("connection_status_changed",value.ToString());
             if (StatusChanged == null) return;
             foreach (Action<ConnectivityStatus> listener in StatusChanged.GetInvocationList())
             {

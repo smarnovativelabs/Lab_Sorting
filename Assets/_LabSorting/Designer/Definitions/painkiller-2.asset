@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: painkiller-2
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-painkiller-2
-  displayName: Painkiller 2
+  displayName: Green Painkiller Box
   icon: {fileID: -1241300071, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}

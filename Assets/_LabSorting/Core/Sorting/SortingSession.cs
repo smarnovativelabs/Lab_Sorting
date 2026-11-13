@@ -39,7 +39,8 @@ namespace LabSorting.Sorting
         }
         public void RefreshSortingColliders(){player.character.SortingColliders.Clear();foreach(var item in items)if(item&&item.hitbox){item.ApplyItemLayer();player.character.SortingColliders.Add(item.hitbox);}int layer=LayerMask.NameToLayer("SortingItem");if(layer>=0)player.character.Motor.CollidableLayers&=~(1<<layer);}
         public bool Initialized {get;private set;}
-        void Start() { RebuildTypeIndex();RefreshSortingColliders(); if(persistence) Load(); InitializeSaveCache();Initialized=true; Notify(); }
+        public bool LoadedAtStartup {get;private set;}
+        void Start() { RebuildTypeIndex();RefreshSortingColliders(); replayLayout=Capture(); bool loaded=persistence&&Load(); LoadedAtStartup=loaded; if(bundleEconomy&&!loaded){cash=150;capacity=10;SearchCredits=5;MagnetCredits=2;} InitializeSaveCache();Initialized=true; Notify(); if(bundleEconomy&&persistence&&!loaded)SaveTransaction(); }
         void Update()
         {
             PollSaveWriter();
@@ -72,7 +73,7 @@ namespace LabSorting.Sorting
             CancelPendingDrop();
             if(player.blocked) return false;
             if(!item || item.location==ItemLocation.Hand || item.Moving) return Fail("No available item in reach");
-            if(carried.Count>=capacity) return Fail("Hands full — place or throw an item");
+            if(carried.Count>=capacity) return FullInventoryNotice();
             if(item.rack) item.rack.Remove(item);
             item.SetSearchHighlight(false); item.location=ItemLocation.Hand; item.slot=-1; item.rack=null; item.Highlight(false);
             if(Active&&(!magnet||!Active.Moving)){Active.CompleteMotion();Active.gameObject.SetActive(false);}
@@ -95,7 +96,7 @@ namespace LabSorting.Sorting
         public void Cycle() { if(carried.Count>0) Select((carried.IndexOf(Active)+1)%carried.Count); }
         void RemoveActive()
         {
-            var type=Active.definition;carried.Remove(Active); Active=null;
+            nextFullNotice=0;var type=Active.definition;carried.Remove(Active); Active=null;
             for(int i=carried.Count-1;i>=0;i--) if(carried[i].definition==type) {Active=carried[i];break;}
             if(!Active && carried.Count>0) Active=carried[carried.Count-1];
             if(Active) { Active.gameObject.SetActive(true); Active.Snap(hand.position,hand.rotation,hand);Active.PresentHeld(); }
@@ -133,7 +134,7 @@ namespace LabSorting.Sorting
         bool Fail(string reason) { if(reason==lastFailure&&Time.unscaledTime<nextFailure)return false;lastFailure=reason;nextFailure=Time.unscaledTime+.8f;Message=reason;MessageIsError=true; Notify(); Feedback?.Invoke(SortingCue.Reject);return false; }
         void Commit(string message) { lastFailure=null;nextAction=Time.unscaledTime+.24f; Message=message;MessageIsError=false; saveAt=Time.unscaledTime+.4f; Notify(); }
         void Notify() { Revision++; Changed?.Invoke(); }
-        [Serializable] public class Snapshot { public int version=3; public int searchCredits,magnetCredits,slotCredits; public List<string> supplyReceipts; public int layoutRevision; public List<string> completedRacks; public string searchId; public float searchRemaining; public bool completionAcknowledged; public List<string> milestones=new List<string>(); public int cash; public List<string> rewarded=new List<string>(); public int capacity; public Vector3 playerPosition; public Vector2 look; public string active; public List<string> hand=new List<string>(); public List<Entry> items=new List<Entry>(); public bool tutorialRewarded; }
+        [Serializable] public class Snapshot { public int version=3; public string completedArea; public int completionCount,completedContentVersion; public bool runCompletionRecorded; public int searchCredits,magnetCredits,slotCredits; public List<string> supplyReceipts; public int layoutRevision; public List<string> completedRacks; public string searchId; public float searchRemaining; public bool completionAcknowledged; public List<string> milestones=new List<string>(); public int cash; public List<string> rewarded=new List<string>(); public int capacity; public Vector3 playerPosition; public Vector2 look; public string active; public List<string> hand=new List<string>(); public List<Entry> items=new List<Entry>(); public bool tutorialRewarded; }
         [Serializable] public class Entry { public string id,rack; public int slot; public ItemLocation location; public Vector3 position; public Quaternion rotation; }
         public Snapshot Capture()
         {
@@ -150,8 +151,8 @@ namespace LabSorting.Sorting
         public bool Restore(Snapshot data)
         {
             // Validate completely before mutating the live session.
-            if(data==null || (data.version<1 || data.version>3) || data.items==null || data.hand==null || data.items.Count!=items.Length || data.capacity<10 || data.capacity>30 || data.hand.Count>data.capacity || (data.version>=2 && data.cash<0)) return false;
-            if(!ValidSupplies(data))return false;
+            if(data==null || (data.version<1 || data.version>3) || data.items==null || data.hand==null || data.items.Count!=items.Length || data.capacity<10 || data.capacity>60 || data.hand.Count>data.capacity || (data.version>=2 && data.cash<0)) return false;
+            if(!ValidSupplies(data)||data.completionCount<0||data.completedContentVersion<0)return false;
             if(float.IsNaN(data.searchRemaining)||float.IsInfinity(data.searchRemaining)||data.searchRemaining<0||data.searchRemaining>3600)return false;
             ItemDefinition savedSearch=null;if(!string.IsNullOrEmpty(data.searchId)){foreach(var candidate in items)if(candidate.definition.id==data.searchId){savedSearch=candidate.definition;break;}if(!savedSearch)return false;}
             var lookup=new Dictionary<string,SortItem>(); foreach(var item in items) lookup.Add(item.id,item);
@@ -177,9 +178,11 @@ namespace LabSorting.Sorting
             var milestones=new HashSet<string>();
             if(data.version>=3){if(data.milestones==null)return false;foreach(var id in data.milestones)if(id==null||Array.IndexOf(milestoneIds,id)<0||!milestones.Add(id))return false;}
             var rackRewards=new HashSet<string>(); if(data.completedRacks!=null){foreach(var id in data.completedRacks)if(id==null||!rackLookup.ContainsKey(id)||!rackRewards.Add(id))return false;} else {foreach(var rack in racks){int count=0;foreach(var e in data.items)if(e.location==ItemLocation.Rack&&e.rack==rack.id)count++;int full=types.TryGetValue(rack.id,out var rackType)?rack.CapacityFor(rackType):0;if(full>0&&count==full)rackRewards.Add(rack.id);}}
-            RebuildTypeIndex();CancelPendingDrop();RestoreSupplies(data);completedRacks=rackRewards;VisualsReset?.Invoke();CompletionAcknowledged=data.version>=3&&data.completionAcknowledged;TutorialRewarded=data.tutorialRewarded;claimedMilestones=milestones;
+            RebuildTypeIndex();CancelPendingDrop();RestoreSupplies(data);RestoreCompletionHistory(data);completedRacks=rackRewards;VisualsReset?.Invoke();CompletionAcknowledged=data.version>=3&&data.completionAcknowledged;TutorialRewarded=data.tutorialRewarded;claimedMilestones=milestones;
             lastFailure=null;MessageIsError=false;CancelHold();EndSearch();ResetMagnetFeedback();cash=data.version>=2?data.cash:200;rewardedItems=rewards;
             ClearTarget(); EndTossStreak(); rackBounds.Clear();  foreach(var rack in racks) rack.Initialize(); carried.Clear(); Active=null; capacity=data.capacity;
+            // Older purchases granted slot tokens. Apply them once while preserving any overflow.
+            if(bundleEconomy&&SlotCredits>0){int applied=Mathf.Min(SlotCredits,Mathf.Max(0,maxCapacity-capacity));capacity+=applied;SlotCredits-=applied;}
             foreach(var e in data.items)
             {
                 var item=lookup[e.id];item.gameObject.SetActive(true);item.location=e.location;item.rack=null;item.slot=-1;
@@ -207,6 +210,7 @@ namespace LabSorting.Sorting
             foreach(var item in carried){item.Snap(hand.position,hand.rotation,hand);item.gameObject.SetActive(item==Active);}
             Backgrounded?.Invoke();Save();
         }
+        public void SuspendForConnection(){if(Initialized)SettleForBackground();}
         void OnApplicationFocus(bool value) { if(!value)SettleForBackground(); }
         void OnApplicationPause(bool value) { if(value)SettleForBackground(); }
         void OnApplicationQuit() { Save(); }

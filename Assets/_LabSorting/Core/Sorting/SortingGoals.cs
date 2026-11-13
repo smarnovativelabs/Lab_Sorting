@@ -15,6 +15,39 @@ namespace LabSorting.Sorting
         public int ShortGoalTarget=>Mathf.Min(ShortGoalSize,Mathf.Max(0,items.Length-ShortGoalOrdinal*ShortGoalSize));
         public int ShortGoalProgress=>ShortGoalsComplete?ShortGoalTarget:rewardedItems.Count%ShortGoalSize;
         public float ShortGoalFraction=>ShortGoalsComplete?1:ShortGoalTarget>0?(float)ShortGoalProgress/ShortGoalTarget:0;
+        public const int CleanupThreshold=15;
+        // Evaluated by the HUD on revision changes, not every frame. These optional
+        // focus suggestions use saved world state; cash remains tied to unique IDs.
+        public string ShortGoalFocus()
+        {
+            int remaining=items.Length-SortedCount;
+            if(remaining>0&&remaining<=CleanupThreshold)
+                return "ALMOST DONE!  "+remaining+" left to sort";
+            int mode=ShortGoalOrdinal%3;
+            if(mode==0)return (ShortGoalTarget-ShortGoalProgress)+" new items to next reward";
+            var progress=GetItemProgress();
+            if(mode==1)
+            {
+                SortRack best=null;
+                foreach(var rack in racks)
+                {
+                    if(!rack||!rack.Type||rack.Count==0||rack.RemainingSlots<=0)continue;
+                    var row=progress.Find(p=>p.type==rack.Type);
+                    if(row==null||row.Remaining<rack.RemainingSlots)continue;
+                    if(best==null||rack.RemainingSlots<best.RemainingSlots)best=rack;
+                }
+                if(best)return "Focus: finish a rack  "+best.Count+" / "+best.Capacity;
+            }
+            ItemProgress closest=null;
+            foreach(var row in progress)
+            {
+                if(row.Remaining<=0)continue;
+                bool fits=false;foreach(var rack in racks)if(rack&&rack.CanAccept(row.type)){fits=true;break;}
+                if(fits&&(closest==null||row.Remaining<closest.Remaining))closest=row;
+            }
+            return closest!=null?"Focus: "+closest.type.displayName+"  "+closest.sorted+" / "+closest.total:
+                (ShortGoalTarget-ShortGoalProgress)+" new items to next reward";
+        }
         public string ShortGoalText
         {
             get

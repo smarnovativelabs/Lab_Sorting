@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: bandage-rolls-1
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-bandage-rolls-1
-  displayName: Bandage Rolls 1
+  displayName: Spool Bandage
   icon: {fileID: -597290094, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}

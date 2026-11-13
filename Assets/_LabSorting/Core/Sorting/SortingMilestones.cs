@@ -29,7 +29,7 @@ namespace LabSorting.Sorting
         {
             foreach(var id in milestoneIds)
                 if(!claimedMilestones.Contains(id)&&GoalReached(id))
-                {claimedMilestones.Add(id);if(!migrate){int reward=Bonus(id);cash+=reward;MilestoneEarned?.Invoke(GoalName(id),reward);}}
+                {claimedMilestones.Add(id);if(id=="complete")RecordAreaCompletion(!migrate);if(!migrate){int reward=Bonus(id);cash+=reward;MilestoneEarned?.Invoke(GoalName(id),reward);}}
         }
         public string NextMilestoneText
         {

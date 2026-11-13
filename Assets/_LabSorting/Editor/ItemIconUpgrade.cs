@@ -11,8 +11,8 @@ namespace LabSorting.Editor
 {
     public static class ItemIconUpgrade
     {
-        static readonly string[] First={"first-aid-box","antibiotic-1","antibiotic-2","bandage-rolls-1","bandage-rolls-2","blood-bag","disinfectant-spray","face-mask-box-1","face-mask-box-2","first-aid-box-2","gas-mask","hand-sanitizer-bottles-1",null,"iv-bag","medicine-bottle-2","medicine-bottle-3","medicine-bottle-4","painkiller-1","painkiller-2","surgical-gloves-box","surgical-gloves-box-2"};
-        static readonly string[] Second={"battries-large","battries-small","blood-sample-tube","emergency-tool-kit-blue","emergency-tool-kit-green","flashlight","food-rations-1","food-rations-2","medical-test-kit","micro-scope","micro-scope-big","oxygen-cylinder-1","oxygen-cylinder-2","protein-bar-1","protein-bar-2","radio-1","radio-2","test-tube","thermal-blanket-1","thermal-blanket-2","therometer-1","vilamin-bottle-1","vilamin-bottle-2","wakie-takie-2","water-purification-1","water-purification-2"};
+        static readonly string[] First={"first-aid-box-2","antibiotic-1","antibiotic-2","bandage-rolls-1","bandage-rolls-2","blood-bag","disinfectant-spray","face-mask-box-1","face-mask-box-2","first-aid-box","gas-mask","hand-sanitizer-bottles-1",null,"iv-bag","medicine-bottle-2","medicine-bottle-3","medicine-bottle-4","painkiller-1","painkiller-2","surgical-gloves-box","surgical-gloves-box-2"};
+        static readonly string[] Second={"battries-large","battries-small","blood-sample-tube","emergency-tool-kit-blue","emergency-tool-kit-green","flashlight","food-rations-1","food-rations-2","medical-test-kit","micro-scope","micro-scope-big","oxygen-cylinder-1","oxygen-cylinder-2","protein-bar-1","protein-bar-2","radio-2","radio-1","test-tube","thermal-blanket-1","thermal-blanket-2","therometer-1","vilamin-bottle-1","vilamin-bottle-2","wakie-takie-2","water-purification-1","water-purification-2"};
         static void Slice(string path,string[] names,int columns)
         {
             var importer=(TextureImporter)AssetImporter.GetAtPath(path);

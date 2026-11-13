@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: surgical-gloves-box
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-surgical-gloves-box
-  displayName: Surgical Gloves Box
+  displayName: Blue Gloves Box
   icon: {fileID: 620969572, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}

@@ -231,3 +231,16 @@ Category complete!|¡Categoría completada!
 Select item|Elige un objeto
 GOAL COMPLETE|OBJETIVO COMPLETADO
 new items to next reward|objetos nuevos para la próxima recompensa
+PAUSE|PAUSA
+RESUME|CONTINUAR
+SAVE|GUARDAR
+STORE|TIENDA
+BIG CASH|PAQUETE GRANDE
+No forced ads|Sin anuncios forzados
+Progress saved|Progreso guardado
+Prices are provided by your store.|Los precios los proporciona tu tienda.
+Collected Items|Objetos recogidos
+Displaying Ad In:|Anuncio en:
+Seconds|segundos
+Preparing video...|Preparando vídeo...
+Video cancelled. No reward used.|Vídeo cancelado. No se usó ninguna recompensa.

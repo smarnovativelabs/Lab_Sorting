@@ -383,7 +383,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 8216963039263
-    m_Localized: OBJETIVO
+    m_Localized: META CORTA
     m_Metadata:
       m_Items: []
   - m_Id: 8216963039264
@@ -1090,7 +1090,319 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 45966634369024
-    m_Localized: "objetos nuevos para la pr\xF3xima recompensa"
+    m_Localized: "objetos para la pr\xF3xima recompensa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665003175936
+    m_Localized: PAUSA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536064
+    m_Localized: CONTINUAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536065
+    m_Localized: GUARDAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536066
+    m_Localized: TIENDA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536067
+    m_Localized: PAQUETE GRANDE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536068
+    m_Localized: Sin anuncios forzados
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536069
+    m_Localized: Los precios los proporciona tu tienda.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536070
+    m_Localized: Objetos recogidos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536071
+    m_Localized: 'Anuncio en:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536072
+    m_Localized: segundos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536073
+    m_Localized: "Preparando v\xEDdeo..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536074
+    m_Localized: "V\xEDdeo cancelado. No se us\xF3 ninguna recompensa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 114626791063552
+    m_Localized: Walkie-talkie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 114626849783808
+    m_Localized: Microscopio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384067129344
+    m_Localized: "Caja de antibi\xF3ticos morada"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683776
+    m_Localized: "Caja de antibi\xF3ticos azul"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683777
+    m_Localized: Venda en carrete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683778
+    m_Localized: Rollo de venda blanca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683779
+    m_Localized: Caja de mascarillas turquesa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683780
+    m_Localized: Caja de mascarillas morada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683781
+    m_Localized: "Botiqu\xEDn verde"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683782
+    m_Localized: "Botiqu\xEDn rojo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683783
+    m_Localized: "Raci\xF3n en paquete crema"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683784
+    m_Localized: "Raci\xF3n en paquete verde"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683785
+    m_Localized: Frasco medicinal azul
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683786
+    m_Localized: Frasco medicinal rojo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683787
+    m_Localized: Frasco medicinal amarillo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683788
+    m_Localized: "Bombona de ox\xEDgeno negra"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683789
+    m_Localized: "Bombona de ox\xEDgeno verde"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878080
+    m_Localized: "Caja de analg\xE9sicos amarilla"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878081
+    m_Localized: "Caja de analg\xE9sicos verde"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878082
+    m_Localized: Barrita proteica amarilla
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878083
+    m_Localized: Barrita proteica roja
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878084
+    m_Localized: Radio compacta
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878085
+    m_Localized: Radio ancha
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878086
+    m_Localized: Caja de guantes azul
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878087
+    m_Localized: Caja de guantes blanca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878088
+    m_Localized: "Manta t\xE9rmica roja"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878089
+    m_Localized: "Manta t\xE9rmica de camuflaje"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878090
+    m_Localized: Tubo de vitaminas alto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878091
+    m_Localized: Frasco de vitaminas morado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878092
+    m_Localized: Tabletas de agua azules
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878093
+    m_Localized: Tabletas de agua blancas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556049334272
+    m_Localized: ESTANTE ASIGNADO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443136
+    m_Localized: "ESTANTE VAC\xCDO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443137
+    m_Localized: GIRA A LA IZQUIERDA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443138
+    m_Localized: GIRA A LA DERECHA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443139
+    m_Localized: SUBE LAS ESCALERAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443140
+    m_Localized: BAJA LAS ESCALERAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443141
+    m_Localized: SIGUE EL BRILLO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443142
+    m_Localized: POR ENCONTRAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443143
+    m_Localized: "\xDALTIMOS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358693898665984
+    m_Localized: TODOS LOS OBJETOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358693923831808
+    m_Localized: 'Por ordenar:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358693923831809
+    m_Localized: de
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363709468360704
+    m_Localized: TAREA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 415328998375424
+    m_Localized: SEARCH resalta los objetos sueltos del tipo seleccionado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 415329031929856
+    m_Localized: MAGNET recoge el tipo seleccionado hasta llenar tus manos.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 415329031929857
+    m_Localized: "Pulsa + junto al inventario para a\xF1adir espacios con dinero
+      o un v\xEDdeo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 419138730835968
+    m_Localized: VELOCIDAD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 428718248542208
+    m_Localized: "\xA1CASI LISTO!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 428718286290944
+    m_Localized: por ordenar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 428718286290945
+    m_Localized: 'Objetivo: completar estante'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 428718286290946
+    m_Localized: 'Objetivo:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 449635703963648
+    m_Localized: "TAMA\xD1O DEL JOYSTICK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 449635750100992
+    m_Localized: "TAMA\xD1O DE BOTONES"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 449635750100993
+    m_Localized: "\xA1BIENVENIDO DE NUEVO!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837353955328
+    m_Localized: "\xBFVOLVER A JUGAR?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481280
+    m_Localized: "\xA1LABORATORIO COMPLETO!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481281
+    m_Localized: "\xBFEmpezar una nueva partida?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481282
+    m_Localized: Los objetos vuelven al suelo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481283
+    m_Localized: Los estantes y el progreso se reinician.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481284
+    m_Localized: 'Conservas dinero, herramientas, capacidad
+
+      e historial de
+      partidas completadas.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481285
+    m_Localized: NUEVA PARTIDA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481286
+    m_Localized: estantes completados
+    m_Metadata:
+      m_Items: []
+  - m_Id: 455530471079936
+    m_Localized: VOLVER A JUGAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 455530504634368
+    m_Localized: SEGUIR EXPLORANDO
     m_Metadata:
       m_Items: []
   references:

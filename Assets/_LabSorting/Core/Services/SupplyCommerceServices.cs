@@ -10,7 +10,7 @@ namespace LabSorting.Services
         LabConsent consent;bool rewardGranted,interstitialPending;float nextInterstitial;
         public bool AdsRemoved=>CommerceEntitlements.RemoveAds;
         public string RemoveAdsPrice{get{var p=settings?store?.GetProductById(settings.removeAdsProductId):null;return p!=null&&p.availableToPurchase?p.metadata.localizedPriceString:null;}}
-        public void BuyRemoveAds(){if(AdsRemoved||busy||store==null||RemoveAdsPrice==null||string.IsNullOrWhiteSpace(settings.googlePlayPublicKey)){Status="Store unavailable or already owned.";return;}busy=true;try{store.PurchaseProduct(settings.removeAdsProductId);}catch{busy=false;Status="Store unavailable.";}}
+        public void BuyRemoveAds(){if(AdsRemoved||busy||store==null||RemoveAdsPrice==null||string.IsNullOrWhiteSpace(settings.googlePlayPublicKey)){Status="Store unavailable or already owned.";return;}BeginPurchase();try{store.PurchaseProduct(settings.removeAdsProductId);}catch{busy=false;Status="Store unavailable.";}}
         public void RestorePurchases(){if(store==null){Status="Store unavailable.";return;}store.RestoreTransactions((success,error)=>{Status=success?"Restore requested.":"Restore unavailable.";if(success)store.FetchPurchases();});}
         public void RetryServices(){if(consent&&!consent.CanRequestAds)consent.Gather(settings.underAgeOfConsent);if(store!=null)Reconnect();}
         async void Reconnect(){try{await store.Connect();}catch{Status="Store unavailable.";}}
@@ -44,7 +44,7 @@ namespace LabSorting.Services
         public bool TryInterstitialAtBreak()
         {
             if(!initializedAds||!consent.CanRequestAds||busy||AdsRemoved||!interstitialPending||Time.unscaledTime<nextInterstitial||!MaxSdk.IsInterstitialReady(settings.androidInterstitialId))return false;
-            busy=true;interstitialPending=false;try{MaxSdk.ShowInterstitial(settings.androidInterstitialId);LabTelemetry.Event("interstitial_shown");return true;}catch{busy=false;return false;}
+            purchaseRequested=false;return BeginAdCountdown(false);
         }
         void CleanupAds()
         {

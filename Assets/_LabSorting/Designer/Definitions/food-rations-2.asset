@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: food-rations-2
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-food-rations-2
-  displayName: Food Rations 2
+  displayName: Green Ration Pack
   icon: {fileID: -1020990058, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}

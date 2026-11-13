@@ -20,7 +20,14 @@ namespace LabSorting.Services
         string rewardToken;
         SupplyKind rewardKind;
         int rewardAmount;
-        public string Status {get;private set;}="";
+        string status="";
+        public event Action<string> StatusChanged;
+        public string Status {get=>status;private set{status=value;StatusChanged?.Invoke(value);}}
+        public bool PurchaseBusy=>busy&&purchaseRequested;
+        bool purchaseRequested;
+        float purchaseBegan;
+        public bool CanClosePurchaseUI=>PurchaseBusy&&Time.unscaledTime-purchaseBegan>=30;
+        void BeginPurchase(){LabTelemetry.Event("purchase_flow_opened");purchaseRequested=true;purchaseBegan=Time.unscaledTime;busy=true;Status="Opening store...";}
         public bool Busy=>busy;
         public bool RewardReady=>initializedAds&&consent&&consent.CanRequestAds&&!busy&&MaxSdk.IsRewardedAdReady(settings.androidRewardedId);
         public string ProductId(SupplyKind kind)=>!settings?"":kind==SupplyKind.Search?settings.searchPackProductId:kind==SupplyKind.Magnet?settings.magnetPackProductId:kind==SupplyKind.Slot?settings.slotPackProductId:settings.smallCashProductId;
@@ -30,7 +37,7 @@ namespace LabSorting.Services
         public bool CanBuy(SupplyKind kind)=>!busy&&session&&session.Initialized&&session.persistence&&Price(kind)!=null&&!string.IsNullOrWhiteSpace(settings.googlePlayPublicKey)&&(kind!=SupplyKind.Slot||PackAmount(kind)<=session.maxCapacity-session.capacity-session.SlotCredits);
         public string LargeCashPrice(){var p=settings?store?.GetProductById(settings.largeCashProductId):null;return p!=null&&p.availableToPurchase?p.metadata.localizedPriceString:null;}
         public bool CanBuyLargeCash=>!busy&&session&&session.Initialized&&session.persistence&&LargeCashPrice()!=null&&!string.IsNullOrWhiteSpace(settings.googlePlayPublicKey);
-        public bool BuyLargeCash(){if(!CanBuyLargeCash){Status="Store unavailable. Please try later.";return false;}busy=true;try{store.PurchaseProduct(settings.largeCashProductId);return true;}catch(Exception){busy=false;Status="Store unavailable.";return false;}}
+        public bool BuyLargeCash(){if(!CanBuyLargeCash){Status="Store unavailable. Please try later.";return false;}BeginPurchase();try{store.PurchaseProduct(settings.largeCashProductId);return true;}catch(Exception){busy=false;Status="Store unavailable.";return false;}}
         async void Start()
         {
             if(!FindFirstObjectByType<InternetConnectivity>()){var go=new GameObject("Lab Connectivity");DontDestroyOnLoad(go);var connection=go.AddComponent<InternetConnectivity>();connection.StartCoroutine(connection.InitializeRoutine());}
@@ -59,8 +66,8 @@ namespace LabSorting.Services
         void Disconnected(StoreConnectionFailureDescription error){busy=false;Status="Store unavailable. Please try later.";}
         void ProductsFetched(System.Collections.Generic.List<Product> list){store.FetchPurchases();}
         void ProductsFailed(ProductFetchFailed error){busy=false;Status="Store unavailable. Please try later.";}
-        void PurchaseFailed(FailedOrder order){busy=false;Status="Purchase cancelled or unsuccessful.";}
-        void Deferred(DeferredOrder order){busy=false;Status="Purchase awaiting approval.";}
+        void PurchaseFailed(FailedOrder order){LabTelemetry.Event("purchase_failed_or_cancelled");busy=false;Status="Purchase cancelled or unsuccessful.";}
+        void Deferred(DeferredOrder order){LabTelemetry.Event("purchase_deferred");busy=false;Status="Purchase awaiting approval.";}
         void Confirmed(Order order){busy=false;Status=order is ConfirmedOrder?"Purchase delivered.":"Purchase confirmation pending.";if(order is ConfirmedOrder confirmed)LabTelemetry.Purchase(confirmed);}
         void PurchasesFetched(Orders orders){foreach(var pending in orders.PendingOrders)OnPending(pending);foreach(var confirmed in orders.ConfirmedOrders)RestoreRemoveAds(confirmed);}
         void PurchasesFailed(PurchasesFetchFailureDescription error){busy=false;Status="Could not restore pending purchases.";}
@@ -83,27 +90,27 @@ namespace LabSorting.Services
                 foreach(SupplyKind kind in Enum.GetValues(typeof(SupplyKind)))if(ProductId(kind)==id)
                 {if(session.GrantSupply(kind,PackAmount(kind),"iap:"+order.Info.TransactionID)){store.ConfirmPurchase(order);Status="Purchase delivered.";}else Status="Saving purchase. Delivery will retry.";return;}
             }
-            catch(Exception){Status="Purchase verification pending. Please retry later.";}
+            catch(Exception){LabTelemetry.Event("purchase_verification_pending");Status="Purchase verification pending. Please retry later.";}
         }
         public bool Buy(SupplyKind kind)
         {
             if(!CanBuy(kind)){Status="Store unavailable. Please try later.";return false;}
-            busy=true;Status="Opening store...";LabTelemetry.Event("purchase_started",ProductId(kind));try{store.PurchaseProduct(ProductId(kind));return true;}catch(Exception){busy=false;Status="Store unavailable.";return false;}
+            BeginPurchase();LabTelemetry.Event("purchase_started",ProductId(kind));try{store.PurchaseProduct(ProductId(kind));return true;}catch(Exception){busy=false;Status="Store unavailable.";return false;}
         }
         public bool Watch(SupplyKind kind)
         {
             if(!session||!session.Initialized||!session.persistence||!RewardReady||kind==SupplyKind.Slot&&AdAmount(kind)>session.maxCapacity-session.capacity-session.SlotCredits){Status="No video available or capacity is full.";return false;}
-            rewardGranted=false;rewardKind=kind;rewardAmount=AdAmount(kind);rewardToken="ad:"+Guid.NewGuid().ToString("N");busy=true;Status="Watching reward video...";
-            LabTelemetry.Event("reward_ad_started",kind.ToString());try{MaxSdk.ShowRewardedAd(settings.androidRewardedId);return true;}catch(Exception){busy=false;rewardToken=null;Status="Video unavailable.";return false;}
+            purchaseRequested=false;rewardGranted=false;rewardKind=kind;rewardAmount=AdAmount(kind);rewardToken="ad:"+Guid.NewGuid().ToString("N");Status="Preparing video...";
+            return BeginAdCountdown(true);
         }
         void OnAdsInitialized(MaxSdkBase.SdkConfiguration config){initializedAds=true;LoadAd();LoadInterstitial();}
         void LoadAd(){if(initializedAds)MaxSdk.LoadRewardedAd(settings.androidRewardedId);}
         void OnReward(string id,MaxSdkBase.Reward reward,MaxSdkBase.AdInfo info)
         {if(id!=settings.androidRewardedId||rewardToken==null||rewardGranted)return;rewardGranted=true;SaveAdReward();}
-        void SaveAdReward(){if(session&&session.Initialized&&session.GrantSupply(rewardKind,rewardAmount,rewardToken)){Status="Reward added!";LabTelemetry.Event("reward_ad_completed",rewardKind.ToString(),rewardAmount);}else{Status="Reward saving. Please wait.";Invoke(nameof(SaveAdReward),2);}}
-        void OnAdHidden(string id,MaxSdkBase.AdInfo info){if(id!=settings.androidRewardedId)return;Invoke(nameof(EndReward),2);LoadAd();}
-        void EndReward(){busy=false;if(!rewardGranted)Status="Video closed. Reward requires completion.";if(!IsInvoking(nameof(SaveAdReward))){rewardToken=null;rewardGranted=false;}else{busy=true;Invoke(nameof(EndReward),2);}}
-        void OnAdFailed(string id,MaxSdkBase.ErrorInfo error,MaxSdkBase.AdInfo info){if(id!=settings.androidRewardedId)return;busy=false;rewardToken=null;Status="Video could not play. No reward used.";Invoke(nameof(LoadAd),5);}
+        void SaveAdReward(){if(session&&session.Initialized&&session.GrantSupply(rewardKind,rewardAmount,rewardToken)){Status="Reward added!";LabTelemetry.Event("reward_ad_completed",rewardKind.ToString(),rewardAmount);}else{Status="Reward saving. Please wait.";if(rewardSaveRetry==null)rewardSaveRetry=StartCoroutine(RetryAdReward());}}
+        void OnAdHidden(string id,MaxSdkBase.AdInfo info){if(id!=settings.androidRewardedId||rewardToken==null)return;QueueRewardClose();LoadAd();}
+        void EndReward(){busy=false;if(!rewardGranted)Status="Video closed. Reward requires completion.";if(rewardSaveRetry==null){rewardToken=null;rewardGranted=false;}else{busy=true;QueueRewardClose();}}
+        void OnAdFailed(string id,MaxSdkBase.ErrorInfo error,MaxSdkBase.AdInfo info){if(id!=settings.androidRewardedId||rewardToken==null)return;if(rewardGranted){QueueRewardClose();return;}if(rewardCloseRoutine!=null){StopCoroutine(rewardCloseRoutine);rewardCloseRoutine=null;}busy=false;rewardToken=null;Status="Video could not play. No reward used.";Invoke(nameof(LoadAd),5);}
         void OnAdLoadFailed(string id,MaxSdkBase.ErrorInfo error){if(id==settings.androidRewardedId)Invoke(nameof(LoadAd),15);}
         void OnDestroy()
         {

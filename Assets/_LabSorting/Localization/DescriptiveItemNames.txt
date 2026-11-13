@@ -1,0 +1,29 @@
+lab-antibiotic-1|Purple Antibiotic Box|Caja de antibióticos morada
+lab-antibiotic-2|Blue Antibiotic Box|Caja de antibióticos azul
+lab-bandage-rolls-1|Spool Bandage|Venda en carrete
+lab-bandage-rolls-2|White Bandage Roll|Rollo de venda blanca
+lab-face-mask-box-1|Teal Mask Box|Caja de mascarillas turquesa
+lab-face-mask-box-2|Purple Mask Box|Caja de mascarillas morada
+lab-first-aid-box|Green First Aid Box|Botiquín verde
+lab-first-aid-box-2|Red First Aid Box|Botiquín rojo
+lab-food-rations-1|Cream Ration Pack|Ración en paquete crema
+lab-food-rations-2|Green Ration Pack|Ración en paquete verde
+lab-medicine-bottle-2|Blue Medicine Bottle|Frasco medicinal azul
+lab-medicine-bottle-3|Red Medicine Bottle|Frasco medicinal rojo
+lab-medicine-bottle-4|Yellow Medicine Bottle|Frasco medicinal amarillo
+lab-oxygen-cylinder-1|Black Oxygen Cylinder|Bombona de oxígeno negra
+lab-oxygen-cylinder-2|Green Oxygen Cylinder|Bombona de oxígeno verde
+lab-painkiller-1|Yellow Painkiller Box|Caja de analgésicos amarilla
+lab-painkiller-2|Green Painkiller Box|Caja de analgésicos verde
+lab-protein-bar-1|Yellow Protein Bar|Barrita proteica amarilla
+lab-protein-bar-2|Red Protein Bar|Barrita proteica roja
+lab-radio-1|Compact Radio|Radio compacta
+lab-radio-2|Wide Radio|Radio ancha
+lab-surgical-gloves-box|Blue Gloves Box|Caja de guantes azul
+lab-surgical-gloves-box-2|White Gloves Box|Caja de guantes blanca
+lab-thermal-blanket-1|Red Thermal Blanket|Manta térmica roja
+lab-thermal-blanket-2|Camo Thermal Blanket|Manta térmica de camuflaje
+lab-vilamin-bottle-1|Tall Vitamin Tube|Tubo de vitaminas alto
+lab-vilamin-bottle-2|Purple Vitamin Bottle|Frasco de vitaminas morado
+lab-water-purification-1|Blue Water Tablets|Tabletas de agua azules
+lab-water-purification-2|White Water Tablets|Tabletas de agua blancas

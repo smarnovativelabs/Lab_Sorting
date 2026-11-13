@@ -23,7 +23,7 @@ namespace LabSorting.UI
                     {
                         if(!rack||!rack.gameObject.activeInHierarchy||!rack.CanAccept(type)||Mathf.Abs(rack.transform.position.y-session.player.transform.position.y)>.8f)continue;
                         var target=rack.label?rack.label.transform.position:rack.transform.position+Vector3.up*1.4f;
-                        if(Physics.Linecast(session.player.view.transform.position,target,out var hit,~(1<<2),QueryTriggerInteraction.Ignore)&&!hit.collider.transform.IsChildOf(rack.transform))continue;
+                        if(Physics.Linecast(session.player.view.transform.position,target,out var hit,~((1<<2)|LayerMask.GetMask("SortingItem")),QueryTriggerInteraction.Ignore)&&!hit.collider.transform.IsChildOf(rack.transform))continue;
                         float distance=(target-session.player.view.transform.position).sqrMagnitude;
                         if(distance<best){best=distance;GuidedRack=rack;}
                     }

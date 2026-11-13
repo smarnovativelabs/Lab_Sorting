@@ -20,6 +20,7 @@ namespace LabSorting.Sorting
         [Min(0)] public float itemGap=.01f;
         [NonSerialized] public SortItem[] contents=Array.Empty<SortItem>();
         public TextMesh label;
+        public SpriteRenderer labelIcon;
         public Renderer indicator;
         public Material neutral, valid, invalid, compatible;
         public bool CompatibleHint {get;private set;}
@@ -124,6 +125,12 @@ namespace LabSorting.Sorting
         }
         public void Refresh()
         {
+            if(labelIcon)
+            {
+                var sprite=Type?Type.icon:null;
+                labelIcon.sprite=sprite;labelIcon.enabled=sprite;
+                if(sprite){float scale=.28f/Mathf.Max(sprite.bounds.size.x,sprite.bounds.size.y);labelIcon.transform.localScale=Vector3.one*scale;}
+            }
             AvailabilityHint=Type?(RemainingSlots==0?"FULL":AlmostFull?RemainingSlots+ (RemainingSlots==1?" SLOT LEFT":" SLOTS LEFT"):""):"";
             if(!label) return;
             label.text=Type?Type.displayName+"\n"+Count+" / "+Capacity:SizeBased?"EMPTY / ANY ITEM":"EMPTY / ANY ITEM\n0 / "+Capacity;

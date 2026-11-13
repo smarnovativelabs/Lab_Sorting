@@ -9,6 +9,70 @@ using UnityEngine.TestTools;
 
 public class SortingIntegrationTests
 {
+    [UnityTest,Timeout(240000)] public IEnumerator DesignerMinimumTouch()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.MinimumTouchChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(240000)] public IEnumerator DesignerControlSizesAndWelcome()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.ControlWelcomeChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(180000)] public IEnumerator DesignerCleanupFocus()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.CleanupFocusChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(180000)] public IEnumerator LoadingArtworkRatios()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity");
+        var startup=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Services.LabStartup")).First(t=>t!=null);
+        startup.GetField("autoLoad").SetValue(UnityEngine.Object.FindFirstObjectByType(startup),false);
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.LoadingAspectChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(180000)] public IEnumerator DesignerFirstLaunchTour()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        var tourType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.UI.FirstLaunchTour")).First(t=>t!=null);
+        var tour=UnityEngine.Object.FindFirstObjectByType(tourType);tourType.GetField("autoPlay").SetValue(tour,true);tourType.GetField("completionKey").SetValue(tour,"LabSorting.TestTour.Done");PlayerPrefs.DeleteKey("LabSorting.TestTour.Done");
+        foreach(var name in new[]{"LabSorting.UI.SettingsTutorialPanel","LabSorting.UI.GuidedTutorial"}){var t=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(name)).First(a=>a!=null);var instance=UnityEngine.Object.FindFirstObjectByType(t);t.GetField("preferencesPrefix").SetValue(instance,"LabSorting.TestTour.");if(name.EndsWith("SettingsTutorialPanel"))t.GetField("autoTutorial").SetValue(instance,true);}
+        PlayerPrefs.DeleteKey("LabSorting.TestTour.GuidedDone");PlayerPrefs.DeleteKey("LabSorting.TestTour.GuidedStep");
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.EnvironmentTourChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(180000)] public IEnumerator RewardedAdReturnRecovery()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RewardReturnChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(300000)] public IEnumerator DesignerServiceExperience()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.ServiceExperienceChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(300000)] public IEnumerator DesignerOffersReplay()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.OffersReplayChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(300000)] public IEnumerator DesignerArtworkUI()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.DesignerUIChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerRapidResume()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
@@ -162,7 +226,9 @@ public class SortingIntegrationTests
     }
     static void PrepareDesignerSession()
     {
-        foreach(var pair in new[]{new[]{"LabSorting.Sorting.SortingSession","persistence"},new[]{"LabSorting.UI.SettingsTutorialPanel","autoTutorial"},new[]{"LabSorting.UI.LabCompletionPanel","autoShow"},new[]{"LabSorting.Sorting.ItemRecovery","automatic"}})
+        var tourType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.UI.FirstLaunchTour")).FirstOrDefault(t=>t!=null);
+        if(tourType!=null){var tour=UnityEngine.Object.FindFirstObjectByType(tourType);if(tour)tourType.GetField("autoPlay").SetValue(tour,false);}
+        foreach(var pair in new[]{new[]{"LabSorting.UI.ServicePresentation","automaticConnectivity"},new[]{"LabSorting.Sorting.SortingSession","persistence"},new[]{"LabSorting.UI.SettingsTutorialPanel","autoTutorial"},new[]{"LabSorting.UI.LabCompletionPanel","autoShow"},new[]{"LabSorting.Sorting.ItemRecovery","automatic"}})
         {
             var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(pair[0])).First(t=>t!=null);
             var instance=UnityEngine.Object.FindFirstObjectByType(type);if(instance)type.GetField(pair[1]).SetValue(instance,false);
@@ -262,16 +328,43 @@ public class SortingIntegrationTests
         try
         {
             yield return new EnterPlayMode(false);Application.runInBackground=true;
-            double until=UnityEditor.EditorApplication.timeSinceStartup+60;
+              // Deterministic connectivity fixture: test transition without an external endpoint.
+              yield return null;
+              var networkType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Services.InternetConnectivity")).First(t=>t!=null);
+              var network=(MonoBehaviour)UnityEngine.Object.FindFirstObjectByType(networkType);Assert.IsNotNull(network);network.enabled=false;
+              networkType.GetProperty("IsReady").SetValue(network,true);networkType.GetMethod("SetStatus",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(network,new[]{Enum.Parse(networkType.GetProperty("Status").PropertyType,"Online")});
+              var bootMusic=GameObject.Find("Boot Music").GetComponent<AudioSource>();int musicId=bootMusic.GetInstanceID();
+              double until=UnityEditor.EditorApplication.timeSinceStartup+60;
             while(UnityEngine.SceneManagement.SceneManager.GetActiveScene().path!="Assets/Scenes/Lab_Sorting.unity"&&UnityEditor.EditorApplication.timeSinceStartup<until)yield return null;
             Assert.AreEqual("Assets/Scenes/Lab_Sorting.unity",UnityEngine.SceneManagement.SceneManager.GetActiveScene().path);
             Assert.AreEqual(1,UnityEngine.SceneManagement.SceneManager.sceneCount,"Boot scene unloaded after automatic transition");
             Assert.IsNotNull(Camera.main,"Designer player camera is available after boot");
+              yield return new WaitForSecondsRealtime(.5f);
+              Assert.IsNull(GameObject.Find("Loading Scene Fade"),"Transition overlay releases controls");
+              Assert.IsTrue(UnityEngine.Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Any(a=>a.GetInstanceID()==musicId&&a.loop),"Original music source continues into gameplay");
+              Assert.AreEqual(1,UnityEngine.Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None).Count(a=>a.isActiveAndEnabled),"One active listener after boot");
             yield return new ExitPlayMode();
         }
         finally {UnityEngine.SceneManagement.SceneManager.sceneLoaded-=loaded;}
     }
-    static void AssertDimensions(GameObject player)
+      [UnityTest,Timeout(180000)] public IEnumerator CompleteFirstLaunchFlow()
+      {
+          EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity");EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+          var helper=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.FirstLaunchFlowChecks")).First(t=>t!=null);
+          UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode> loaded=(scene,mode)=>{if(scene.path=="Assets/Scenes/Lab_Sorting.unity"){PrepareDesignerSession();helper.GetMethod("Configure").Invoke(null,null);}};
+          UnityEngine.SceneManagement.SceneManager.sceneLoaded+=loaded;
+          try
+          {
+              yield return new EnterPlayMode(false);Application.runInBackground=true;yield return null;
+              var networkType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Services.InternetConnectivity")).First(t=>t!=null);
+              var network=(MonoBehaviour)UnityEngine.Object.FindFirstObjectByType(networkType);network.enabled=false;networkType.GetProperty("IsReady").SetValue(network,true);networkType.GetMethod("SetStatus",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(network,new[]{Enum.Parse(networkType.GetProperty("Status").PropertyType,"Online")});
+              float deadline=Time.realtimeSinceStartup+45;while(UnityEngine.SceneManagement.SceneManager.GetActiveScene().path!="Assets/Scenes/Lab_Sorting.unity"&&Time.realtimeSinceStartup<deadline)yield return null;
+              Assert.AreEqual("Assets/Scenes/Lab_Sorting.unity",UnityEngine.SceneManagement.SceneManager.GetActiveScene().path);
+              yield return (IEnumerator)helper.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+          }
+          finally{UnityEngine.SceneManagement.SceneManager.sceneLoaded-=loaded;helper.GetMethod("Cleanup").Invoke(null,null);}
+      }
+      static void AssertDimensions(GameObject player)
     {
         var capsule=player.GetComponent<CapsuleCollider>();Assert.That(capsule.height,Is.EqualTo(1.7f).Within(.0001f));Assert.That(capsule.center.y,Is.EqualTo(.85f).Within(.0001f));Assert.That(capsule.radius,Is.EqualTo(.3f).Within(.0001f));
         var camera=player.GetComponentInChildren<Camera>(true);Assert.That(player.transform.InverseTransformPoint(camera.transform.position).y,Is.EqualTo(1.6f).Within(.0001f));Assert.That(player.transform.localScale,Is.EqualTo(Vector3.one));

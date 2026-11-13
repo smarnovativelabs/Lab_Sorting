@@ -21,7 +21,7 @@ namespace LabSorting.Sorting
         {
             if(surfaces.Count>0)return;
             foreach(var r in rack.GetComponentsInChildren<Renderer>(true))
-                if(r!=rack.indicator&&!r.GetComponentInParent<SortItem>()&&!r.GetComponent<TextMesh>())
+                if(r!=rack.indicator&&r!=rack.labelIcon&&!r.GetComponentInParent<SortItem>()&&!r.GetComponent<TextMesh>())
                     surfaces.Add(new Surface{renderer=r,materials=r.sharedMaterials});
         }
         public void Show(SortRack rack,ItemDefinition type)

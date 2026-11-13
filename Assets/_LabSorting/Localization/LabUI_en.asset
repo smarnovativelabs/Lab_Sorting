@@ -1805,6 +1805,318 @@ MonoBehaviour:
     m_Localized: new items to next reward
     m_Metadata:
       m_Items: []
+  - m_Id: 89665003175936
+    m_Localized: PAUSE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536064
+    m_Localized: RESUME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536065
+    m_Localized: SAVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536066
+    m_Localized: STORE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536067
+    m_Localized: BIG CASH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536068
+    m_Localized: No forced ads
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536069
+    m_Localized: Prices are provided by your store.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536070
+    m_Localized: Collected Items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536071
+    m_Localized: 'Displaying Ad In:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536072
+    m_Localized: Seconds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536073
+    m_Localized: Preparing video...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 89665032536074
+    m_Localized: Video cancelled. No reward used.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 114626791063552
+    m_Localized: Walkie Talkie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 114626849783808
+    m_Localized: Microscope
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384067129344
+    m_Localized: Purple Antibiotic Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683776
+    m_Localized: Blue Antibiotic Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683777
+    m_Localized: Spool Bandage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683778
+    m_Localized: White Bandage Roll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683779
+    m_Localized: Teal Mask Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683780
+    m_Localized: Purple Mask Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683781
+    m_Localized: Green First Aid Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683782
+    m_Localized: Red First Aid Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683783
+    m_Localized: Cream Ration Pack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683784
+    m_Localized: Green Ration Pack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683785
+    m_Localized: Blue Medicine Bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683786
+    m_Localized: Red Medicine Bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683787
+    m_Localized: Yellow Medicine Bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683788
+    m_Localized: Black Oxygen Cylinder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384100683789
+    m_Localized: Green Oxygen Cylinder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878080
+    m_Localized: Yellow Painkiller Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878081
+    m_Localized: Green Painkiller Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878082
+    m_Localized: Yellow Protein Bar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878083
+    m_Localized: Red Protein Bar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878084
+    m_Localized: Compact Radio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878085
+    m_Localized: Wide Radio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878086
+    m_Localized: Blue Gloves Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878087
+    m_Localized: White Gloves Box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878088
+    m_Localized: Red Thermal Blanket
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878089
+    m_Localized: Camo Thermal Blanket
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878090
+    m_Localized: Tall Vitamin Tube
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878091
+    m_Localized: Purple Vitamin Bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878092
+    m_Localized: Blue Water Tablets
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119384104878093
+    m_Localized: White Water Tablets
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556049334272
+    m_Localized: MATCHING RACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443136
+    m_Localized: EMPTY RACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443137
+    m_Localized: TURN LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443138
+    m_Localized: TURN RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443139
+    m_Localized: FIND STAIRS UP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443140
+    m_Localized: FIND STAIRS DOWN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443141
+    m_Localized: FOLLOW THE GLOW
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443142
+    m_Localized: TO FIND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356556116443143
+    m_Localized: LAST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358693898665984
+    m_Localized: ALL ITEMS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358693923831808
+    m_Localized: 'Left to sort:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358693923831809
+    m_Localized: of
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363709468360704
+    m_Localized: TASK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 415328998375424
+    m_Localized: SEARCH highlights loose items of your selected type.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 415329031929856
+    m_Localized: MAGNET collects your selected type until your hands are full.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 415329031929857
+    m_Localized: Tap + beside Collected Items to add slots with cash or a reward
+      video.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 419138730835968
+    m_Localized: MOVE SPEED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 428718248542208
+    m_Localized: ALMOST DONE!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 428718286290944
+    m_Localized: left to sort
+    m_Metadata:
+      m_Items: []
+  - m_Id: 428718286290945
+    m_Localized: 'Focus: finish a rack'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 428718286290946
+    m_Localized: 'Focus:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 449635703963648
+    m_Localized: JOYSTICK SIZE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 449635750100992
+    m_Localized: ACTION SIZE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 449635750100993
+    m_Localized: WELCOME BACK!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837353955328
+    m_Localized: PLAY AGAIN?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481280
+    m_Localized: LAB COMPLETE!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481281
+    m_Localized: Start a fresh sorting run?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481282
+    m_Localized: Items return to the floor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481283
+    m_Localized: Racks and run progress reset.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481284
+    m_Localized: 'Cash, tools, capacity upgrades and
+
+      completion history stay
+      saved.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481285
+    m_Localized: START NEW RUN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454837408481286
+    m_Localized: racks completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 455530471079936
+    m_Localized: PLAY AGAIN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 455530504634368
+    m_Localized: KEEP EXPLORING
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

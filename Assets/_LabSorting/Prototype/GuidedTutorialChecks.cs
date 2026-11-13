@@ -30,7 +30,7 @@ namespace LabSorting.Prototype
         static IEnumerator Teleport(SortingSession s,Vector3 feet,Vector3 lookAt)
         {
             s.player.Clear();s.player.character.Motor.BaseVelocity=Vector3.zero;s.player.character.Motor.SetPositionAndRotation(feet,Quaternion.identity);
-            yield return Wait(.15f);s.player.look.SnapToDirection(lookAt-s.player.view.transform.position);yield return Wait(.2f);
+            yield return Wait(.15f);s.player.look.SnapToDirection(lookAt-s.player.view.transform.position);yield return Wait(.4f);
         }
         static SortItem NearestLoose(SortingSession s)
         {
@@ -63,10 +63,10 @@ namespace LabSorting.Prototype
                 g.Begin(false);yield return Wait(.3f);
                 Check(g.IsRunning&&g.Current==GuidedTutorial.Step.Move&&g.group.alpha==1,"Starts at step 1, Move");
                 Check(g.Mode==GuidedTutorial.HandMode.Drag&&HandNear(g,g.joystick,120),"Hand drags on the joystick");
-                Check(g.message.text.Contains("joystick")&&g.stepLabel.text=="STEP 1 / 5"&&!g.gotItButton.gameObject.activeSelf,"Move text and step counter");
+                Check(g.message.text.Contains("joystick")&&g.stepLabel.text=="STEP 1 / 7"&&!g.gotItButton.gameObject.activeSelf,"Move text and step counter");
 
                 // Loading a save moves the player in one frame: that must not count as walking.
-                motor.SetPosition(spawn+new Vector3(0,0,2.5f));yield return Wait(.2f);motor.SetPosition(spawn);yield return Wait(.2f);
+                motor.SetPosition(spawn+new Vector3(0,0,2.5f));yield return Wait(.4f);motor.SetPosition(spawn);yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Move,"A teleport (like loading a save) does not complete Move");
                 // Walking: the hand gets out of the way while the player moves.
                 for(int i=1;i<=5;i++){motor.SetPosition(spawn+new Vector3(0,0,.2f*i));yield return null;yield return null;}
@@ -78,7 +78,7 @@ namespace LabSorting.Prototype
                 Check(g.Current==GuidedTutorial.Step.Look,"Walking 1.5 m completes Move");
                 yield return Wait(g.idleDelay+.4f);
                 Check(g.Mode==GuidedTutorial.HandMode.Drag&&HandNear(g,g.lookArea,220),"Hand swipes on the look area");
-                s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw+60,10));yield return Wait(.2f);
+                s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw+60,10));yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Pick,"Turning 45 degrees completes Look");
 
                 // Not aiming at anything: the hand points at the aim cross and stays there when the camera turns.
@@ -106,8 +106,15 @@ namespace LabSorting.Prototype
                 Check(s.TryPlace(rack),"Place on the rack");DOTween.CompleteAll();yield return Wait(.3f);
 
                 Check(g.Current==GuidedTutorial.Step.Tools&&g.gotItButton.gameObject.activeSelf,"Placing completes the main task; optional tools and GOT IT appear");
-                Check(g.Mode==GuidedTutorial.HandMode.Tap&&(HandNear(g,g.searchButton,70)||HandNear(g,g.magnetButton,70)),"Hand shows SEARCH and MAGNET");
-                int cash=s.Cash;g.gotItButton.onClick.Invoke();yield return Wait(.2f);
+                Check(g.ToolModalActive&&s.player.TutorialBlocked&&!g.hand.gameObject.activeSelf&&!g.skipButton.gameObject.activeSelf,"Tools are mandatory explanations without a hand");
+                int cash=s.Cash;g.gotItButton.onClick.Invoke();yield return Wait(.4f);
+                int search=s.SearchCredits,magnet=s.MagnetCredits,capacity=s.capacity;
+                Check(g.ToolPage==1&&g.ToolModalActive,"NEXT explains magnet without using it");
+                g.gotItButton.onClick.Invoke();yield return Wait(.4f);
+                Check(g.ToolPage==2&&g.capacityButton&&g.ToolModalActive,"Capacity explanation points at collected-items plus");
+                g.Begin(false);yield return Wait(.4f);Check(g.ToolPage==2,"Capacity explanation resumes safely");
+                Check(s.Cash==cash&&s.SearchCredits==search&&s.MagnetCredits==magnet&&s.capacity==capacity,"Explanations consume no cash, tools or capacity upgrades");
+                g.gotItButton.onClick.Invoke();yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Done&&s.TutorialRewarded&&s.Cash==cash+g.reward,"Finishing pays the reward: +$"+g.reward);
                 yield return Wait(.4f);
                 Check(g.Completed&&g.message.text.StartsWith("Well done")&&!g.hand.gameObject.activeSelf&&!g.skipButton.gameObject.activeSelf,"Well done message, tutorial remembered as finished");
@@ -116,13 +123,13 @@ namespace LabSorting.Prototype
 
                 // Replay from the start, skipping ahead by doing actions early: never pays twice.
                 g.Begin(true);yield return null;Check(g.IsRunning&&g.Current==GuidedTutorial.Step.Move,"Replay starts again at Move");
-                Check(s.TryPick(NearestLoose(s)),"Replay: pick");DOTween.CompleteAll();yield return Wait(.2f);
+                Check(s.TryPick(NearestLoose(s)),"Replay: pick");DOTween.CompleteAll();yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Place,"Picking during Move skips ahead to Place");
-                Check(s.TryPlace(RackFor(s)),"Replay: place");DOTween.CompleteAll();yield return Wait(.2f);
-                Check(s.TryPick(NearestLoose(s)),"Replay: pick again");DOTween.CompleteAll();
-                yield return ThrowSpot(s,spawn);s.ThrowActive();DOTween.CompleteAll();yield return Wait(.2f);
+                Check(s.TryPlace(RackFor(s)),"Replay: place");DOTween.CompleteAll();yield return Wait(.4f);
+                Check(!s.TryPick(NearestLoose(s)),"Replay: tools block extra pickups");DOTween.CompleteAll();
+                yield return ThrowSpot(s,spawn);s.ThrowActive();DOTween.CompleteAll();yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Tools,"Replay: throw reaches Tools");
-                cash=s.Cash;g.GotIt();yield return null;
+                cash=s.Cash;g.GotIt();yield return Wait(.4f);g.GotIt();yield return Wait(.4f);g.GotIt();yield return null;
                 Check(g.Current==GuidedTutorial.Step.Done&&s.Cash==cash,"Replay finishes without a second reward");
                 yield return Wait(5.4f);
 
@@ -130,18 +137,18 @@ namespace LabSorting.Prototype
                 Check(s.Restore(initial),"Reset catalog");
                 while(s.carried.Count<s.capacity){Check(s.TryPick(NearestLoose(s)),"Fill hands");DOTween.CompleteAll();}
                 PlayerPrefs.SetInt(prefix+"GuidedStep",(int)GuidedTutorial.Step.Pick);PlayerPrefs.DeleteKey(prefix+"GuidedDone");
-                g.Begin(false);yield return Wait(.2f);
+                g.Begin(false);yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Place,"Full hands at the Pick step move straight on to Place");
                 g.Skip();Check(s.Restore(initial),"Reset catalog");
 
                 // Skip, resume and visibility behind menus.
                 g.Begin(true);g.skipButton.onClick.Invoke();Check(!g.IsRunning&&g.Completed&&g.group.alpha==0,"SKIP ends the tutorial and remembers it");
                 PlayerPrefs.SetInt(prefix+"GuidedStep",(int)GuidedTutorial.Step.Throw);PlayerPrefs.DeleteKey(prefix+"GuidedDone");
-                g.Begin(false);Check(g.Current==GuidedTutorial.Step.Tools&&g.stepLabel.text=="STEP 5 / 5","Restarting the game resumes at the saved step");
+                g.Begin(false);Check(g.Current==GuidedTutorial.Step.Tools&&g.stepLabel.text=="STEP 5 / 7","Restarting the game resumes at the saved step");
                 yield return Wait(.1f);settings.OpenSettings();yield return Wait(.1f);
-                Check(g.group.alpha==0&&!g.group.blocksRaycasts,"Hidden while Settings is open");
+                Check(g.group.alpha==1&&!settings.IsOpen,"Settings cannot interrupt mandatory guidance");
                 settings.Close();yield return Wait(.1f);Check(g.group.alpha==1,"Shown again after Settings closes");
-                settings.OpenSettings();settings.ReplayTutorial();yield return null;
+                g.GotIt();yield return Wait(.4f);g.GotIt();yield return Wait(.4f);g.GotIt();settings.OpenSettings();settings.ReplayTutorial();yield return null;
                 Check(!settings.IsOpen&&g.IsRunning&&g.Current==GuidedTutorial.Step.Move,"Settings > Replay tutorial restarts the guided tutorial");
                 g.Skip();settings.OpenSettings();settings.OpenHowToPlay();
                 Check(settings.IsOpen&&settings.ShowingTutorial,"Settings > How to play opens the help cards");settings.Close();
@@ -162,3 +169,4 @@ namespace LabSorting.Prototype
         }
     }
 }
+

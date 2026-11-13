@@ -4,6 +4,7 @@ using System.IO;
 using DG.Tweening;
 using UnityEngine;
 using LabSorting.Sorting;
+using LabSorting.UI;
 
 namespace LabSorting.Prototype
 {
@@ -176,7 +177,7 @@ namespace LabSorting.Prototype
                 int count=s.carried.Count,cash=s.Cash;var active=s.Active;s.player.SetMove(Vector2.one);
                 Check(!s.TryPick(thrown)&&!s.TryPlace(s.racks[0])&&!s.TryMagnet()&&!s.TrySearch()&&!s.TryUpgradeCapacity(),"Modal rejects all sorting/economy actions");
                 s.ThrowActive();s.Cycle();Check(s.carried.Count==count&&s.Cash==cash&&s.Active==active&&s.player.Move==Vector2.zero,"Modal preserves inventory, cash, selection and movement");
-                Check(panel.rows[0].text.Contains("remaining")&&panel.summary.text.Contains("/ 50"),"Progress rows and total summary populated");
+                Check(panel.rows[0].text.Contains(" / ")&&panel.summary.text.Contains("of 50"),"Progress rows and total summary populated");
                 Capture(s,"Logs/ItemsProgress.png");
                 panel.closeButton.onClick.Invoke();Check(!panel.IsOpen&&!s.player.blocked,"Close button restores gameplay");
                 s.player.SetBlocked(true);panel.Open();panel.Close();Check(s.player.blocked,"Panel preserves a pre-existing input block");s.player.SetBlocked(false);
@@ -198,11 +199,12 @@ namespace LabSorting.Prototype
         }
         public static void Capture(SortingSession session,string path="Logs/SortingTest.png")
         {
-            var camera=session.player.view;var canvas=UnityEngine.Object.FindFirstObjectByType<Canvas>();var oldMode=canvas.renderMode;var oldCamera=canvas.worldCamera;
+            var camera=session.player.view;var canvas=UnityEngine.Object.FindFirstObjectByType<SortingHUD>().GetComponent<Canvas>();var oldMode=canvas.renderMode;var oldCamera=canvas.worldCamera;
             var rt=new RenderTexture(1280,720,24);var texture=new Texture2D(1280,720,TextureFormat.RGB24,false);var oldTarget=camera.targetTexture;var oldActive=RenderTexture.active;
+            var service=UnityEngine.Object.FindFirstObjectByType<ServicePresentation>();var extra=service?service.offlineRoot.GetComponentInParent<Canvas>():null;if(extra==canvas)extra=null;var extraMode=extra?extra.renderMode:RenderMode.ScreenSpaceOverlay;var extraCamera=extra?extra.worldCamera:null;float extraPlane=extra?extra.planeDistance:0;
             float oldPlane=canvas.planeDistance;
-            try {canvas.renderMode=RenderMode.ScreenSpaceCamera;canvas.worldCamera=camera;canvas.planeDistance=camera.nearClipPlane+.01f;Canvas.ForceUpdateCanvases();camera.targetTexture=rt;camera.Render();RenderTexture.active=rt;texture.ReadPixels(new Rect(0,0,1280,720),0,0);texture.Apply();Directory.CreateDirectory("Logs");File.WriteAllBytes(path,texture.EncodeToPNG());}
-            finally {camera.targetTexture=oldTarget;RenderTexture.active=oldActive;canvas.renderMode=oldMode;canvas.worldCamera=oldCamera;canvas.planeDistance=oldPlane;UnityEngine.Object.Destroy(rt);UnityEngine.Object.Destroy(texture);}
+            try {if(extra){extra.renderMode=RenderMode.ScreenSpaceCamera;extra.worldCamera=camera;extra.planeDistance=camera.nearClipPlane+.005f;}canvas.renderMode=RenderMode.ScreenSpaceCamera;canvas.worldCamera=camera;canvas.planeDistance=camera.nearClipPlane+.01f;Canvas.ForceUpdateCanvases();camera.targetTexture=rt;camera.Render();RenderTexture.active=rt;texture.ReadPixels(new Rect(0,0,1280,720),0,0);texture.Apply();Directory.CreateDirectory("Logs");File.WriteAllBytes(path,texture.EncodeToPNG());}
+            finally {if(extra){extra.renderMode=extraMode;extra.worldCamera=extraCamera;extra.planeDistance=extraPlane;}camera.targetTexture=oldTarget;RenderTexture.active=oldActive;canvas.renderMode=oldMode;canvas.worldCamera=oldCamera;canvas.planeDistance=oldPlane;UnityEngine.Object.Destroy(rt);UnityEngine.Object.Destroy(texture);}
         }
     }
 }

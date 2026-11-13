@@ -21,6 +21,8 @@ namespace LabSorting.UI
         public Text message, stepLabel;
         public Button skipButton, gotItButton;
         public RectTransform joystick, lookArea, pickButton, placeButton, throwButton, searchButton, magnetButton;
+        public RectTransform capacityButton;
+        public int ToolPage {get;private set;}
         [Min(0)] public int reward=3;
         public string preferencesPrefix="LabSorting.";
         [Min(.1f)] public float moveDistance=1.5f, lookDegrees=45;
@@ -29,14 +31,19 @@ namespace LabSorting.UI
         public Step Current {get;private set;}
         public HandMode Mode {get;private set;}
         public bool Completed=>PlayerPrefs.GetInt(preferencesPrefix+"GuidedDone",0)==1;
-        public const int StepCount=5;
+        public const int StepCount=7;
         const float TargetGrace=.3f, FadeSpeed=6;
         Vector3 lastPosition;float lastYaw,walked,looked,hideAt,lastActivity=-99,lastPickTarget=-99,lastRackTarget=-99,handAlpha;
         bool subscribed,paid,fresh,canThrow;float nextThrowCheck;string shown;Image handImage;
+        RectTransform pointedControl;
+        float nextToolAdvance;
 
         void Awake(){Hide();}
-        void OnEnable(){if(IsRunning)Subscribe();}
-        void OnDisable(){Unsubscribe();HideRackGuide();}
+        void OnEnable(){Canvas.willRenderCanvases+=RefreshPointerLayout;if(IsRunning){Subscribe();SetToolModal(Current==Step.Tools);}}
+        void OnDisable(){Canvas.willRenderCanvases-=RefreshPointerLayout;Unsubscribe();HideRackGuide();SetToolModal(false);}
+        // Safe-area/canvas geometry may change after Update (resize, camera handoff).
+        // Resolve the fingertip against the final control geometry just before rendering.
+        void RefreshPointerLayout(){if(toolModal)UpdateToolHighlight();if(IsRunning&&session&&!session.player.blocked&&Mode==HandMode.Tap&&pointedControl)Tap(pointedControl);}
 
         // Start from the beginning, or from the step saved when the game was closed.
         public void Begin(bool restart)
@@ -44,6 +51,7 @@ namespace LabSorting.UI
             LabSorting.Services.LabTelemetry.Event(restart?"tutorial_replayed":"tutorial_started");
             int saved=restart?0:Mathf.Clamp(PlayerPrefs.GetInt(preferencesPrefix+"GuidedStep",0),0,(int)Step.Tools);
             if(saved==(int)Step.Throw)saved=(int)Step.Tools; // Older saves: dropping is now optional.
+            ToolPage=restart||saved!=(int)Step.Tools?0:Mathf.Clamp(PlayerPrefs.GetInt(preferencesPrefix+"GuidedToolPage",0),0,2);
             IsRunning=true;paid=false;Subscribe();Enter((Step)saved);
         }
         public void Skip()
@@ -52,7 +60,7 @@ namespace LabSorting.UI
             PlayerPrefs.SetInt(preferencesPrefix+"GuidedDone",1);PlayerPrefs.DeleteKey(preferencesPrefix+"GuidedStep");PlayerPrefs.Save();
             Stop();
         }
-        public void GotIt(){if(IsRunning&&Current==Step.Tools)Enter(Step.Done);}
+        public void GotIt(){if(!IsRunning||Current!=Step.Tools||session.player.NetworkBlocked||Time.unscaledTime<nextToolAdvance)return;nextToolAdvance=Time.unscaledTime+.35f;if(ToolPage<2){ToolPage++;Enter(Step.Tools);}else Enter(Step.Done);}
         void Stop(){IsRunning=false;Unsubscribe();Hide();}
         void Enter(Step step)
         {
@@ -64,10 +72,13 @@ namespace LabSorting.UI
                 PlayerPrefs.SetInt(preferencesPrefix+"GuidedDone",1);PlayerPrefs.DeleteKey(preferencesPrefix+"GuidedStep");
             }
             else PlayerPrefs.SetInt(preferencesPrefix+"GuidedStep",(int)step);
+            if(step==Step.Tools)PlayerPrefs.SetInt(preferencesPrefix+"GuidedToolPage",ToolPage);
+            if(step==Step.Done)PlayerPrefs.DeleteKey(preferencesPrefix+"GuidedToolPage");
             PlayerPrefs.Save();
             if(gotItButton)gotItButton.gameObject.SetActive(step==Step.Tools);
-            if(skipButton)skipButton.gameObject.SetActive(step!=Step.Done);
-            if(stepLabel)stepLabel.text=step==Step.Done?"":"STEP "+Mathf.Min((int)step+1,StepCount)+" / "+StepCount;
+            if(gotItButton){var text=gotItButton.GetComponentInChildren<Text>(true);if(text)text.text=step==Step.Tools?"NEXT":"GOT IT";}
+            if(skipButton)skipButton.gameObject.SetActive(step!=Step.Done&&step!=Step.Tools); SetToolModal(step==Step.Tools);
+            if(stepLabel)stepLabel.text=step==Step.Done?"":"STEP "+(step==Step.Tools?5+ToolPage:Mathf.Min((int)step+1,StepCount))+" / "+StepCount;
             shown=null;
         }
 
@@ -83,12 +94,13 @@ namespace LabSorting.UI
             // A toss is a placement made with the THROW button: it counts for either step.
             else if(cue==SortingCue.Toss){if(Current<=Step.Place)Enter(Step.Throw);else if(Current==Step.Throw)Enter(Step.Tools);}
         }
-        void OnSearch(ItemDefinition type,int count){GotIt();}
-        void OnMagnet(ItemDefinition type,Vector3[] origins){GotIt();}
+        void OnSearch(ItemDefinition type,int count){} // Tool use is optional; only NEXT advances these explanations.
+        void OnMagnet(ItemDefinition type,Vector3[] origins){}
 
         void Update()
         {
             if(!IsRunning)return;
+            if(gotItButton&&Current==Step.Tools)gotItButton.interactable=!session.player.NetworkBlocked&&Time.unscaledTime>=nextToolAdvance;
             // Walking and turning are measured frame by frame from the first frame of the step. One-frame jumps
             // (loading a save restores the player's position and view) are not counted as walking or looking.
             var position=session.player.transform.position;float yaw=session.player.look.Yaw;
@@ -98,7 +110,7 @@ namespace LabSorting.UI
             if(turn<90){looked+=turn;if(turn>.05f)lastActivity=Time.unscaledTime;}
             if(actions&&actions.PickVisible)lastPickTarget=Time.unscaledTime;
             if(RackReady())lastRackTarget=Time.unscaledTime;
-            bool blocked=session.player.blocked;
+            bool blocked=session.player.NetworkBlocked||(session.player.blocked&&!session.player.TutorialBlocked);
             UpdateRackGuide(blocked);
             group.alpha=blocked?0:1;group.blocksRaycasts=!blocked;
             if(Current==Step.Done){SetHand(HandMode.Hidden);SetText();FadeHand();if(Time.unscaledTime>=hideAt)Stop();return;}
@@ -129,7 +141,7 @@ namespace LabSorting.UI
                     if(canThrow)Tap(throwButton);else Aim();
                     break;
                 case Step.Tools:
-                    Tap(Mathf.Repeat(Time.unscaledTime,3.2f)<1.6f?searchButton:magnetButton);break;
+                    SetHand(HandMode.Hidden);UpdateToolHighlight();break;
             }
             SetText();FadeHand();
         }
@@ -160,6 +172,7 @@ namespace LabSorting.UI
         }
         void Tap(RectTransform target)
         {
+            pointedControl=target;
             if(!target||!target.gameObject.activeInHierarchy){SetHand(HandMode.Hidden);return;}
             SetHand(HandMode.Tap);
             bool mirror=Local(target).x<area.rect.center.x-area.rect.width*.2f;
@@ -209,11 +222,11 @@ namespace LabSorting.UI
                     if(!carrying)return "Pick up another item first.";
                     if(Mode!=HandMode.Tap)return "Your item will drop forward when there is room.";
                     return "Tap DROP to throw one item gently forward."+(pc?"  (Q)":"");
-                case Step.Tools: return Time.unscaledTime<placedHintUntil?"Nice! This rack now holds that item type.":"DROP throws one item gently forward. Select a type in your hand to use SEARCH or MAGNET. Get tools with cash, optional reward videos or the store. Tap GOT IT to continue.";
+                case Step.Tools: return ToolPage==0?"SEARCH highlights loose items of your selected type.":ToolPage==1?"MAGNET collects your selected type until your hands are full.":"Tap + beside Collected Items to add slots with cash or a reward video.";
                 default: return paid?"Well done! +$"+reward+"\nNow sort every item to finish the lab.":"Well done!\nNow sort every item to finish the lab.";
             }
         }
-        void Hide(){HideRackGuide();Mode=HandMode.Hidden;handAlpha=0;if(hand)hand.gameObject.SetActive(false);if(group){group.alpha=0;group.blocksRaycasts=false;}}
+        void Hide(){SetToolModal(false);HideRackGuide();Mode=HandMode.Hidden;handAlpha=0;if(hand)hand.gameObject.SetActive(false);if(group){group.alpha=0;group.blocksRaycasts=false;}}
     }
 }
 

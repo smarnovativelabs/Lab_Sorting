@@ -124,7 +124,8 @@ namespace LabSorting.Sorting
             holding=success;repeatAt=Time.unscaledTime+Mathf.Max(.3f,holdDelay);
         }
         public void EndHold(bool place){if(bufferedTap&&bufferedPlace==place)bufferedRepeat=false;if(holding&&holdPlace==place)CancelHold();}
-        public void CancelHold(){holding=false;holdType=null;holdRack=null;if(bufferedTap)BufferedTapState=TapBufferState.Cancelled;bufferedTap=false;bufferedItem=null;bufferedRack=null;bufferedType=null;}
+        public int HoldGeneration {get;private set;}
+        public void CancelHold(){HoldGeneration++;holding=false;holdType=null;holdRack=null;if(bufferedTap)BufferedTapState=TapBufferState.Cancelled;bufferedTap=false;bufferedItem=null;bufferedRack=null;bufferedType=null;}
         void TickBufferedTap()
         {
             if(!bufferedTap)return;

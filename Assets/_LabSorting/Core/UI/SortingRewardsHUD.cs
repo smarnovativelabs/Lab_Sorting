@@ -21,6 +21,8 @@ namespace LabSorting.UI
         Tween toastTween,abilityTween;
         int revision=-1;
         readonly HashSet<ItemDefinition> celebratedCategories=new HashSet<ItemDefinition>();
+        public int PendingAnnouncements=>announcements.Count;
+        void Announce(string message){if(announcements.Count>=3)announcements.Dequeue();announcements.Enqueue(message);}
         public int ActiveFlights { get {int count=0;foreach(var chip in chips)if(chip&&chip.gameObject.activeSelf)count++;return count;} }
         void OnEnable(){if(!session)return;session.Backgrounded+=ResetVisuals;session.ItemPlaced+=CategoryPlaced;session.MilestoneEarned+=Earned;session.SmallGoalEarned+=Earned;session.SearchStarted+=Search;session.MagnetCollected+=Magnet;session.TossScored+=Tossed;session.VisualsReset+=ResetVisuals;}
         void OnDisable(){if(session){session.Backgrounded-=ResetVisuals;session.ItemPlaced-=CategoryPlaced;session.MilestoneEarned-=Earned;session.SmallGoalEarned-=Earned;session.SearchStarted-=Search;session.MagnetCollected-=Magnet;session.TossScored-=Tossed;session.VisualsReset-=ResetVisuals;}ResetVisuals();}
@@ -32,12 +34,15 @@ namespace LabSorting.UI
         }
         void Update()
         {
+            // Modal screens and the tour own attention. Do not replay stale rewards
+            // over gameplay when the player returns.
+            if(session.player.blocked){ResetVisuals();return;}
             bool completing=Time.unscaledTime<goalCompleteUntil;
             if(revision!=session.Revision||completing!=showingGoalCompletion)
             {
                 bool first=revision<0;revision=session.Revision;showingGoalCompletion=completing;
                 milestone.text=completing?"✓ GOAL COMPLETE   +$"+SortingSession.ShortGoalBonus:session.ShortGoalsComplete?"SHORT GOALS COMPLETE":
-                    "SHORT GOAL   "+session.ShortGoalProgress+" / "+session.ShortGoalTarget+"   |   +$"+SortingSession.ShortGoalBonus+"\n"+(session.ShortGoalTarget-session.ShortGoalProgress)+" new items to next reward";
+                    "SHORT GOAL   "+session.ShortGoalProgress+" / "+session.ShortGoalTarget+"   |   +$"+SortingSession.ShortGoalBonus+"\n"+session.ShortGoalFocus();
                 selectedSwatch.color=session.Active?session.Active.definition.color:new Color(.3f,.35f,.4f);
                 if(first)shownGoalProgress=session.ShortGoalFraction;else if(!completing&&goalOrdinal!=session.ShortGoalOrdinal)shownGoalProgress=0;
                 if(!completing)goalOrdinal=session.ShortGoalOrdinal;
@@ -46,20 +51,20 @@ namespace LabSorting.UI
             if(announcements.Count>0&&(toastTween==null||!toastTween.IsActive()))
             {
                 toast.text=announcements.Dequeue();toast.color=new Color(.5f,1,.75f,1);toast.transform.localScale=Vector3.one*.94f;
-                toastTween=DOTween.Sequence().Append(toast.transform.DOScale(1,.18f).SetEase(Ease.OutCubic)).AppendInterval(2.5f).Append(toast.DOFade(0,.3f)).SetUpdate(true);
+                toastTween=DOTween.Sequence().Append(toast.transform.DOScale(1,.16f).SetEase(Ease.OutCubic)).AppendInterval(1.35f).Append(toast.DOFade(0,.25f)).SetUpdate(true);
             }
         }
-        void Earned(string goal,int reward){if(goal=="Rack complete!"){Ability("✓ "+goal+"   +$"+reward,new Color(.5f,1,.75f));return;}if(goal=="Sorting goal complete!"){goalCompleteUntil=Time.unscaledTime+1.1f;return;}announcements.Enqueue(goal+"   +$"+reward);}
+        void Earned(string goal,int reward){if(goal=="Rack complete!"){Ability("✓ "+goal+(reward>0?"   +$"+reward:""),new Color(.5f,1,.75f));return;}if(goal=="Sorting goal complete!"){goalCompleteUntil=Time.unscaledTime+1.4f;return;}Announce(goal+(reward>0?"   +$"+reward:""));}
         void CategoryPlaced(SortItem item)
         {
             if(celebratedCategories.Contains(item.definition))return;
             foreach(var candidate in session.ItemsOfType(item.definition))if(candidate.location!=ItemLocation.Rack)return;
-            celebratedCategories.Add(item.definition);announcements.Enqueue("✓ Category complete!  "+item.definition.displayName);
+            celebratedCategories.Add(item.definition);Announce("✓ Category complete!  "+item.definition.displayName);
         }
         void Ability(string text,Color color)
         {
             abilityTween?.Kill();ability.text=text;ability.color=color;ability.transform.localScale=Vector3.one*.9f;
-            abilityTween=DOTween.Sequence().Append(ability.transform.DOScale(1,.2f).SetEase(Ease.OutCubic)).AppendInterval(2).Append(ability.DOFade(0,.4f)).SetUpdate(true);
+            abilityTween=DOTween.Sequence().Append(ability.transform.DOScale(1,.16f).SetEase(Ease.OutCubic)).AppendInterval(1.35f).Append(ability.DOFade(0,.25f)).SetUpdate(true);
         }
         void Search(ItemDefinition type,int count){Ability("SEARCH  "+type.displayName+"  |  "+count+" found",new Color(1,.9f,.35f));}
         void Magnet(ItemDefinition type,Vector3[] origins)

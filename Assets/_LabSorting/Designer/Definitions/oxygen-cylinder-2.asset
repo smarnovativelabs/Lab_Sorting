@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: oxygen-cylinder-2
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-oxygen-cylinder-2
-  displayName: Oxygen Cylinder 2
+  displayName: Green Oxygen Cylinder
   icon: {fileID: -1397329865, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 3
   color: {r: 1, g: 1, b: 1, a: 1}

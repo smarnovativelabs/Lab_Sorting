@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: thermal-blanket-2
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-thermal-blanket-2
-  displayName: Thermal Blanket 2
+  displayName: Camo Thermal Blanket
   icon: {fileID: -1209295513, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 0
   color: {r: 1, g: 1, b: 1, a: 1}

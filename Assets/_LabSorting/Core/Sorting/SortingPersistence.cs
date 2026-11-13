@@ -81,6 +81,9 @@ namespace LabSorting.Sorting
         public bool FlushSaves(int timeoutMilliseconds=5000)=>saveWriter==null||saveWriter.Flush(timeoutMilliseconds);
         public void Save(){if(!persistence)return;if(RequestSave(true)&&!FlushSaves())Debug.LogWarning("Sorting save has not completed: "+(LastSaveError??"writer timeout"));}
         void SaveTransaction(){RequestSave();}
+        // Rare critical boundary: rotate the same committed state into the backup
+        // before acknowledging a verified purchase or a completed replay reset.
+        bool SaveRedundantTransaction()=>!persistence||(RequestSave(true)&&FlushSaves()&&RequestSave()&&FlushSaves());
         void PollSaveWriter()
         {
             if(saveWriter==null)return;

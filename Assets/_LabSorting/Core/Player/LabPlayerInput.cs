@@ -13,11 +13,15 @@ namespace LabSorting.Player
         public bool blocked;
         public float touchSensitivity = 1f;
         public Vector2 Move { get; private set; }
+        public float LastLookInputTime {get;private set;}=-100;
         Vector2 drag;
         bool focused = true;
+        bool requestedBlocked;
+        public bool NetworkBlocked {get;private set;} public bool TutorialBlocked {get;private set;} public void SetTutorialBlocked(bool value){TutorialBlocked=value;blocked=requestedBlocked||NetworkBlocked||value;Clear();}
         public void SetMove(Vector2 value) { Move = blocked ? Vector2.zero : Vector2.ClampMagnitude(value, 1); }
-        public void AddLook(Vector2 value) { if (!blocked && focused) drag += value * touchSensitivity; }
-        public void SetBlocked(bool value) { blocked = value; Clear(); }
+        public void AddLook(Vector2 value) { if (!blocked && focused){drag += value * touchSensitivity;if(value.sqrMagnitude>.01f)LastLookInputTime=Time.unscaledTime;} }
+        public void SetBlocked(bool value) { requestedBlocked=value;blocked = value||NetworkBlocked||TutorialBlocked; Clear(); }
+        public void SetNetworkBlocked(bool value){if(value&&!NetworkBlocked)requestedBlocked=blocked&&!TutorialBlocked;NetworkBlocked=value;blocked=requestedBlocked||value||TutorialBlocked;Clear();}
         public void Clear() { Move = drag = Vector2.zero; if(character) character.CancelPendingJump(); }
         void OnDisable() { Clear(); }
         void OnApplicationFocus(bool value) { focused = value; Clear(); }
@@ -35,6 +39,7 @@ namespace LabSorting.Player
                 if (Mouse.current != null && Cursor.lockState == CursorLockMode.Locked)
                     drag += Mouse.current.delta.ReadValue();
                 if (Gamepad.current != null) movement += Gamepad.current.leftStick.ReadValue();
+                if(drag.sqrMagnitude>.01f||(Gamepad.current!=null&&Gamepad.current.rightStick.ReadValue().sqrMagnitude>.01f))LastLookInputTime=Time.unscaledTime;
                 look.ApplyLookInput(drag, LabLookInputMode.Delta, Time.deltaTime);
                 if (Gamepad.current != null) look.ApplyLookInput(Gamepad.current.rightStick.ReadValue(), LabLookInputMode.Rate, Time.deltaTime);
             }

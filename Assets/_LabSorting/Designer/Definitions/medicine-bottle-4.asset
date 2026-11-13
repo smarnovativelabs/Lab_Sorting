@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: medicine-bottle-4
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-medicine-bottle-4
-  displayName: Medicine Bottle 4
+  displayName: Yellow Medicine Bottle
   icon: {fileID: -2130857466, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 2
   color: {r: 1, g: 1, b: 1, a: 1}

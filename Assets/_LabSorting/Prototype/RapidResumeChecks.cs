@@ -22,7 +22,7 @@ namespace LabSorting.Prototype
             var fixture=GameObject.CreatePrimitive(PrimitiveType.Cube);fixture.name="Temporary buffered place rack";fixture.SetActive(false);
             try
             {
-                Check(s.items.Length==4032,"4032 designer items");s.player.SendMessage("OnApplicationFocus",true);s.player.Clear();s.player.character.Motor.enabled=false;
+                Check(s.items.Length==4032,"4032 designer items");yield return FullInventoryControlChecks.Run(s);s.player.SendMessage("OnApplicationFocus",true);s.player.Clear();s.player.character.Motor.enabled=false;
                 var chosen=s.items.Where(i=>i.location==ItemLocation.Loose).GroupBy(i=>i.definition).Take(3).Select(g=>g.First()).ToArray();
                 foreach(var item in chosen){Check(s.TryPick(item),"Pick rapid-switch item");DOTween.CompleteAll();}
                 for(int i=0;i<30;i++)
@@ -68,7 +68,7 @@ namespace LabSorting.Prototype
                 var type=chosen[0].definition;var goalRack=racks.First(r=>r.CapacityFor(type)>=25);int startCash=s.Cash;
                 foreach(var item in s.ItemsOfType(type).Take(25)){Check(s.TryPick(item),"Short-goal pickup");DOTween.CompleteAll();Check(s.TryPlace(goalRack),"Short-goal placement");DOTween.CompleteAll();}
                 var rewards=UnityEngine.Object.FindFirstObjectByType<SortingRewardsHUD>();rewards.SendMessage("Update");Check(rewards.milestone.text.Contains("GOAL COMPLETE")&&s.ShortGoalProgress==0&&s.ShortGoalTarget==25,"Goal completes visibly and advances to next batch");
-                yield return new WaitForSecondsRealtime(1.2f);rewards.SendMessage("Update");Check(rewards.milestone.text.Contains("25 new items")&&rewards.shortGoalFill,"Next goal explains remaining items and has a progress bar");
+                yield return new WaitForSecondsRealtime(1.5f);rewards.SendMessage("Update");Check((rewards.milestone.text.Contains(s.ShortGoalFocus())||rewards.milestone.text.Contains(LabSorting.Services.LabLocalization.Text(s.ShortGoalFocus())))&&rewards.shortGoalFill,"Next goal gives an achievable contextual focus and has a progress bar");
                 int goalCash=s.Cash;var repeat=s.ItemsOfType(type).First(i=>i.location==ItemLocation.Rack);Check(s.TryPick(repeat),"Retrieve rewarded item");DOTween.CompleteAll();Check(s.TryPlace(goalRack),"Replace rewarded item");DOTween.CompleteAll();Check(s.Cash==goalCash&&s.ShortGoalProgress==0,"Repeated placement cannot advance or repay short goal");
                 SortingSmokeChecks.Capture(s,"Logs/ShortGoalPresentation.png");report.AppendLine("4032-item lifecycle tests passed; unique item IDs="+s.items.Select(i=>i.id).Distinct().Count());File.WriteAllText("Logs/RapidResumeMeasurements.txt",report.ToString());
             }

@@ -9,8 +9,9 @@ namespace LabSorting.UI
         {
             forward.y=0;delta.y=0;if(delta.sqrMagnitude<.04f)return "HERE";
             float angle=Vector3.SignedAngle(forward,delta,Vector3.up);
-            return Mathf.Abs(angle)>135?"TURN AROUND":angle< -18?"< LEFT":angle>18?"RIGHT >":"AHEAD";
+            return Mathf.Abs(angle)>135?"TURN AROUND":angle< -18?"TURN LEFT":angle>18?"TURN RIGHT":"AHEAD";
         }
+        public static string Route(float itemBase,float playerFeet)=>itemBase-playerFeet>1.8f?"FIND STAIRS UP":itemBase-playerFeet< -1.8f?"FIND STAIRS DOWN":"FOLLOW THE GLOW";
         public static string Describe(SortingSession session,SortItem item)
         {
             var delta=item.transform.position-session.player.transform.position;
