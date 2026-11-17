@@ -30,15 +30,16 @@ namespace LabSorting.Editor
                 if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty)throw new InvalidOperationException("Save current scene before verification");
                 if(request=="restore"){EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");File.WriteAllText("Logs/RatVerificationState.txt","Main scene restored");return;}
 
-                if(request!="all"&&request!="core"&&request!="rats"&&request!="polish"&&request!="polish16"&&request!="connectivity"&&request!="regression"&&request!="corrections")throw new InvalidOperationException("Unknown verification request");
+                if(!request.StartsWith("held-")&&request!="all"&&request!="core"&&request!="rats"&&request!="polish"&&request!="polish16"&&request!="connectivity"&&request!="regression"&&request!="corrections")throw new InvalidOperationException("Unknown verification request");
                 if(request=="polish16")SetReviewSize();
+                if(request.StartsWith("held-")){var dimensions=request.Substring(5).Split('x');SetReviewSize(int.Parse(dimensions[0]),int.Parse(dimensions[1]));}
                 Start(request);
             }
             catch(Exception e){File.WriteAllText("Logs/RatVerificationState.txt",e.ToString());Debug.LogException(e);}
         }
         [MenuItem("Lab Sorting/Verify Rats and Core")]
         public static void Run(){Start("all");}
-        static void SetReviewSize()
+        static void SetReviewSize(int width=1280,int height=720)
         {
             var assembly=typeof(UnityEditor.Editor).Assembly;
             var sizesType=assembly.GetType("UnityEditor.GameViewSizes");
@@ -47,7 +48,7 @@ namespace LabSorting.Editor
             var group=sizesType.GetProperty("currentGroup").GetValue(sizes);
             var sizeType=assembly.GetType("UnityEditor.GameViewSize");
             var mode=Enum.Parse(assembly.GetType("UnityEditor.GameViewSizeType"),"FixedResolution");
-            var size=Activator.CreateInstance(sizeType,new object[]{mode,1280,720,"Lab held-item review"});
+            var size=Activator.CreateInstance(sizeType,new object[]{mode,width,height,"Lab held-item review"});
             group.GetType().GetMethod("AddCustomSize").Invoke(group,new[]{size});
             int count=(int)group.GetType().GetMethod("GetTotalCount").Invoke(group,null);
             var view=EditorWindow.GetWindow(assembly.GetType("UnityEditor.GameView"));
@@ -59,6 +60,7 @@ namespace LabSorting.Editor
             report="Logs/RatVerification-"+mode+".xml";
             var names=mode=="polish"?new[]{"SortingIntegrationTests.RequestedGameplayPolish"}:mode=="connectivity"?new[]{"ConnectivityPanelTests.OfflineOnlinePanelRecovery"}:mode=="core"?new[]{"SortingIntegrationTests.CoreSortingAndController"}:mode=="rats"?new[]{"SortingIntegrationTests.RatsPickPlaceThrowSave"}:new[]{"SortingIntegrationTests.CoreSortingAndController","SortingIntegrationTests.RatsPickPlaceThrowSave"};
             File.WriteAllText("Logs/RatVerificationState.txt","Running "+mode);
+            if(mode.StartsWith("held-"))names=new[]{"SortingIntegrationTests.HeldItemSizing"};
             if(mode=="corrections")names=new[]{"SortingIntegrationTests.RatPoseAndPresentationCorrections"};
             if(mode=="polish16")names=new[]{"SortingIntegrationTests.RequestedGameplayPolish"};
             if(mode=="regression")names=new[]{"SortingIntegrationTests.RatsPickPlaceThrowSave","SortingIntegrationTests.DesignerGuidedTutorial","SortingIntegrationTests.DesignerFrontOnlyDrop","ConnectivityPanelTests.OfflineOnlinePanelRecovery"};
@@ -72,7 +74,8 @@ namespace LabSorting.Editor
         {
             TestRunnerApi.SaveResultToFile(result,report);
             File.WriteAllText("Logs/RatVerificationState.txt","Finished: passed="+result.PassCount+" failed="+result.FailCount);
-            api.UnregisterCallbacks(this);UnityEngine.Object.DestroyImmediate(api);api=null;
+            TestRunnerApi.UnregisterTestCallback(this);
+            if(api)UnityEngine.Object.DestroyImmediate(api);api=null;
         }
     }
 }

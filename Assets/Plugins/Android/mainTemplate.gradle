@@ -9,7 +9,11 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4' // Assets/GoogleMobileAds/Editor/GoogleMobileAdsDependencies.xml:12
     implementation 'androidx.fragment:fragment:1.7.1' // Assets/GoogleMobileAds/Editor/GoogleMobileAdsDependencies.xml:22
     implementation 'androidx.lifecycle:lifecycle-process:2.6.2' // Assets/GoogleMobileAds/Editor/GoogleMobileAdsDependencies.xml:17
+    implementation 'androidx.recyclerview:recyclerview:1.2.1' // Assets/MaxSdk/Mediation/Mintegral/Editor/Dependencies.xml:9
     implementation 'com.applovin.mediation:google-adapter:[25.4.0.0]' // Assets/MaxSdk/Mediation/Google/Editor/Dependencies.xml:5
+    implementation 'com.applovin.mediation:mintegral-adapter:17.2.21.0' // Assets/MaxSdk/Mediation/Mintegral/Editor/Dependencies.xml:8
+    implementation 'com.applovin.mediation:unityads-adapter:4.21.0.1' // Assets/MaxSdk/Mediation/UnityAds/Editor/Dependencies.xml:4
+    implementation 'com.applovin.mediation:vungle-adapter:7.8.0.0' // Assets/MaxSdk/Mediation/Vungle/Editor/Dependencies.xml:4
     implementation 'com.applovin:applovin-sdk:13.6.4' // Assets/MaxSdk/AppLovin/Editor/Dependencies.xml:4
     implementation 'com.google.android.gms:play-services-ads:25.4.0' // Assets/GoogleMobileAds/Editor/GoogleMobileAdsDependencies.xml:7
     implementation 'com.google.android.gms:play-services-ads-identifier:18.1.0' // Assets/_LabSorting/Editor/TenjinDependencies.xml:4

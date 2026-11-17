@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-medicine-bottle-3
   displayName: Red Medicine Bottle
+  heldSizeMultiplier: 1.12
   icon: {fileID: 267006572, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 2
   color: {r: 1, g: 1, b: 1, a: 1}

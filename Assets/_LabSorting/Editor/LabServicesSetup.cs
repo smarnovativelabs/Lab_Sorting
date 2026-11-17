@@ -61,8 +61,6 @@ namespace LabSorting.Editor
             Button(root,"Restore",new Vector2(155,175),"RESTORE PURCHASES",panel.Restore);
             panel.languageLabel=Button(root,"Language",new Vector2(-155,110),"Language",panel.Language).GetComponentInChildren<UnityEngine.UI.Text>();
             Button(root,"Retry",new Vector2(155,110),"RETRY CONNECTION",panel.Retry);
-            panel.analyticsLabel=Button(root,"Analytics",new Vector2(-155,45),"Analytics",panel.Analytics).GetComponentInChildren<UnityEngine.UI.Text>();
-            panel.diagnosticsLabel=Button(root,"Diagnostics",new Vector2(155,45),"Crash reports",panel.Diagnostics).GetComponentInChildren<UnityEngine.UI.Text>();
             panel.attributionLabel=Button(root,"Attribution",new Vector2(-155,-20),"Attribution",panel.Attribution).GetComponentInChildren<UnityEngine.UI.Text>();
             Button(root,"AdPrivacy",new Vector2(155,-20),"AD PRIVACY OPTIONS",panel.Privacy);
             Button(root,"Policy",new Vector2(-155,-85),"PRIVACY POLICY",panel.Policy);Button(root,"Close",new Vector2(155,-85),"BACK",panel.Close);

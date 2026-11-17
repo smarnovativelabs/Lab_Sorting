@@ -562,6 +562,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: lab-rat
+      rect:
+        serializedVersion: 2
+        x: 438
+        y: 117
+        width: 488
+        height: 234
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c1f0dda6875b6ba46aaa8d300a8627b4
+      internalID: 659986330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -589,6 +611,7 @@ TextureImporter:
       gas-mask: -1745248993
       hand-sanitizer-bottles-1: 637257942
       iv-bag: 831012718
+      lab-rat: 659986330
       medicine-bottle-2: 1796603859
       medicine-bottle-3: 267006572
       medicine-bottle-4: -2130857466

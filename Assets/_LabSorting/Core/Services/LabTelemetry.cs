@@ -17,9 +17,10 @@ namespace LabSorting.Services
         readonly System.Collections.Generic.HashSet<string> purchaseEvents=new System.Collections.Generic.HashSet<string>();
         [Serializable] sealed class StoreReceipt{public string Payload;}
         [Serializable] sealed class GoogleReceipt{public string json,signature;}
-        public static bool AnalyticsAllowed=>PlayerPrefs.GetInt("Lab.AnalyticsConsent",0)==1;
+        // Analytics and crash reporting are app-managed, not player settings.
+        public static bool AnalyticsAllowed=>true;
         public static bool AttributionAllowed=>PlayerPrefs.GetInt("Lab.AttributionConsent",0)==1;
-        public static bool DiagnosticsAllowed=>PlayerPrefs.GetInt("Lab.DiagnosticsConsent",0)==1;
+        public static bool DiagnosticsAllowed=>true;
         public static event Action<string> Observed;
         void Awake(){instance=this;}
         public void BindSession(SortingSession value){if(ReferenceEquals(session,value))return;OnDisable();session=value;if(isActiveAndEnabled)OnEnable();}
@@ -37,7 +38,7 @@ namespace LabSorting.Services
                 Event("lab_session_start");
             }catch{Debug.LogWarning("Lab telemetry initialization unavailable; gameplay continues.");}finally{starting=false;}
         }
-        public static void SetPrivacy(bool analytics,bool attribution,bool diagnostics){PlayerPrefs.SetInt("Lab.AnalyticsConsent",analytics?1:0);PlayerPrefs.SetInt("Lab.AttributionConsent",attribution?1:0);PlayerPrefs.SetInt("Lab.DiagnosticsConsent",diagnostics?1:0);PlayerPrefs.Save();if(instance)instance.Initialize();}
+        public static void SetAttribution(bool attribution){PlayerPrefs.SetInt("Lab.AttributionConsent",attribution?1:0);PlayerPrefs.Save();if(instance)instance.Initialize();}
         public static void Event(string name,string context="",double value=0)
         {
             Observed?.Invoke(name);

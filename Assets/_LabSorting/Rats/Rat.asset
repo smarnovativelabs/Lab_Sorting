@@ -15,7 +15,8 @@ MonoBehaviour:
   id: lab-rat
   displayName: Rat
   isRat: 1
-  icon: {fileID: 0}
+  heldSizeMultiplier: 1.1
+  icon: {fileID: 659986330, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 2
   color: {r: 1, g: 1, b: 1, a: 1}
   shelfEuler: {x: 0, y: 0, z: 0}

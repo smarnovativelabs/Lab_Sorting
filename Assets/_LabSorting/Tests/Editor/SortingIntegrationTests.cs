@@ -9,6 +9,14 @@ using UnityEngine.TestTools;
 
 public class SortingIntegrationTests
 {
+    [UnityTest,Timeout(600000)] public IEnumerator HeldItemSizing()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RequestedPolishChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("HeldSizing").Invoke(null,null);yield return new ExitPlayMode();
+    }
     [UnityTest,Timeout(240000)] public IEnumerator RatPoseAndPresentationCorrections()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();

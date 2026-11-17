@@ -13,6 +13,48 @@ namespace LabSorting.Prototype
     public static class RequestedPolishChecks
     {
         static void Check(bool value,string message){if(!value)throw new Exception("POLISH: "+message);Debug.Log("POLISH PASS: "+message);}
+        public static IEnumerator HeldSizing()
+        {
+            var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();while(!s.Initialized)yield return null;
+            s.player.SendMessage("OnApplicationFocus",true);s.player.SetBlocked(false);s.player.SetNetworkBlocked(false);
+            var initial=s.Capture();var carry=s.hand.GetComponent<CarryPresentation>();
+            string folder="Logs/HeldSizeReview/"+Screen.width+"x"+Screen.height;Directory.CreateDirectory(folder);
+            var report=new StringBuilder("Item,Multiplier,Width,Height,InsideSafeRegion\n");
+            var unique=s.items.GroupBy(i=>i.definition).Select(g=>g.First()).ToArray();
+            var hud=UnityEngine.Object.FindFirstObjectByType<ContextActionHUD>();
+            var controls=UnityEngine.Object.FindFirstObjectByType<ControlSizes>();
+            var task=UnityEngine.Object.FindFirstObjectByType<TaskCardLayout>();
+            var obstacles=UnityEngine.Object.FindObjectsByType<RectTransform>(FindObjectsInactive.Include,FindObjectsSortMode.None)
+                .Where(r=>r.name=="SelectedItemCard"||r==hud.pick.transform||r==hud.drop.transform||r==hud.place.transform||r==task.card||r==controls.joystick||controls.actions.Contains(r)).ToArray();
+            try
+            {
+                foreach(var item in unique)
+                {
+                    item.CompleteMotion();Check(s.TryPick(item),"Pick "+item.definition.displayName);item.CompleteMotion();
+                    yield return new WaitForSecondsRealtime(.2f);Canvas.ForceUpdateCanvases();yield return null;
+                    var rect=carry.HeldScreenRect;var safe=carry.HeldSafeRect;
+                    bool fits=rect.xMin>=safe.xMin-2&&rect.xMax<=safe.xMax+2&&rect.yMin>=safe.yMin-2&&rect.yMax<=safe.yMax+2;
+                    report.AppendLine($"\"{item.definition.displayName}\",{item.definition.heldSizeMultiplier},{rect.width:F1},{rect.height:F1},{fits}");
+                    File.WriteAllText(folder+"/results.csv",report.ToString());
+                    Check(fits,"Safe region "+item.definition.displayName+" "+rect+" safe="+safe);
+                    Check(Mathf.Max(rect.width,rect.height)>=Screen.height*.10f,"Readable size "+item.definition.displayName);
+                    Check(rect.height<=Screen.height*.34f&&rect.width<=Screen.width*.31f,"Moderate size "+item.definition.displayName);
+                    foreach(var obstacle in obstacles)
+                    {
+                        var corners=new Vector3[4];obstacle.GetWorldCorners(corners);var canvas=obstacle.GetComponentInParent<Canvas>();
+                        var camera=canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera;
+                        var points=corners.Select(c=>(Vector2)RectTransformUtility.WorldToScreenPoint(camera,c)).ToArray();
+                        var bounds=Rect.MinMaxRect(points.Min(p=>p.x),points.Min(p=>p.y),points.Max(p=>p.x),points.Max(p=>p.y));
+                        Check(!rect.Overlaps(bounds),"No overlap with "+obstacle.name+": "+item.definition.displayName);
+                    }
+                    ScreenCapture.CaptureScreenshot(folder+"/"+item.definition.id+".png");yield return new WaitForSecondsRealtime(.1f);
+                    s.ThrowActive();item.CompleteMotion();
+                    Check(Vector3.Distance(item.transform.localScale,item.originalScale)<.0001f,"World size restored "+item.definition.displayName);
+                }
+                Debug.Log("HELD_SIZE_CHECKS_OK unique="+unique.Length+" resolution="+Screen.width+"x"+Screen.height);
+            }
+            finally{DG.Tweening.DOTween.CompleteAll();s.Restore(initial);}
+        }
         static IEnumerator FrozenBones(LabRat rat,string state)
         {
             yield return new WaitForSecondsRealtime(.2f);
