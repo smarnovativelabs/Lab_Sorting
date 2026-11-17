@@ -9,13 +9,18 @@ namespace LabSorting.Sorting
         public SortingFeedback feedback;
         public LabRat[] rats;
         public AudioClip squeak,scurry,release,landing;
+        [Tooltip("Multiplier on every rat sound")][Range(0,1)] public float volume=.65f;
+        [Tooltip("Seconds between idle squeaks of one rat")] public Vector2 squeakInterval=new Vector2(25,40);
+        [Tooltip("Minimum seconds between any two idle squeaks across the colony")] public float squeakGap=15;
+        [Tooltip("Seconds between scurry patters while a nearby rat runs")] public Vector2 scurryInterval=new Vector2(.8f,1.3f);
+        public float SqueakDelay=>Random.Range(squeakInterval.x,squeakInterval.y);
         public Vector2 roomX=new Vector2(-11.5f,11.5f),roomZ=new Vector2(-8.5f,8.5f);
         readonly RaycastHit[] hits=new RaycastHit[32];
         readonly Collider[] movementOverlaps=new Collider[32];
         readonly AudioSource[] voices=new AudioSource[2];
         AudioSource interaction;
         LabRat first,second;
-        float scanAt,stepAt,interactionAt;
+        float scanAt,stepAt,interactionAt,squeakAt;
         bool paused,focused=true;
         public int AmbientVoiceCount=>voices.Length;
         public bool Audible=>feedback&&feedback.SoundEnabled&&!paused&&focused&&Time.timeScale>0&&!session.player.blocked;
@@ -30,13 +35,20 @@ namespace LabSorting.Sorting
         void OnDisable(){session.ItemPlaced-=Placed;session.ItemLanded-=Landed;Silence();}
         public void PlayInteraction(SortItem item,bool thrown=false)
         {
-            if(!item||!item.definition.isRat||!Audible||Time.time<interactionAt)return;
+            // A rat in the container is silent.
+            if(!item||!item.definition.isRat||item.location==ItemLocation.Rack||!Audible||Time.time<interactionAt)return;
             interactionAt=Time.time+.09f;interaction.transform.position=item.transform.position;interaction.Stop();interaction.pitch=Random.Range(.94f,1.08f);
-            interaction.PlayOneShot(thrown?release:squeak,.22f);
-            var rat=item.GetComponent<LabRat>();if(rat)rat.NextSqueak=Time.time+Random.Range(8f,15f);
+            interaction.PlayOneShot(thrown?release:squeak,.15f*volume);
+            var rat=item.GetComponent<LabRat>();if(rat)rat.NextSqueak=Time.time+SqueakDelay;
         }
-        void Placed(SortItem item){PlayInteraction(item);}
-        void Landed(SortItem item,bool tossed){if(item&&item.definition.isRat&&Audible){interaction.transform.position=item.transform.position;interaction.PlayOneShot(landing,.12f);}}
+        // Placing (or tossing) a rat into the container makes no rat sound, and cuts any still playing.
+        void Placed(SortItem item){if(item&&item.definition.isRat&&interaction)interaction.Stop();}
+        void Landed(SortItem item,bool tossed)
+        {
+            if(!item||!item.definition.isRat)return;
+            if(tossed||item.location==ItemLocation.Rack){if(interaction)interaction.Stop();return;}
+            if(Audible){interaction.transform.position=item.transform.position;interaction.PlayOneShot(landing,.08f*volume);}
+        }
         void Silence(){foreach(var s in voices)if(s)s.Stop();if(interaction)interaction.Stop();}
         void OnApplicationPause(bool value){paused=value;if(value)Silence();}
         void OnApplicationFocus(bool value){focused=value;if(!value)Silence();}
@@ -49,7 +61,7 @@ namespace LabSorting.Sorting
                 scanAt=Time.time+.25f;first=second=null;float a=64,b=64;
                 foreach(var rat in rats)
                 {
-                    if(!rat||!rat.isActiveAndEnabled||rat.Item.location==ItemLocation.Hand)continue;
+                    if(!rat||!rat.isActiveAndEnabled||rat.Item.location!=ItemLocation.Loose)continue;
                     float d=(rat.transform.position-listener).sqrMagnitude;
                     if(d<a){b=a;second=first;a=d;first=rat;}else if(d<b){b=d;second=rat;}
                 }
@@ -59,11 +71,17 @@ namespace LabSorting.Sorting
         }
         void Ambient(LabRat rat,AudioSource voice,Vector3 listener)
         {
-            if(!rat||!rat.isActiveAndEnabled||rat.Item.location==ItemLocation.Hand||(rat.transform.position-listener).sqrMagnitude>=64){voice.Stop();return;}
+            // Only loose rats on the floor make ambient sound; held or boxed rats stay quiet.
+            if(!rat||!rat.isActiveAndEnabled||rat.Item.location!=ItemLocation.Loose||(rat.transform.position-listener).sqrMagnitude>=64){voice.Stop();return;}
             voice.transform.position=rat.transform.position;
             if(voice.isPlaying)return;
-            if(Time.time>=rat.NextSqueak){rat.NextSqueak=Time.time+Random.Range(8f,15f);voice.pitch=Random.Range(.9f,1.12f);voice.PlayOneShot(squeak,.10f);}
-            else if(rat.Running&&Time.time>=stepAt){stepAt=Time.time+.3f;voice.pitch=Random.Range(.9f,1.1f);voice.PlayOneShot(scurry,.045f);}
+            if(Time.time>=rat.NextSqueak)
+            {
+                rat.NextSqueak=Time.time+SqueakDelay;
+                // The colony-wide gap keeps the two nearest rats from squeaking back to back.
+                if(Time.time>=squeakAt){squeakAt=Time.time+squeakGap;voice.pitch=Random.Range(.9f,1.12f);voice.PlayOneShot(squeak,.07f*volume);}
+            }
+            else if(rat.Running&&Time.time>=stepAt){stepAt=Time.time+Random.Range(scurryInterval.x,scurryInterval.y);voice.pitch=Random.Range(.9f,1.1f);voice.PlayOneShot(scurry,.03f*volume);}
         }
         public bool TryStep(LabRat rat,Vector3 next,out Vector3 grounded)
         {
@@ -83,7 +101,7 @@ namespace LabSorting.Sorting
             if(floorY-rat.transform.position.y>=.08f)return false;
             grounded.y=Mathf.MoveTowards(rat.transform.position.y,floorY,2f*Time.deltaTime);
             // Include the upcoming turn, so the longer full-size body cannot rotate through a wall.
-            var facing=Quaternion.LookRotation(delta.normalized);
+            var facing=LabRat.Facing(delta.normalized);
             count=Physics.OverlapBoxNonAlloc(grounded+facing*item.definition.center,half,movementOverlaps,facing,WorldMask,QueryTriggerInteraction.Ignore);
             if(count==movementOverlaps.Length)return false;
             for(int i=0;i<count;i++)if(!movementOverlaps[i].transform.IsChildOf(session.player.transform))return false;

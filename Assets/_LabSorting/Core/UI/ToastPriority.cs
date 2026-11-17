@@ -21,6 +21,16 @@ namespace LabSorting.UI
         }
         void Display(Entry entry,float now){Text=entry.text;Priority=entry.priority;Until=now+entry.duration;}
         public void Tick(float now){if(now<Until)return;if(pending.Count==0){Text="";Priority=0;return;}var entry=pending[0];pending.RemoveAt(0);Display(entry,now);}
+        // Moment-to-moment feedback the HUD already shows elsewhere (held item, Selected card,
+        // Collected list pulse, ability popup). Kept out of the center toast so it never
+        // covers the aim point on every pick/place.
+        static readonly string[] routinePrefixes={"Picked ","Placed ","Selected ","Dropped ","Nice shot!","Magnet collected ","Search: "};
+        public static bool IsRoutine(string text)
+        {
+            if(string.IsNullOrEmpty(text))return false;
+            foreach(var prefix in routinePrefixes)if(text.StartsWith(prefix,StringComparison.OrdinalIgnoreCase))return true;
+            return false;
+        }
         public static int Classify(string text,bool error=false)
         {
             if(string.IsNullOrEmpty(text))return 0;

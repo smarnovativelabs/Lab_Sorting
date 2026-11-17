@@ -17,9 +17,9 @@ namespace LabSorting.Services
         readonly System.Collections.Generic.HashSet<string> purchaseEvents=new System.Collections.Generic.HashSet<string>();
         [Serializable] sealed class StoreReceipt{public string Payload;}
         [Serializable] sealed class GoogleReceipt{public string json,signature;}
-        // Analytics and crash reporting are app-managed, not player settings.
+        // Analytics, Tenjin attribution and crash reporting are app-managed, not player settings.
         public static bool AnalyticsAllowed=>true;
-        public static bool AttributionAllowed=>PlayerPrefs.GetInt("Lab.AttributionConsent",0)==1;
+        public static bool AttributionAllowed=>true;
         public static bool DiagnosticsAllowed=>true;
         public static event Action<string> Observed;
         void Awake(){instance=this;}
@@ -30,15 +30,19 @@ namespace LabSorting.Services
         {
             if(starting||!settings||!settings.enableLiveServices||Application.isEditor)return;
             starting=true;
+            // Tenjin starts first and independently so a Firebase failure never blocks install attribution.
+            if(!tenjin&&!string.IsNullOrWhiteSpace(settings.tenjinApiKey)&&Application.platform==RuntimePlatform.Android)
+            {
+                var go=new GameObject("Tenjin");go.transform.SetParent(transform);
+                try{var t=go.AddComponent<AndroidTenjin>();t.Init(settings.tenjinApiKey);t.OptIn();t.Connect();tenjin=t;}
+                catch{Destroy(go);Debug.LogWarning("Tenjin initialization unavailable; gameplay continues.");}
+            }
             try{
                 if(settings.firebaseConfigurationAdded&&!ready&&(AnalyticsAllowed||DiagnosticsAllowed)&&await FirebaseApp.CheckAndFixDependenciesAsync()==DependencyStatus.Available){if(!this)return;app=FirebaseApp.DefaultInstance;ready=true;}
                 if(ready){FirebaseAnalytics.SetConsent(new System.Collections.Generic.Dictionary<ConsentType,ConsentStatus>{{ConsentType.AnalyticsStorage,AnalyticsAllowed?ConsentStatus.Granted:ConsentStatus.Denied},{ConsentType.AdStorage,ConsentStatus.Denied},{ConsentType.AdUserData,ConsentStatus.Denied},{ConsentType.AdPersonalization,ConsentStatus.Denied}});FirebaseAnalytics.SetAnalyticsCollectionEnabled(AnalyticsAllowed);Crashlytics.IsCrashlyticsCollectionEnabled=DiagnosticsAllowed;Crashlytics.ReportUncaughtExceptionsAsFatal=true;Crashlytics.SetCustomKey("game","lab_sorting");}
-                if(AttributionAllowed&&!tenjin&&!string.IsNullOrWhiteSpace(settings.tenjinApiKey)&&Application.platform==RuntimePlatform.Android){var go=new GameObject("Tenjin");go.transform.SetParent(transform);tenjin=go.AddComponent<AndroidTenjin>();tenjin.Init(settings.tenjinApiKey);tenjin.OptIn();tenjin.Connect();}
-                if(tenjin){if(AttributionAllowed)tenjin.OptIn();else tenjin.OptOut();}
                 Event("lab_session_start");
             }catch{Debug.LogWarning("Lab telemetry initialization unavailable; gameplay continues.");}finally{starting=false;}
         }
-        public static void SetAttribution(bool attribution){PlayerPrefs.SetInt("Lab.AttributionConsent",attribution?1:0);PlayerPrefs.Save();if(instance)instance.Initialize();}
         public static void Event(string name,string context="",double value=0)
         {
             Observed?.Invoke(name);

@@ -18,7 +18,28 @@ namespace LabSorting.UI
         public Text inventorySummary;
         public GameObject inventoryPanel;
         public UnityEngine.UI.Button previousPage,nextPage; public UnityEngine.UI.Text pageLabel;
+        [Tooltip("Selected item card: fades out when nothing is selected and pops when the selection changes.")]
+        public CanvasGroup selectedCard;
         int revision=-1,page;bool wasBlocked;
+        SortItem cardItem;float cardPop;
+        void ResolveSelectedCard()
+        {
+            if(selectedCard||!active)return;var parent=active.transform.parent;
+            if(!parent||parent.name!="SelectedItemCard")return;
+            selectedCard=parent.GetComponent<CanvasGroup>();if(!selectedCard)selectedCard=parent.gameObject.AddComponent<CanvasGroup>();
+        }
+        void TickSelectedCard()
+        {
+            if(!selectedCard)return;
+            selectedCard.interactable=false;selectedCard.blocksRaycasts=false;
+            selectedCard.alpha=Mathf.MoveTowards(selectedCard.alpha,session.Active?1:0,Time.unscaledDeltaTime*6);
+            if(session.Active&&session.Active!=cardItem&&selectedCard.alpha>.5f)cardPop=1;
+            if(session.Active)cardItem=session.Active;
+            // Pop the contents, not the card: CarryPresentation sizes the held item from the card's rect.
+            cardPop=Mathf.MoveTowards(cardPop,0,Time.unscaledDeltaTime/.22f);
+            var scale=Vector3.one*(1+.1f*Mathf.Sin(cardPop*Mathf.PI));
+            active.transform.localScale=scale;if(activeIcon)activeIcon.transform.localScale=scale;
+        }
         readonly int[] selectionIndices=new int[60];
         readonly ItemDefinition[] buttonTypes=new ItemDefinition[60];
         readonly int[] shownCounts=new int[60];
@@ -56,7 +77,7 @@ namespace LabSorting.UI
             if(scroll.verticalScrollbar){var guard=scroll.verticalScrollbar.GetComponent<InventoryAutoScroll>();if(!guard)guard=scroll.verticalScrollbar.gameObject.AddComponent<InventoryAutoScroll>();guard.owner=autoScroll;}
         }
         public void ChangePage(int delta) {if(session.player.blocked)return;page=Mathf.Clamp(page+delta,0,pageCount-1);revision=-1;}
-        void Start() { if(previousPage)previousPage.onClick.AddListener(()=>ChangePage(-1));if(nextPage)nextPage.onClick.AddListener(()=>ChangePage(1)); for(int i=0;i<inventoryButtons.Length;i++){int index=i;inventoryButtons[i].onClick.AddListener(()=>SelectType(buttonTypes[index]));} }
+        void Start() { ResolveSelectedCard();if(selectedCard)selectedCard.alpha=session.Active?1:0; if(previousPage)previousPage.onClick.AddListener(()=>ChangePage(-1));if(nextPage)nextPage.onClick.AddListener(()=>ChangePage(1)); for(int i=0;i<inventoryButtons.Length;i++){int index=i;inventoryButtons[i].onClick.AddListener(()=>SelectType(buttonTypes[index]));} }
         string TossText()
         {
             var rack=session.TossRack;float distance=Vector3.Distance(session.player.view.transform.position,rack.transform.position);
@@ -65,7 +86,7 @@ namespace LabSorting.UI
         void SelectType(ItemDefinition type){if(!type)return;for(int i=session.carried.Count-1;i>=0;i--)if(session.carried[i].definition==type){session.Select(i);return;}}
         void Update()
         {
-            TickInventoryMotion();TickFullFeedback();
+            TickInventoryMotion();TickFullFeedback();TickSelectedCard();
             if(!autoScroll&&designerSkin)SetupAutoScroll();
             if(autoScroll&&session.player.blocked)autoScroll.Cancel();
             var rack=session.TargetRack;
@@ -81,9 +102,13 @@ namespace LabSorting.UI
             if(revision==session.Revision&&wasBlocked==session.player.blocked) return; revision=session.Revision;wasBlocked=session.player.blocked;
             progress.text="LAB SORTING\nSorted "+session.SortedCount+" / "+session.items.Length+"    Remaining "+(session.items.Length-session.SortedCount);
             if(compact)progress.text="SORTED  "+session.SortedCount+" / "+session.items.Length;
-            if(activeIcon){activeIcon.sprite=session.Active?session.Active.definition.icon:null;activeIcon.enabled=activeIcon.sprite;}
-            int selectedCount=0;foreach(var item in session.carried)if(session.Active&&item.definition==session.Active.definition)selectedCount++;
-            active.text=session.Active?"SELECTED  "+session.Active.definition.displayName+"  x"+selectedCount+"\nHands  "+session.carried.Count+" / "+session.capacity:"SELECT AN ITEM\nHands  0 / "+session.capacity;
+            // Name only: hand totals and per-type counts already live in the Collected list.
+            // With a fading card, keep the last name/icon while it fades out.
+            if(session.Active||!selectedCard)
+            {
+                if(activeIcon){activeIcon.sprite=session.Active?session.Active.definition.icon:null;activeIcon.enabled=activeIcon.sprite;}
+                active.text=session.Active?session.Active.definition.displayName:"SELECT AN ITEM";
+            }
             var toasts=GetComponent<DesignerToasts>();if(toasts)toasts.Present(session.Message,session.MessageIsError);else {status.text=session.Message;status.color=session.MessageIsError?new Color(1,.68f,.32f):Color.white;}
             int groups=0;
             for(int i=0;i<session.carried.Count;i++)

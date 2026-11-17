@@ -28,7 +28,10 @@ namespace LabSorting.Sorting
             animator.Play("Idle",0,0);animator.Update(0);animator.speed=0;
         }
         void OnEnable(){if(Item&&Item.location!=ItemLocation.Loose)StopRunning();}
-        void Awake(){Item=GetComponent<SortItem>();NextSqueak=Time.time+Random.Range(8f,15f);}
+        // Rat.fbx is authored nose toward local -Z (the tail runs along +Z), so the body
+        // must face the opposite of LookRotation(heading) or the rat runs tail-first.
+        public static Quaternion Facing(Vector3 heading)=>Quaternion.LookRotation(-heading);
+        void Awake(){Item=GetComponent<SortItem>();NextSqueak=Time.time+(colony?colony.SqueakDelay:30f);}
         void Update()
         {
             Running=false;
@@ -44,22 +47,27 @@ namespace LabSorting.Sorting
                 }
                 if(direction.sqrMagnitude>.1f)
                 {
-                    var next=transform.position+direction*speed*Time.deltaTime;
+                    // Turn toward the chosen direction and always advance along the body's own
+                    // nose, so a sharp turn becomes a short arc instead of a backwards slide.
+                    var turned=Quaternion.RotateTowards(transform.rotation,Facing(direction),540*Time.deltaTime);
+                    var heading=turned*Vector3.back;heading.y=0;heading.Normalize();
+                    var next=transform.position+heading*speed*Time.deltaTime;
                     if(colony.TryStep(this,next,out var grounded))
                     {
-                        transform.SetPositionAndRotation(grounded,Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(direction),540*Time.deltaTime));Running=true;
+                        transform.SetPositionAndRotation(grounded,turned);Running=true;
                         if(Time.time>=dirtyAt){Item.MarkPoseDirty();dirtyAt=Time.time+.5f;}
                     }
                     else
                     {
-                        // Try tangents/reverse immediately instead of repeatedly choosing a
-                        // direction into the same wall (especially while fleeing the player).
+                        // Try the target direction (the mid-turn heading may be the blocked one),
+                        // then tangents/reverse, instead of repeatedly choosing a direction into
+                        // the same wall (especially while fleeing the player).
                         bool escaped=false;
-                        for(int turn=1;turn<=7;turn++)
+                        for(int turn=0;turn<=7;turn++)
                         {
                             var candidate=Quaternion.Euler(0,(turn%2==0?-1:1)*Mathf.Ceil(turn/2f)*45,0)*direction;
                             if(!colony.TryStep(this,transform.position+candidate*speed*Time.deltaTime,out grounded))continue;
-                            direction=candidate;transform.SetPositionAndRotation(grounded,Quaternion.LookRotation(direction));
+                            direction=candidate;transform.SetPositionAndRotation(grounded,Facing(direction));
                             Running=escaped=true;decisionAt=Time.time+1;Item.MarkPoseDirty();break;
                         }
                         if(!escaped){direction=Vector3.zero;decisionAt=Time.time+.15f;}

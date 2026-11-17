@@ -61,8 +61,7 @@ namespace LabSorting.Editor
             Button(root,"Restore",new Vector2(155,175),"RESTORE PURCHASES",panel.Restore);
             panel.languageLabel=Button(root,"Language",new Vector2(-155,110),"Language",panel.Language).GetComponentInChildren<UnityEngine.UI.Text>();
             Button(root,"Retry",new Vector2(155,110),"RETRY CONNECTION",panel.Retry);
-            panel.attributionLabel=Button(root,"Attribution",new Vector2(-155,-20),"Attribution",panel.Attribution).GetComponentInChildren<UnityEngine.UI.Text>();
-            Button(root,"AdPrivacy",new Vector2(155,-20),"AD PRIVACY OPTIONS",panel.Privacy);
+            Button(root,"AdPrivacy",new Vector2(0,-20),"AD PRIVACY OPTIONS",panel.Privacy);
             Button(root,"Policy",new Vector2(-155,-85),"PRIVACY POLICY",panel.Policy);Button(root,"Close",new Vector2(155,-85),"BACK",panel.Close);
             panel.status=Label(root,"Status",new Vector2(0,-155),"",17);panel.status.rectTransform.sizeDelta=new Vector2(620,70);
             var note=Label(root,"Note",new Vector2(0,-225),"Remove Ads disables automatic ads. Reward videos remain optional.",16);note.rectTransform.sizeDelta=new Vector2(620,50);root.gameObject.SetActive(false);

@@ -30,10 +30,10 @@ namespace LabSorting.Editor
             {"close",Root+"Lab sorting game mockup and sprites 1/Pause/Layer 4.png"},
             {"joystick",Game+"ChatGPT Image Nov 12, 2026, 12_07_19 PM-2.png"},
             {"knob",Game+"ChatGPT Image Nov 12, 2026, 12_07_16 PM-1.png"},
-            {"pick",Game+"glossy_3d_medical_ui_icon_collection_05.png"},
+            {"pick",HandPick},{"place",HandPlace},
             {"search",Game+"glossy_3d_medical_ui_icon_collection_06.png"},
             {"magnet",Game+"glossy_3d_medical_ui_icon_collection_07.png"},
-            {"drop",Game+"glossy_3d_medical_ui_icon_collection_09.png"},
+            {"drop",HandDrop},
             {"items",Game+"glossy_3d_medical_ui_icon_collection_11.png"},
             {"store",Game+"glossy_blue_and_gold_game_ui_icons_10.png"},
             {"slots",Root+"Store and settings panel sprite/Store/Layer 3.png"},
@@ -103,7 +103,7 @@ namespace LabSorting.Editor
             // Preserve every existing action component and event; replace only artwork/layout.
             foreach(var b in hud.GetComponentsInChildren<UnityEngine.UI.Button>(true))StyleButton(b);
             RoundButton(actions.pick.GetComponent<UnityEngine.UI.Button>(),"pick");RoundButton(actions.drop.GetComponent<UnityEngine.UI.Button>(),"drop");
-            var place=actions.place.GetComponent<UnityEngine.UI.Button>();Pos((RectTransform)place.transform,new Vector2(1,0),new Vector2(-76,202),Vector2.one*82);RoundButton(place,"items");
+            var place=actions.place.GetComponent<UnityEngine.UI.Button>();Pos((RectTransform)place.transform,new Vector2(1,0),new Vector2(-76,202),Vector2.one*82);RoundButton(place,"place");
             RoundButton(economy.searchButton,"search");RoundButton(economy.magnetButton,"magnet");RoundButton(economy.upgradeButton,"slots");RoundButton(settings.openButton,"settings");RoundButton(progress.openButton,"items");
             foreach(var touch in hud.GetComponentsInChildren<LabTouchArea>(true))if(touch.movement){foreach(var g in touch.GetComponentsInChildren<ControlGlyph>(true))g.gameObject.SetActive(false);Skin(touch.transform,"joystick",false,true);Skin(touch.knob,"knob");}
             hud.designerSkin=true;foreach(var b in hud.inventoryButtons)StyleButton(b,"blue");

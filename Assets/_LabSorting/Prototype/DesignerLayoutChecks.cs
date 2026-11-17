@@ -10,6 +10,30 @@ namespace LabSorting.Prototype
     public static class DesignerLayoutChecks
     {
         static void Check(bool ok,string message){if(!ok)throw new Exception("UI LAYOUT: "+message);Debug.Log("UI LAYOUT PASS: "+message);}
+        static Rect ScreenRect(RectTransform r,Camera camera,Vector3[] corners){r.GetWorldCorners(corners);var a=RectTransformUtility.WorldToScreenPoint(camera,corners[0]);var b=RectTransformUtility.WorldToScreenPoint(camera,corners[2]);return Rect.MinMaxRect(Mathf.Min(a.x,b.x),Mathf.Min(a.y,b.y),Mathf.Max(a.x,b.x),Mathf.Max(a.y,b.y));}
+        // Center toast at its settled spot (rack direction forced visible, the worst case) must clear the
+        // aim point and the HUD above it; the compact Selected card must clear the bottom controls.
+        static void CenterToastClear(SortingHUD hud,Transform safe,Camera camera,Vector2Int size,Vector3[] corners)
+        {
+            var toasts=hud.GetComponent<DesignerToasts>();if(!toasts||!toasts.toast)return;
+            var toast=(RectTransform)toasts.toast.transform;var rack=safe.Find("MatchingRackDirection");bool rackWas=rack&&rack.gameObject.activeSelf;
+            Vector2 moving=toast.anchoredPosition;Vector3 scale=toast.localScale;
+            try
+            {
+                if(rack)rack.gameObject.SetActive(true);
+                toast.anchoredPosition=toasts.SettledPosition();toast.localScale=Vector3.one;var bounds=ScreenRect(toast,camera,corners);
+                foreach(var name in new[]{"Crosshair","Target","MatchingRackDirection","MockupTaskCard","DesignerTitle_Progress","DesignerCollected"})
+                {var other=safe.Find(name);if(other&&other.gameObject.activeInHierarchy)Check(!bounds.Overlaps(ScreenRect((RectTransform)other,camera,corners)),"Center toast clear of "+name+" at "+size+" toast="+bounds);}
+                var card=safe.Find("SelectedItemCard");
+                if(card)
+                {
+                    var cardBounds=ScreenRect((RectTransform)card,camera,corners);Check(!cardBounds.Overlaps(bounds),"Selected card and toast apart at "+size);
+                    foreach(var name in new[]{"MovementJoystick","PICK","PLACE","THROW","ServiceToast"})
+                    {var other=safe.Find(name);if(other&&other.gameObject.activeInHierarchy)Check(!cardBounds.Overlaps(ScreenRect((RectTransform)other,camera,corners)),"Selected card clear of "+name+" at "+size);}
+                }
+            }
+            finally{if(rack)rack.gameObject.SetActive(rackWas);toast.anchoredPosition=moving;toast.localScale=scale;}
+        }
         public static IEnumerator Run(SortingSession session)
         {
             var hud=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();var canvas=hud.GetComponent<Canvas>();var scaler=canvas.GetComponent<UnityEngine.UI.CanvasScaler>();var safe=hud.GetComponentInChildren<SafeAreaPanel>();var menus=hud.GetComponent<DesignerMenus>();var supply=hud.GetComponent<SupplyPanel>();var settings=hud.GetComponent<SettingsTutorialPanel>();
@@ -43,6 +67,7 @@ namespace LabSorting.Prototype
                             ((RectTransform)tool.transform).GetWorldCorners(corners);
                             Check(goalRight+8<RectTransformUtility.WorldToScreenPoint(camera,corners[0]).x||goalBottom>RectTransformUtility.WorldToScreenPoint(camera,corners[2]).y+8,"Task card leaves tool column clear at "+size+" goalBottom="+goalBottom+" toolTop="+RectTransformUtility.WorldToScreenPoint(camera,corners[2]).y);
                         }
+                        CenterToastClear(hud,safe.transform,camera,size,corners);
                         menus.OpenPause();yield return new WaitForSecondsRealtime(.3f);Canvas.ForceUpdateCanvases();camera.Render();Canvas.ForceUpdateCanvases();
                         var pauseCard=(RectTransform)menus.pauseRoot.transform.Find("Card");
                         var pauseArt=pauseCard.GetComponent<UnityEngine.UI.Image>();

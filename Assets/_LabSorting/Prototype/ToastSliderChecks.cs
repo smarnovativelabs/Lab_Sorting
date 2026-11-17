@@ -16,6 +16,8 @@ namespace LabSorting.Prototype
             q.Push("Purchase successful",2,2,4);q.Push("Purchase successful",2,2.1f,4);q.Tick(4.2f);Check(q.Text=="Purchase successful","Important pending message appears after protected message");q.Tick(8.3f);Check(q.Text=="","No stale routine actions or duplicate messages replay");
             q.Push("Picked",0,9,2);q.Push("Inventory full",2,9.1f,4);Check(q.Text=="Inventory full","Error interrupts routine feedback");
             Check(ToastPriority.Classify("Save delayed",true)==3&&ToastPriority.Classify("Received 50 Cash")==2,"Save and delivery messages classified as important");
+            Check(ToastPriority.IsRoutine("Picked Beaker")&&ToastPriority.IsRoutine("Placed Beaker")&&ToastPriority.IsRoutine("Selected Beaker")&&ToastPriority.IsRoutine("Dropped Beaker"),"Routine pick/place/select/drop stays out of the center toast");
+            Check(!ToastPriority.IsRoutine("Hands full — place items on a matching rack. No charge.")&&!ToastPriority.IsRoutine("Capacity upgraded to 11")&&!ToastPriority.IsRoutine("Received 50 Cash"),"Errors, upgrades and deliveries still reach the center toast");
             q=new ToastPriority();q.Push("Purchase pending",2,0,4);q.Supersede("Purchase",1);q.Push("Purchase delivered",2,1,4);Check(q.Text=="Purchase delivered","Final transaction result supersedes outdated pending state");q.Push("Checking connection...",0,2,4);Check(q.Text=="Purchase delivered","Routine connection checks cannot replace purchase result");
             foreach(var slider in hud.GetComponentsInChildren<UnityEngine.UI.Slider>(true))
             {
