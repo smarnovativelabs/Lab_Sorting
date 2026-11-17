@@ -1,4 +1,53 @@
-# Lab Sorting services handoff — 2026-11-12
+# Android account handoff — 2026-11-16
+
+Device APK produced: `Builds/Android/QuarantineLabSort-Android-Test.apk` (110,313,288 bytes), development/debug signed, ARM64, minimum API 25, target API 36, version 0.1.0 (1). Gradle assembleDebug succeeded after recovering from disk exhaustion and corrupt generated Gradle transform caches. APK v2 signature, package/title, billing/internet permissions and the configured AdMob app ID were verified from the packaged APK. Device QA is still pending. See `Builds/Android/DEVICE-TEST-NOTES.txt` and `BUILD-INFO.txt` for test prerequisites and SHA-256.
+
+Latest follow-up: Google Play licensing public key assigned; Unity configuration validation now reports zero blockers (Logs/LabServiceValidation.txt). Actual signed Google Play purchase validation still requires a licensed Android store installation; the Unity Editor receipt validator is a platform stub.
+
+Connectivity regression passed: Logs/ConnectivityPanelTests.xml, 1 test / 0 failures, with 12 behavior checks. The Editor-only injected network signals exercise the real polling coroutine and gameplay panel, including adapter off/on, router outage with Wi-Fi still connected, automatic recovery within eight seconds, Retry, timeScale zero, background/resume, and repeated cycles. Fixed exponential failure backoff that could delay internet recovery by up to 120 seconds: failed-probe retry delay is now capped at five seconds. No PC adapter was disabled and physical Android network switching remains a device QA check. Re-run from Tools > Lab Sorting > Services > Test connectivity panel.
+
+Current configuration supersedes the historical notes below. Title: **Quarantine Lab sort Simulator**. Package: `com.peri.games.quarantine.lab.sort.simulator`. Live services are enabled for Android; Editor runs still skip live SDK initialization.
+
+The supplied Tenjin key and matching Firebase configuration are assigned. MAX SDK key and `https://perigames.com/privacy` were copied from I_Am_Janitor as requested. The supplied Google Play licensing public key is assigned. Receipt verification remains mandatory; purchase availability still depends on active Google Play products and a successful store connection.
+
+| Android ad placement | ID |
+| --- | --- |
+| MAX interstitial | `90ff4a080a00633c` |
+| MAX rewarded | `86fe615b70b36b8a` |
+| AdMob app | `ca-app-pub-9058006185556068~2175955707` |
+| AdMob interstitial | `ca-app-pub-9058006185556068/4203353245` |
+| AdMob rewarded | `ca-app-pub-9058006185556068/1527033103` |
+
+MAX owns runtime ad requests. The producer must map the AdMob ad units to the corresponding MAX placements in the dashboard, confirm the correct Google bidding/waterfall setup, and publish the UMP privacy message for this AdMob app. AdMob IDs are saved in LabServiceSettings for that handoff; they are not separate concurrent direct-ad requests. Both Unity SDK settings assets and the Android manifest use the new AdMob app ID.
+
+## Google Play products for the producer
+
+Create and activate these exact one-time product IDs under the package above. Set prices and regional availability in Play Console; the game displays the returned localized store price. These are not subscriptions.
+
+| Product ID | Type | Delivery |
+| --- | --- | --- |
+| `lab_sorting_remove_ads` | Non-consumable | Permanently removes automatic interstitials; optional rewarded videos remain |
+| `lab_sorting_cash_500` | Consumable | 500 cash |
+| `lab_sorting_cash_1500` | Consumable | 1,500 cash |
+| `lab_sorting_searches_25` | Consumable | 25 searches |
+| `lab_sorting_magnets_10` | Consumable | 10 magnets |
+| `lab_sorting_slots_5` | Consumable | 5 carry-slot tokens |
+
+Current rewarded-video grants are 50 cash, 3 searches, 2 magnets, or 2 slot tokens. Current catalog quantities were preserved.
+
+## Consent, events, and verification
+
+UMP runs on Android startup before MAX initialization. Ad loads, retries, and presentation require CanRequestAds and pause while a privacy form is busy. Settings > Store & Privacy exposes ad privacy, retry, restore, privacy policy, and independent analytics/attribution/diagnostic switches. Firebase Analytics, Tenjin and Crashlytics remain off until their corresponding player choice is enabled; no UMP ad permission is reused as unrelated telemetry consent.
+
+Existing Firebase/Tenjin hooks cover session, tutorial, sorting progress, rack completion, search/magnet use, milestones, purchases, rewarded completion, and MAX impression revenue. IAP verifies signed receipts and durably saves rewards before confirmation; duplicate transaction IDs do not grant twice. No purchase validation bypass was added.
+
+The licensing key has now been supplied; rerun Unity configuration validation after account changes. Device validation remains required: UMP initial/returning-user flow and privacy changes, MAX test-device rewarded/interstitial ads, Firebase DebugView, Tenjin sessions/revenue, and licensed-test purchases/restores/redelivery from a Play internal-test install. No Android build or live dashboard delivery is claimed.
+
+Verification on this update: Unity applied the account settings and regenerated Firebase Android resources; `git diff --check` passed. The focused rewarded-ad regression could not finish through the Editor connection. A batch-mode retry exited with code 198 because no valid Unity headless Editor license was available (Logs/AndroidServiceBatch.log); there is no passing test result for this update. The focused test can be rerun through ReviewTestRunner.RunAndroidServices once the Editor is available.
+
+References: [Google UMP Unity flow](https://developers.google.com/admob/unity/privacy), [MAX Google network setup](https://legacy-support.axon.ai/en/max/unity/preparing-mediated-networks/).
+
+# Historical Lab Sorting services handoff — 2026-11-12
 
 This section supersedes the historical status below. Android is the implemented target. No APK/player build, live purchase, live ad, attribution dashboard delivery or Crashlytics crash upload has been tested; Lab-specific account credentials and Firebase configuration are still absent.
 

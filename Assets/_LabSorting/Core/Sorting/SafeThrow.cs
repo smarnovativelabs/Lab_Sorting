@@ -6,6 +6,57 @@ namespace LabSorting.Sorting
         Vector3 throwLaunchPosition;
         readonly Collider[] throwOverlaps=new Collider[256];
         readonly RaycastHit[] throwHits=new RaycastHit[256];
+        // A crowded floor is a valid drop: find the top of the local pile. This fallback
+        // releases directly above the supported footprint, without flying through clutter.
+        Vector3 FindCrowdedDrop(SortItem item)
+        {
+            var bounds=ReleaseBounds(item);var half=bounds.extents+Vector3.one*.02f;
+            var offset=bounds.center-item.transform.position;
+            var camera=player.view.transform;var forward=Vector3.ProjectOnPlane(camera.forward,Vector3.up).normalized;
+            if(forward.sqrMagnitude<.1f)forward=player.transform.forward;
+            var origin=camera.position;
+            for(int attempt=0;attempt<81;attempt++)
+            {
+                int side=attempt%9;float angle=side==0?0:(side%2==1?1:-1)*Mathf.Ceil(side/2f)*40;
+                var delta=Quaternion.Euler(0,angle,0)*forward*(.55f+attempt/9*.3f);
+                // Stay on this side of walls, even when the hand is visually beyond them.
+                int worldMask=~((1<<2)|(1<<LayerMask.NameToLayer("SortingItem")));
+                if(Physics.Raycast(origin,delta.normalized,delta.magnitude+Mathf.Max(half.x,half.z),worldMask,QueryTriggerInteraction.Ignore))continue;
+                var center=origin+delta;
+                for(int lift=0;lift<24;lift++)
+                {
+                    if(ThrowClear(center,half,item,true))break;
+                    center.y+=.15f;
+                }
+                if(!ThrowClear(center,half,item,true))continue;
+                var hits=Physics.BoxCastAll(center,half,Vector3.down,Quaternion.identity,6,~0,QueryTriggerInteraction.Ignore);
+                float distance=float.PositiveInfinity;
+                foreach(var hit in hits)
+                {
+                    if(!ThrowObstacle(hit.collider,item,true)||hit.collider.transform.IsChildOf(player.transform)||hit.normal.y<.65f)continue;
+                    distance=Mathf.Min(distance,hit.distance);
+                }
+                if(float.IsInfinity(distance))continue;
+                var end=center+Vector3.down*Mathf.Max(0,distance-.025f);
+                if(!ThrowClear(end,half,item,true)||DropLandingPool.Reserved(new Bounds(end,half*2),item))continue;
+                throwLaunchPosition=end-offset+Vector3.up*.04f;
+                return end-offset;
+            }
+            // Last resort for a completely enclosed/full footprint: lift the local column
+            // until the entire released bounds are clear. Never leave the item in inventory.
+            var fallback=origin+forward*.35f;
+            for(int i=0;i<256;i++)
+            {
+                var overlaps=Physics.OverlapBox(fallback,half,Quaternion.identity,~0,QueryTriggerInteraction.Ignore);
+                float top=fallback.y;bool blocked=false;
+                foreach(var other in overlaps)if(ThrowObstacle(other,item,true))
+                {blocked=true;top=Mathf.Max(top,other.bounds.max.y+half.y+.03f);}
+                if(!blocked&&!DropLandingPool.Reserved(new Bounds(fallback,half*2),item))break;
+                fallback.y=Mathf.Max(top,fallback.y+.1f);
+            }
+            throwLaunchPosition=fallback-offset;
+            return throwLaunchPosition;
+        }
         public Bounds ReleaseBounds(SortItem item)
         {
             var box=item.hitbox as BoxCollider;

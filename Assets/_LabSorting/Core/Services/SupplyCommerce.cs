@@ -104,7 +104,7 @@ namespace LabSorting.Services
             return BeginAdCountdown(true);
         }
         void OnAdsInitialized(MaxSdkBase.SdkConfiguration config){initializedAds=true;LoadAd();LoadInterstitial();}
-        void LoadAd(){if(initializedAds)MaxSdk.LoadRewardedAd(settings.androidRewardedId);}
+        void LoadAd(){if(initializedAds&&consent&&consent.CanRequestAds)MaxSdk.LoadRewardedAd(settings.androidRewardedId);}
         void OnReward(string id,MaxSdkBase.Reward reward,MaxSdkBase.AdInfo info)
         {if(id!=settings.androidRewardedId||rewardToken==null||rewardGranted)return;rewardGranted=true;SaveAdReward();}
         void SaveAdReward(){if(session&&session.Initialized&&session.GrantSupply(rewardKind,rewardAmount,rewardToken)){Status="Reward added!";LabTelemetry.Event("reward_ad_completed",rewardKind.ToString(),rewardAmount);}else{Status="Reward saving. Please wait.";if(rewardSaveRetry==null)rewardSaveRetry=StartCoroutine(RetryAdReward());}}

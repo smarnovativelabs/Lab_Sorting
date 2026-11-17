@@ -1,0 +1,10 @@
+Rat audio assets
+
+Squeak.wav, Scurry.wav, Release.wav: original synthesized game sound effects
+created for this project by RatSetup.MakeSound. No third-party recordings used.
+Landing: existing project Audio/Materials/PlasticTap.wav.
+
+Mono 22050 Hz PCM, preloaded; two shared spatial ambient sources plus one
+interaction source. Linear rolloff: 3m minimum, 8m maximum. Idle squeaks are
+randomized every 8-15 seconds and restricted to the two nearest rats.
+Global sound settings, pause, loss of focus and blocked gameplay silence voices.

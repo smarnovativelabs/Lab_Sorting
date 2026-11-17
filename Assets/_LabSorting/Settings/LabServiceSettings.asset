@@ -12,12 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00f2d9a81842f024385959e85f68b498, type: 3}
   m_Name: LabServiceSettings
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Services.LabServiceSettings
-  androidPackageName: 
-  firebaseConfigurationAdded: 0
-  maxSdkKey: 
-  androidInterstitialId: 
-  androidRewardedId: 
-  googleMobileAdsAppId: 
+  appTitle: Quarantine Lab sort Simulator
+  androidPackageName: com.peri.games.quarantine.lab.sort.simulator
+  firebaseConfigurationAdded: 1
+  maxSdkKey: TRg6tE6Jqd63wDA1Egi746kgkf6hBDmP1x3ddKVkxqed_NUoJtPlTFEBu1FT03HiToJf035dbl7ZG8wrgvuCWc
+  androidInterstitialId: 90ff4a080a00633c
+  androidRewardedId: 86fe615b70b36b8a
+  googleMobileAdsAppId: ca-app-pub-9058006185556068~2175955707
+  admobInterstitialId: ca-app-pub-9058006185556068/4203353245
+  admobRewardedId: ca-app-pub-9058006185556068/1527033103
   removeAdsProductId: lab_sorting_remove_ads
   smallCashProductId: lab_sorting_cash_500
   largeCashProductId: lab_sorting_cash_1500
@@ -33,10 +36,10 @@ MonoBehaviour:
   rewardedSlotAmount: 2
   smallCashAmount: 500
   largeCashAmount: 1500
-  googlePlayPublicKey: 
-  privacyPolicyUrl: 
-  tenjinApiKey: 
+  googlePlayPublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvYNe/oLve6TPy+Ss1MYoWtoOfF9h12CBkokO58tvlRv3QXlN+QrhUIZImafxBTPDk2aX0BnMxaMESd8Hb9XDR5e+7n8fK5Ibk1d9pEweqCLNtZU4ZzphXyNyIe3pmcbGtBF72TB3T6jFJMQf/BulHCr+xLaYxvVG7Id7FkytZ+cU++QtcBO4fMtGARYvLBTf1Qe/j9REnVXio9kSW7GNtZv/w2JMX9aq5X2Sg/flwBdgBZcd/LEZoF/cbkj7WocKWRM7+PCurgKApW2GVrLNsuphIPd0QQtz2S7VbkpsMGd+2PmaqmWwuLfAlMZuy7jELK5AWZMA5SX50S8KU3uq0wIDAQAB
+  privacyPolicyUrl: https://perigames.com/privacy
+  tenjinApiKey: HOW31HJVU6NYQ9SFDKAMS8XKZVTNCNDX
   underAgeOfConsent: 0
-  enableLiveServices: 0
+  enableLiveServices: 1
   testDeviceAdvertisingIds: []
   interstitialCooldownSeconds: 180

@@ -28,11 +28,16 @@ namespace LabSorting.Services
         private string validatedFallbackProbeUrl;
         private int consecutiveProbeFailures;
         private float nextManualCheckTime;
+#if UNITY_EDITOR
+        // Exercise the real polling and UI flow without disconnecting the development machine.
+        internal Func<bool> InterfaceAvailableForTests;
+        internal Func<bool> ProbeSuccessForTests;
+#endif
 
         public bool IsReady { get; private set; }
         public ConnectivityStatus Status { get; private set; } = ConnectivityStatus.Unknown;
         public bool HasNetworkInterface => Status == ConnectivityStatus.NetworkAvailable || Status == ConnectivityStatus.Online;
-        public bool ConnectionProblem => Status == ConnectivityStatus.Offline || consecutiveProbeFailures >= 2;
+        public bool ConnectionProblem => Status == ConnectivityStatus.Offline || consecutiveProbeFailures >= 1;
         public event Action<ConnectivityStatus> StatusChanged;
 
         public IEnumerator InitializeRoutine()
@@ -62,7 +67,6 @@ namespace LabSorting.Services
             if (activeRequest != null) return;
             if (pollingRoutine != null) StopCoroutine(pollingRoutine);
             pollingRoutine = null;
-            consecutiveProbeFailures = 0;
             ResumePolling();
         }
 
@@ -124,6 +128,15 @@ namespace LabSorting.Services
                         string url = probeIndex == 0 ? validatedProbeUrl : validatedFallbackProbeUrl;
                         if (url == null) continue;
                         if (!SampleInterface()) break;
+#if UNITY_EDITOR
+                        if (ProbeSuccessForTests != null)
+                        {
+                            yield return null;
+                            succeeded = ProbeSuccessForTests();
+                        }
+                        else
+#endif
+                        {
                         activeRequest = UnityWebRequest.Head(url);
                         activeRequest.timeout = Mathf.Clamp(requestTimeoutSeconds, 1, 30);
                         activeRequest.redirectLimit = 0;
@@ -133,6 +146,7 @@ namespace LabSorting.Services
                                     && activeRequest.responseCode == expectedCode;
                         activeRequest.Dispose();
                         activeRequest = null;
+                        }
                         if (succeeded) break;
                     }
                     hasInterface = SampleInterface();
@@ -153,6 +167,9 @@ namespace LabSorting.Services
                 float interval = Mathf.Max(2f, checkIntervalSeconds);
                 float delay = Mathf.Min(interval * Mathf.Pow(2f, consecutiveProbeFailures),
                     Mathf.Max(interval, maximumBackoffSeconds));
+                // The mandatory connection panel must recover promptly even when the Wi-Fi
+                // adapter stays connected throughout a router/ISP outage.
+                if (consecutiveProbeFailures > 0) delay = Mathf.Min(delay, 5f);
                 float nextProbeTime = Time.realtimeSinceStartup + delay;
                 // Sample the local adapter during HTTP backoff so reconnection does not wait up to
                 // two minutes. This does not issue network requests or depend on gameplay timeScale.
@@ -170,6 +187,9 @@ namespace LabSorting.Services
         private bool SampleInterface()
         {
             bool available = Application.internetReachability != NetworkReachability.NotReachable;
+#if UNITY_EDITOR
+            if (InterfaceAvailableForTests != null) available = InterfaceAvailableForTests();
+#endif
             if (!available) SetStatus(ConnectivityStatus.Offline);
             else if (Status != ConnectivityStatus.Online) SetStatus(ConnectivityStatus.NetworkAvailable);
             return available;

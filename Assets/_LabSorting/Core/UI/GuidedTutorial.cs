@@ -37,13 +37,14 @@ namespace LabSorting.UI
         bool subscribed,paid,fresh,canThrow;float nextThrowCheck;string shown;Image handImage;
         RectTransform pointedControl;
         float nextToolAdvance;
+        float lookGestureAt;
 
         void Awake(){Hide();}
         void OnEnable(){Canvas.willRenderCanvases+=RefreshPointerLayout;if(IsRunning){Subscribe();SetToolModal(Current==Step.Tools);}}
         void OnDisable(){Canvas.willRenderCanvases-=RefreshPointerLayout;Unsubscribe();HideRackGuide();SetToolModal(false);}
         // Safe-area/canvas geometry may change after Update (resize, camera handoff).
         // Resolve the fingertip against the final control geometry just before rendering.
-        void RefreshPointerLayout(){if(toolModal)UpdateToolHighlight();if(IsRunning&&session&&!session.player.blocked&&Mode==HandMode.Tap&&pointedControl)Tap(pointedControl);}
+        void RefreshPointerLayout(){if(toolModal)UpdateToolHighlight();if(IsRunning&&session&&!session.player.NetworkBlocked&&(!session.player.blocked||toolModal)&&Mode==HandMode.Tap&&pointedControl)Tap(pointedControl);}
 
         // Start from the beginning, or from the step saved when the game was closed.
         public void Begin(bool restart)
@@ -65,6 +66,7 @@ namespace LabSorting.UI
         void Enter(Step step)
         {
             Current=step;fresh=true;lastActivity=-99;nextThrowCheck=0;canThrow=false;
+            if(step==Step.Look)lookGestureAt=Time.unscaledTime+.35f;
             if(step==Step.Done)
             {
                 LabSorting.Services.LabTelemetry.Event("tutorial_completed");
@@ -124,7 +126,7 @@ namespace LabSorting.UI
                     break;
                 case Step.Look:
                     if(looked>=lookDegrees){Enter(Step.Pick);return;}
-                    if(idle)Drag(lookArea,new Vector2(-140,-60),new Vector2(140,-60),55);else SetHand(HandMode.Hidden);
+                    if(Time.unscaledTime>=lookGestureAt&&(idle||looked<1))Drag(lookArea,new Vector2(-140,-60),new Vector2(140,-60),55);else SetHand(HandMode.Hidden);
                     break;
                 case Step.Pick:
                     // Hands already full (e.g. replaying the tutorial later): picking can't be practised, move on.
@@ -141,7 +143,7 @@ namespace LabSorting.UI
                     if(canThrow)Tap(throwButton);else Aim();
                     break;
                 case Step.Tools:
-                    SetHand(HandMode.Hidden);UpdateToolHighlight();break;
+                    Tap(gotItButton?gotItButton.transform as RectTransform:null);UpdateToolHighlight();if(hand)hand.SetAsLastSibling();break;
             }
             SetText();FadeHand();
         }
@@ -175,6 +177,15 @@ namespace LabSorting.UI
             pointedControl=target;
             if(!target||!target.gameObject.activeInHierarchy){SetHand(HandMode.Hidden);return;}
             SetHand(HandMode.Tap);
+            if(Current==Step.Tools&&gotItButton&&target==gotItButton.transform)
+            {
+                var bottom=target.rect;
+                Vector2 nextTip=area.InverseTransformPoint(target.TransformPoint(new Vector2(bottom.center.x,bottom.yMin)));
+                float phase=Mathf.Repeat(Time.unscaledTime,1f);
+                float gap=8+14*(.5f+.5f*Mathf.Cos(phase*Mathf.PI*2));
+                PutHand(nextTip-Vector2.up*gap,90,false,1);
+                return;
+            }
             bool mirror=Local(target).x<area.rect.center.x-area.rect.width*.2f;
             // Touch the near end of the button so its label stays readable.
             var tip=Local(target,mirror?.85f:.15f);

@@ -25,6 +25,8 @@ namespace LabSorting.Sorting
                 var ray=player.view.ScreenPointToRay(p);
                 if(!Physics.Raycast(ray,out var hit,reach,~(1<<2),QueryTriggerInteraction.Ignore))continue;
                 var item=hit.collider.GetComponentInParent<SortItem>();
+                var container=hit.collider.GetComponentInParent<SortRack>();
+                if(!item&&container&&container.ratsOnly)foreach(var rat in container.contents)if(rat&&!rat.Moving){item=rat;break;}
                 if(item&&!item.Moving&&item.location!=ItemLocation.Hand)return TryPick(item);
                 if(i==0&&hit.distance<.4f)return false;
             }
@@ -64,6 +66,8 @@ namespace LabSorting.Sorting
             if(Physics.Raycast(origin,forward,out var direct,reach,~(1<<2),QueryTriggerInteraction.Ignore))
             {item=direct.collider.GetComponentInParent<SortItem>();rack=direct.collider.GetComponentInParent<SortRack>();}
             if(item&&!Candidate(item,aimAssistRadius,out _))item=null;
+            // Transparent enclosure is itself the visible target for retrieving a captured rat.
+            if(!item&&rack&&rack.ratsOnly)foreach(var rat in rack.contents)if(rat&&!rat.Moving){item=rat;break;}
             // The rack's whole silhouette is targetable, including gaps between its boards.
             // Real foreground geometry still wins, so this cannot select through a wall or loose item.
             if(!item||item.location==ItemLocation.Rack)

@@ -24,12 +24,11 @@ namespace LabSorting.Prototype
                 wall.transform.position=s.player.view.transform.position+Vector3.forward*.25f;wall.transform.localScale=new Vector3(20,6,.1f);wall.SetActive(true);Physics.SyncTransforms();
                 Check(!s.TryThrowPosition(item,out _),"Solid front wall cannot be bypassed even if the visual hand is beyond it");
                 int count=s.carried.Count,cash=s.Cash;string message=s.Message;s.ThrowActive();yield return Wait(.3f);
-                Check(s.DropPending&&s.Active==item&&s.carried.Count==count&&s.Cash==cash&&s.Message==message,"Blocked front queues silently without item or cash loss");
+                Check(!s.DropPending&&item.location==ItemLocation.Loose&&s.carried.Count==count-1&&s.Cash==cash,"Blocked front releases immediately without charging or waiting for movement");
                 wall.SetActive(false);Physics.SyncTransforms();s.player.look.SetYawPitch(new Vector2(5,0));yield return Wait(2.1f);
                 Check(!s.DropPending&&item.location==ItemLocation.Loose&&item.hitbox.enabled&&s.carried.Count==count-1,"Pending drop releases automatically after aim changes to safe front space");
-                Check(Vector3.Angle(Vector3.ProjectOnPlane(s.player.view.transform.forward,Vector3.up),Vector3.ProjectOnPlane(item.transform.position-s.player.view.transform.position,Vector3.up))<=20.01f,"Automatic release also stays in front");
-                Check(s.TryPick(item),"Pick item again");DOTween.CompleteAll();yield return Wait(.3f);wall.SetActive(true);Physics.SyncTransforms();s.ThrowActive();Check(s.DropPending,"Second blocked drop queues");s.Select(0);Check(!s.DropPending,"Selection cancels pending drop");
-                s.ThrowActive();Check(s.DropPending,"Queue before modal");s.player.SetBlocked(true);yield return Wait(.1f);Check(!s.DropPending,"Opening a modal cancels pending drop");s.player.SetBlocked(false);s.ThrowActive();Check(s.DropPending,"Queue before backgrounding");s.SendMessage("OnApplicationPause",true);Check(!s.DropPending,"Backgrounding cancels pending drop");
+                Check(s.TryPick(item),"Pick item again");wall.SetActive(true);Physics.SyncTransforms();s.ThrowActive();Check(!s.DropPending&&item.location==ItemLocation.Loose,"Drop during pickup also releases beside a wall");yield return Wait(2.1f);
+                Check(item.hitbox.enabled&&!item.Moving,"Repeated crowded release settles and remains pickable");
             }
             finally{wall.SetActive(false);floor.SetActive(false);UnityEngine.Object.Destroy(wall);UnityEngine.Object.Destroy(floor);DOTween.CompleteAll();s.player.SetBlocked(false);s.player.character.Motor.enabled=motor;s.Restore(initial);}
         }

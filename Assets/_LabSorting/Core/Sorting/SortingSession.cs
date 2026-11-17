@@ -76,9 +76,11 @@ namespace LabSorting.Sorting
             if(carried.Count>=capacity) return FullInventoryNotice();
             if(item.rack) item.rack.Remove(item);
             item.SetSearchHighlight(false); item.location=ItemLocation.Hand; item.slot=-1; item.rack=null; item.Highlight(false);
+            item.GetComponent<LabRat>()?.StopRunning();
             if(Active&&(!magnet||!Active.Moving)){Active.CompleteMotion();Active.gameObject.SetActive(false);}
             carried.Add(item); Active=item; item.gameObject.SetActive(true);
             recentPickType=item.definition;recentPickUntil=Time.unscaledTime+.6f;
+            if(item.definition.isRat)item.GetComponent<LabRat>()?.colony.PlayInteraction(item);
             item.DockAt(hand,magnet,delay,()=>{if(item&&item.location==ItemLocation.Hand&&Active!=item)item.gameObject.SetActive(false);});
             if(!magnet){Commit("Picked "+item.definition.displayName); Feedback?.Invoke(SortingCue.Pick);}return true;
         }
@@ -120,13 +122,15 @@ namespace LabSorting.Sorting
             CancelHold();
             if(player.blocked)return;
             if(!Active) {Fail("Pick an item first");return;}
-            if(!Ready()||Active.Moving){QueueDrop(Active);dropProbeRevision=-1;return;}
+            // DROP is an immediate release, including during the pickup animation/cooldown.
+            Active.CompleteMotion();
             // Resolve the current aim at the click, not the target cached by the throttled preview.
             RefreshTarget();RefreshToss();
             var item=Active;
-            if(!TryThrowPosition(item,out var position)) {QueueDrop(item);return;}
+            if(!TryThrowPosition(item,out var position)) position=FindCrowdedDrop(item);
             CancelPendingDrop();
             RemoveActive(); item.location=ItemLocation.Loose;item.rack=null;item.slot=-1;item.transform.SetParent(null,true);item.transform.position=throwLaunchPosition;
+            if(item.definition.isRat)item.GetComponent<LabRat>()?.colony.PlayInteraction(item,true);
             EndTossStreak();item.ThrowWithPhysics(position,()=>NotifyLanded(item)); Commit("Dropped "+item.definition.displayName);Feedback?.Invoke(SortingCue.Throw);
         }
         public bool MessageIsError {get;private set;}

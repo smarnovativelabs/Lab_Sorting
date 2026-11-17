@@ -15,6 +15,22 @@ namespace LabSorting.UI
         public int LooseSearchCount {get;private set;}
         bool cleanupMode;
         int cleanupRevision=-1;
+        SortItem focusItem;float focusStarted,focusYaw,focusPitch;
+        void OnEnable(){if(session)session.SearchStarted+=FocusSearch;}
+        void OnDisable(){if(session)session.SearchStarted-=FocusSearch;focusItem=null;}
+        void FocusSearch(ItemDefinition type,int count){focusItem=session.NearestSearchResult();focusStarted=Time.unscaledTime;focusYaw=session.player.look.Yaw;focusPitch=session.player.look.Pitch;nextScan=0;}
+        void Update()
+        {
+            if(!focusItem)return;
+            var player=session.player;
+            if(player.blocked||player.LastLookInputTime>=focusStarted||player.Move.sqrMagnitude>.01f||focusItem.location!=ItemLocation.Loose){focusItem=null;return;}
+            var delta=focusItem.visual.bounds.center-player.view.transform.position;
+            float yaw=Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg,pitch=-Mathf.Atan2(delta.y,new Vector2(delta.x,delta.z).magnitude)*Mathf.Rad2Deg;
+            float duration=Mathf.Max(.65f,Mathf.Abs(Mathf.DeltaAngle(focusYaw,yaw))/100f);
+            float t=Mathf.Clamp01((Time.unscaledTime-focusStarted)/duration);
+            player.look.SetYawPitch(new Vector2(Mathf.LerpAngle(focusYaw,yaw,Mathf.SmoothStep(0,1,t)),Mathf.Lerp(focusPitch,pitch,Mathf.SmoothStep(0,1,t))));
+            if(t>=1)focusItem=null;
+        }
         public bool FinalItemsMode=>LooseSearchCount>0&&(LooseSearchCount<=5||cleanupMode);
         Vector2 Local(Vector3 screen){var canvas=safeArea.GetComponentInParent<Canvas>();RectTransformUtility.ScreenPointToLocalPointInRectangle(safeArea,screen,canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera,out var p);return p;}
         void LateUpdate()
@@ -41,7 +57,7 @@ namespace LabSorting.UI
                 var viewport=camera.WorldToViewportPoint(item.visual.bounds.center);
                 if(viewport.z<=0||viewport.x<.1f||viewport.x>.85f||viewport.y<.22f||viewport.y>.83f)continue;
                 var delta=item.visual.bounds.center-camera.transform.position;
-                if(Physics.Raycast(camera.transform.position,delta.normalized,out var hit,delta.magnitude+.01f,~(1<<2),QueryTriggerInteraction.Ignore)&&hit.collider.GetComponentInParent<SortItem>()!=item)continue;
+                // Search markers deliberately remain visible through piles and shelves.
                 float distance=delta.sqrMagnitude;
                 for(int i=0;i<nearest.Length;i++)if(distance<distances[i]){for(int j=nearest.Length-1;j>i;j--){nearest[j]=nearest[j-1];distances[j]=distances[j-1];}nearest[i]=item;distances[i]=distance;break;}
             }
@@ -52,7 +68,7 @@ namespace LabSorting.UI
                 if(!item)continue;beacons[i].text=(FinalItemsMode?"LAST "+LooseSearchCount+"  ▼  ":"▼  ")+Mathf.Sqrt(distances[i]).ToString("0.0")+"m"+(FinalItemsMode?"\n"+SearchDirection.Floor(item.hitbox?item.hitbox.bounds.min.y:item.transform.position.y,session.player.transform.position.y):"");
                 beacons[i].color=FinalItemsMode?new Color(.45f,1,1):new Color(1,.88f,.25f);
                 beacons[i].rectTransform.sizeDelta=FinalItemsMode?new Vector2(190,Mathf.Max(52,beaconSizes[i].y)):beaconSizes[i];
-                beacons[i].transform.localScale=Vector3.one*(FinalItemsMode?1.08f+.04f*Mathf.Sin(Time.unscaledTime*4):1);
+                beacons[i].transform.localScale=Vector3.one*(1.08f+.06f*Mathf.Sin(Time.unscaledTime*4));
                 var position=Local(camera.WorldToScreenPoint(item.visual.bounds.center+Vector3.up*(item.visual.bounds.extents.y+.08f)));
                 bool overlaps=false;
                 for(int j=0;j<shown;j++)if(Mathf.Abs(position.x-markerPositions[j].x)<(FinalItemsMode?190:104)&&Mathf.Abs(position.y-markerPositions[j].y)<(FinalItemsMode?58:34))overlaps=true;

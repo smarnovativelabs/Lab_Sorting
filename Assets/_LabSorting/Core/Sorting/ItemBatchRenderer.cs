@@ -67,7 +67,7 @@ namespace LabSorting.Sorting
             if(!targetCamera||!targetCamera.isActiveAndEnabled){RestoreSources();dirty=true;return;}
             if(session&&session.SearchType)
             {
-                float strength=.58f+.12f*Mathf.Sin(Time.unscaledTime*4);
+                float strength=.80f+.18f*Mathf.Sin(Time.unscaledTime*4);
                 foreach(var pair in materials)pair.Value[1].SetColor("_BaseColor",Color.Lerp(pair.Key.GetColor("_BaseColor"),new Color(1f,.72f,.12f),strength));
             }
             if(dirty)

@@ -106,7 +106,7 @@ namespace LabSorting.Prototype
                 Check(s.TryPlace(rack),"Place on the rack");DOTween.CompleteAll();yield return Wait(.3f);
 
                 Check(g.Current==GuidedTutorial.Step.Tools&&g.gotItButton.gameObject.activeSelf,"Placing completes the main task; optional tools and GOT IT appear");
-                Check(g.ToolModalActive&&s.player.TutorialBlocked&&!g.hand.gameObject.activeSelf&&!g.skipButton.gameObject.activeSelf,"Tools are mandatory explanations without a hand");
+                Check(g.ToolModalActive&&s.player.TutorialBlocked&&g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,g.gotItButton.transform as RectTransform,70)&&!g.skipButton.gameObject.activeSelf,"Tools highlight their button but hand points only to NEXT");
                 int cash=s.Cash;g.gotItButton.onClick.Invoke();yield return Wait(.4f);
                 int search=s.SearchCredits,magnet=s.MagnetCredits,capacity=s.capacity;
                 Check(g.ToolPage==1&&g.ToolModalActive,"NEXT explains magnet without using it");

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "400267727952",
+    "project_id": "quarantine-lab-sort-simulator",
+    "storage_bucket": "quarantine-lab-sort-simulator.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:400267727952:android:7f8376454e7658d769ed55",
+        "android_client_info": {
+          "package_name": "com.peri.games.quarantine.lab.sort.simulator"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9zmVOd_M8Pd_XWHYrvD16OeSJpmPu1bI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

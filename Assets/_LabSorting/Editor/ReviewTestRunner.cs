@@ -10,6 +10,16 @@ namespace LabSorting.Editor
     {
         static TestRunnerApi api;
         static string reportPath="Logs/ReviewTests.xml";
+        [MenuItem("Tools/Lab Sorting/Services/Test connectivity panel")]
+        public static void RunConnectivity()
+        {
+            if(EditorApplication.isPlayingOrWillChangePlaymode || UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty)
+                throw new InvalidOperationException("Save the scene and stop Play mode before tests");
+            reportPath="Logs/ConnectivityPanelTests.xml";
+            api=ScriptableObject.CreateInstance<TestRunnerApi>();api.RegisterCallbacks(new ReviewTestRunner());
+            api.Execute(new ExecutionSettings(new Filter{testMode=TestMode.EditMode,testNames=new[]{"ConnectivityPanelTests.OfflineOnlinePanelRecovery"}}));
+        }
+        public static void RunAndroidServices(){RunSelected(new[]{"RewardedAdReturnRecovery"},"Logs/AndroidServiceRewardTests.xml");}
         public static void RunCompact(){RunSelected(new[]{"DesignerCompactControls","DesignerBulkAndIcons","DesignerSoftDropAndRackTargeting","CoreSortingAndController"},"Logs/CompactControlsTests.xml");}
         public static void RunCompactFocused(){RunSelected(new[]{"DesignerCompactControls"},"Logs/CompactControlsFocusedTests.xml");}
         public static void RunReferenceFocused(){RunSelected(new[]{"DesignerReferenceCorrections"},"Logs/ReferenceFocusedTests.xml");}

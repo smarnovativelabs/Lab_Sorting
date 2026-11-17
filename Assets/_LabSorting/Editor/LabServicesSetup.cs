@@ -43,7 +43,9 @@ namespace LabSorting.Editor
         public static void ApplyAccountSettings()
         {
             var config=AssetDatabase.LoadAssetAtPath<LabServiceSettings>(SettingsPath);
+            if(!string.IsNullOrWhiteSpace(config.appTitle))PlayerSettings.productName=config.appTitle;
             if(!string.IsNullOrWhiteSpace(config.androidPackageName))PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android,config.androidPackageName);
+            AppLovinSettings.Instance.SdkKey=config.maxSdkKey??"";
             AppLovinSettings.Instance.AdMobAndroidAppId=config.googleMobileAdsAppId??"";EditorUtility.SetDirty(AppLovinSettings.Instance);
             var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("GoogleMobileAds.Editor.GoogleMobileAdsSettings")).FirstOrDefault(t=>t!=null);
             if(type!=null){var asset=(UnityEngine.Object)type.GetMethod("LoadInstance",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic).Invoke(null,null);var so=new SerializedObject(asset);so.FindProperty("adMobAndroidAppId").stringValue=config.googleMobileAdsAppId??"";so.ApplyModifiedPropertiesWithoutUndo();}

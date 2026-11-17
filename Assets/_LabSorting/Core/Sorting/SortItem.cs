@@ -31,6 +31,7 @@ namespace LabSorting.Sorting
         public event System.Action VisualChanged;
         public event System.Action<SortItem> PersistenceChanged;
         void PoseChanged(){VisualChanged?.Invoke();PersistenceChanged?.Invoke(this);}
+        public void MarkPoseDirty(){PersistenceChanged?.Invoke(this);}
         bool batchHighlight;
         public bool Hovered=>hovered;
         public bool Searched=>searched;
@@ -67,7 +68,7 @@ namespace LabSorting.Sorting
             if(!outline)return;
             // Cyan rim identifies the single aim target; gold belongs to paid search results.
             outline.OutlineColor=hovered?new Color(.2f,1f,1f):new Color(1f,.74f,.12f);
-            outline.OutlineWidth=hovered?4f:2f;
+            outline.OutlineWidth=hovered?4f:5f;
             outline.enabled=hovered||(searched&&!batchHighlight);
         }
         public void Snap(Vector3 position, Quaternion rotation, Transform parent=null)

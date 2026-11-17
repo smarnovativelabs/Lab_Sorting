@@ -13,6 +13,7 @@ namespace LabSorting.Sorting
     public sealed class SortRack : MonoBehaviour
     {
         public string id;
+        public bool ratsOnly;
         [Tooltip("Fixed points (prototype racks). Ignored when shelves are set.")]
         public Transform[] slots;
         [Tooltip("Size-based points: the first item type placed fills every shelf with as many points as fit.")]
@@ -43,7 +44,7 @@ namespace LabSorting.Sorting
         public bool CanAccept(ItemDefinition type) => type && (!Type || Type==type) && Count<(Type?Capacity:CapacityFor(type));
         public int CapacityFor(ItemDefinition type)
         {
-            if(!type) return 0;
+            if(!type || type.isRat!=ratsOnly) return 0;
             if(!SizeBased) return slots!=null?slots.Length:0;
             if(type==cachedType) return cachedCapacity;
             int total=0; for(int i=0;i<shelves.Length;i++) if(Layout(type,i,out var grid)) total+=grid.columns*grid.rows;
@@ -133,7 +134,7 @@ namespace LabSorting.Sorting
             }
             AvailabilityHint=Type?(RemainingSlots==0?"FULL":AlmostFull?RemainingSlots+ (RemainingSlots==1?" SLOT LEFT":" SLOTS LEFT"):""):"";
             if(!label) return;
-            label.text=Type?Type.displayName+"\n"+Count+" / "+Capacity:SizeBased?"EMPTY / ANY ITEM":"EMPTY / ANY ITEM\n0 / "+Capacity;
+            label.text=ratsOnly?"RATS\n"+Count+" / "+Capacity:Type?Type.displayName+"\n"+Count+" / "+Capacity:SizeBased?"EMPTY / ANY ITEM":"EMPTY / ANY ITEM\n0 / "+Capacity;
             if(AvailabilityHint.Length>0)label.text+="  |  "+AvailabilityHint;
             label.text=LabSorting.Services.LabLocalization.Text(label.text);
             languageRevision=LabSorting.Services.LabLocalization.Revision;

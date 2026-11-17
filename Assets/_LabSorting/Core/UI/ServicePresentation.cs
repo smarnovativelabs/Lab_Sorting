@@ -28,7 +28,9 @@ namespace LabSorting.UI
             if(loadingRoot.activeSelf){loadingRoot.transform.SetAsLastSibling();dismissLoading.gameObject.SetActive(commerce.CanClosePurchaseUI);loadingText.text=commerce.CanClosePurchaseUI?"Purchase is still pending. You can continue playing; delivery will finish when the store responds.":"Contacting store...\nPlease wait";}
             messages.Tick(Time.unscaledTime);toastUntil=messages.Until;toastText.text=messages.Text;
             toast.alpha=Mathf.MoveTowards(toast.alpha,Time.unscaledTime<toastUntil?1:0,Time.unscaledDeltaTime*7);if(toast.alpha>0)toast.transform.SetAsLastSibling();
-            bool offline=automaticConnectivity&&internet&&internet.IsReady&&(internet.ConnectionProblem||(visible&&internet.Status!=ConnectivityStatus.Online));
+            // Show the startup gate while verification is pending as well as while offline.
+            // Previously the player was locked invisibly until two failed probe cycles.
+            bool offline=automaticConnectivity&&(!internet||!internet.IsReady||internet.Status!=ConnectivityStatus.Online);
             if(offline){if(!visible)OpenOffline();offlineRoot.transform.SetAsLastSibling();Cursor.lockState=CursorLockMode.None;Cursor.visible=true;}
             else if(visible){LabTelemetry.Event("internet_restored");CloseOffline();}
             else if(hud.session.player.NetworkBlocked&&(!automaticConnectivity||(internet&&internet.Status==ConnectivityStatus.Online)))hud.session.player.SetNetworkBlocked(false);

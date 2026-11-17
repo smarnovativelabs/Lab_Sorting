@@ -7,6 +7,8 @@ namespace LabSorting.Sorting
     {
         public string id;
         public string displayName;
+        public bool isRat;
+        [Range(1f,1.5f)] public float heldSizeMultiplier=1f;
         public Sprite icon;
         public PlacementMaterial placementMaterial;
         public Color color=Color.white;

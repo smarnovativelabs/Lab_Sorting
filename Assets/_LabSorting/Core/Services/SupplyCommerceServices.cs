@@ -12,7 +12,7 @@ namespace LabSorting.Services
         public string RemoveAdsPrice{get{var p=settings?store?.GetProductById(settings.removeAdsProductId):null;return p!=null&&p.availableToPurchase?p.metadata.localizedPriceString:null;}}
         public void BuyRemoveAds(){if(AdsRemoved||busy||store==null||RemoveAdsPrice==null||string.IsNullOrWhiteSpace(settings.googlePlayPublicKey)){Status="Store unavailable or already owned.";return;}BeginPurchase();try{store.PurchaseProduct(settings.removeAdsProductId);}catch{busy=false;Status="Store unavailable.";}}
         public void RestorePurchases(){if(store==null){Status="Store unavailable.";return;}store.RestoreTransactions((success,error)=>{Status=success?"Restore requested.":"Restore unavailable.";if(success)store.FetchPurchases();});}
-        public void RetryServices(){if(consent&&!consent.CanRequestAds)consent.Gather(settings.underAgeOfConsent);if(store!=null)Reconnect();}
+        public void RetryServices(){if(consent&&!consent.CanRequestAds)consent.Gather(settings.underAgeOfConsent);else if(initializedAds){LoadAd();LoadInterstitial();}if(store!=null)Reconnect();var telemetry=GetComponent<LabTelemetry>();if(telemetry)telemetry.Initialize();}
         async void Reconnect(){try{await store.Connect();}catch{Status="Store unavailable.";}}
         void AccountChanged(){store.FetchProducts(products);}
         void RestoreRemoveAds(ConfirmedOrder order)
@@ -23,6 +23,9 @@ namespace LabSorting.Services
         public void ShowPrivacyOptions(){if(consent)consent.PrivacyOptions();}
         void InitializeAds()
         {
+            if(!string.IsNullOrEmpty(consent.Status))Status=consent.Status;
+            if(!consent.CanRequestAds){CancelInvoke(nameof(LoadAd));CancelInvoke(nameof(LoadInterstitial));CancelAdCountdown();return;}
+            if(initializedAds){LoadAd();LoadInterstitial();return;}
             if(subscribed||!consent.CanRequestAds||string.IsNullOrWhiteSpace(settings.maxSdkKey)||string.IsNullOrWhiteSpace(settings.androidRewardedId)||string.IsNullOrWhiteSpace(settings.googleMobileAdsAppId))return;
             MaxSdkCallbacks.OnSdkInitializedEvent+=OnAdsInitialized;MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent+=OnReward;MaxSdkCallbacks.Rewarded.OnAdHiddenEvent+=OnAdHidden;MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent+=OnAdFailed;MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent+=OnAdLoadFailed;
             MaxSdkCallbacks.Rewarded.OnAdRevenuePaidEvent+=AdRevenue;MaxSdkCallbacks.Interstitial.OnAdRevenuePaidEvent+=AdRevenue;
@@ -36,7 +39,7 @@ namespace LabSorting.Services
         }
         void AdRevenue(string id,MaxSdkBase.AdInfo info)=>LabTelemetry.Revenue(info);
         void CompletedRack(LabSorting.Sorting.SortRack rack){interstitialPending=true;}
-        void LoadInterstitial(){if(initializedAds&&!AdsRemoved&&!string.IsNullOrWhiteSpace(settings.androidInterstitialId))MaxSdk.LoadInterstitial(settings.androidInterstitialId);}
+        void LoadInterstitial(){if(initializedAds&&consent&&consent.CanRequestAds&&!AdsRemoved&&!string.IsNullOrWhiteSpace(settings.androidInterstitialId))MaxSdk.LoadInterstitial(settings.androidInterstitialId);}
         void InterstitialLoadFailed(string id,MaxSdkBase.ErrorInfo error){if(id==settings.androidInterstitialId)Invoke(nameof(LoadInterstitial),30);}
         void InterstitialHidden(string id,MaxSdkBase.AdInfo info){if(id!=settings.androidInterstitialId)return;busy=false;nextInterstitial=Time.unscaledTime+Mathf.Max(180,settings.interstitialCooldownSeconds);LoadInterstitial();}
         void InterstitialFailed(string id,MaxSdkBase.ErrorInfo error,MaxSdkBase.AdInfo info){InterstitialHidden(id,info);}
