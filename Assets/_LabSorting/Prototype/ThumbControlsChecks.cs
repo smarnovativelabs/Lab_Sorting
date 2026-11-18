@@ -95,6 +95,7 @@ namespace LabSorting.Prototype
             Check(zone.GetSiblingIndex()>look.transform.GetSiblingIndex()&&zone.GetSiblingIndex()<stickRect.GetSiblingIndex(),"Zone sits above the look area and below the stick");
             var pick=(RectTransform)actions.pick.transform;var place=(RectTransform)actions.place.transform;var drop=(RectTransform)actions.drop.transform;
             var search=(RectTransform)economy.searchButton.transform;var magnet=(RectTransform)economy.magnetButton.transform;
+            var pagers=new[]{"InventoryNext","InventoryPage"}.Select(n=>safe.Find(n) as RectTransform).Where(r=>r&&r.gameObject.activeInHierarchy).ToArray();
             var top=new[]{"CashOffers","DesignerStoreButton","Wallet","DesignerTitle_Progress"}.Select(n=>safe.Find(n) as RectTransform).Where(r=>r&&r.gameObject.activeInHierarchy).ToArray();
             float joy=sizes.JoystickScale,act=sizes.ActionScale;
             try
@@ -118,6 +119,7 @@ namespace LabSorting.Prototype
                         foreach(var (a,b) in new[]{(pick,place),(pick,drop),(place,drop),(drop,magnet)})
                         {float gap=(Vector2.Distance(Screen(a).center,Screen(b).center)-(Screen(a).width+Screen(b).width)*.5f)/unit;Check(gap>=10,a.name+"-"+b.name+" finger gap "+gap.ToString("F0")+" units x"+scale+at);}
                         foreach(var c in new[]{pick,place,drop,search,magnet})Check(Screen(c).width/unit>=52,c.name+" touch size "+(Screen(c).width/unit).ToString("F0")+" units x"+scale+at);
+                        foreach(var pager in pagers)foreach(var c in new[]{pick,place,drop})Check(!Screen(c).Overlaps(Screen(pager)),c.name+" clear of "+pager.name+" x"+scale+at);
                         var card=Screen(task.card);
                         Check(card.xMin>=area.xMin-1&&card.xMax<=area.xMax+1&&card.yMin>=area.yMin-1&&card.yMax<=area.yMax+1,"Task card inside safe area x"+scale+at);
                         foreach(var tool in new[]{search,magnet})Check(card.yMin>Screen(tool).yMax+8*unit||card.xMax+8*unit<Screen(tool).xMin,"Task card leaves "+tool.name+" clear x"+scale+at);

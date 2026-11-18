@@ -93,6 +93,32 @@ namespace LabSorting.Prototype
                 int successes=0;for(int yaw=0;yaw<360;yaw+=45){s.player.look.SetYawPitch(new Vector2(yaw,0));yield return Wait(.1f);if(s.TryThrowPosition(tap,out var landing)){successes++;Check(Vector3.Angle(Vector3.ProjectOnPlane(s.player.view.transform.forward,Vector3.up),Vector3.ProjectOnPlane(landing-s.player.view.transform.position,Vector3.up))<=20.01f,"Drop stays inside the front cone at yaw "+yaw);}}
                 Check(successes>0,"Dense scene offers forward landing space; valid directions="+successes);
                 var rack=s.racks.First(r=>r.CanAccept(tap.definition));cash=s.Cash;Check(s.TryPlace(rack)&&s.Cash==cash,"Ordinary placement awards zero cash");DOTween.CompleteAll();
+                // Crosshair first: with an item aimed, a tap anywhere on the camera area picks that item.
+                s.Restore(initial);yield return Wait(.3f);eye=s.player.view.transform.position;s.player.look.SnapToDirection(point-eye);yield return Wait(.3f);s.RefreshTarget();
+                var aimed=s.TargetItem;Check(aimed&&!aimed.Moving,"Crosshair aims at an item before a free screen tap; target="+(aimed?aimed.name:"null"));
+                Check(s.TryTouchPick(new Vector2(Screen.width*.85f,Screen.height*.8f))&&s.Active==aimed,"Tap anywhere on the camera area picks the item under the crosshair");DOTween.CompleteAll();
+                // Nothing aimed: the tap falls back to the item under the finger.
+                s.Restore(initial);yield return Wait(.3f);SortItem fingered=null;string tried="";
+                var side=Vector3.Cross(Vector3.up,point-eye).normalized;
+                foreach(var offset in new[]{Vector3.up,side,-side,(Vector3.up+side).normalized,(Vector3.up-side).normalized})
+                {
+                    for(float lift=.3f;lift<=1.5f&&!fingered;lift+=.2f)
+                    {
+                        s.player.look.SnapToDirection(point+offset*lift-eye);yield return Wait(.15f);s.RefreshTarget();
+                        if(s.TargetItem){tried+=" aimed";continue;}
+                        foreach(var item in s.items)
+                        {
+                            if(!item||item.location==ItemLocation.Hand||item.Moving||!item.hitbox)continue;
+                            var finger=s.player.view.WorldToScreenPoint(item.hitbox.bounds.center);
+                            if(finger.z<=0||finger.x<0||finger.y<0||finger.x>Screen.width||finger.y>Screen.height)continue;
+                            if(!Physics.Raycast(s.player.view.ScreenPointToRay(finger),out var seen,s.reach,~(1<<2),QueryTriggerInteraction.Ignore)||seen.collider.GetComponentInParent<SortItem>()!=item)continue;
+                            fingered=item;Check(s.TryTouchPick(finger)&&s.Active==item,"With nothing under the crosshair a tap picks the item under the finger");DOTween.CompleteAll();break;
+                        }
+                        if(!fingered)tried+=" empty";
+                    }
+                    if(fingered)break;
+                }
+                Check(fingered,"Found a view with an empty crosshair and a tappable item on screen; views="+tried);
                 Check(SortingSession.ShortGoalBonus==2&&SortingSession.RackBonus==1&&s.completeBonus==10,"Completion rewards use the reduced economy");
                 Debug.Log("COMPACT_CONTROLS_OK");
             }

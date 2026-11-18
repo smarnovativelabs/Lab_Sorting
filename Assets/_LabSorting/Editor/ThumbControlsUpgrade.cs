@@ -13,8 +13,10 @@ namespace LabSorting.Editor
     public static class ThumbControlsUpgrade
     {
         public const float ZoneWidth=.36f,ZoneHeight=.78f,TaskCardScale=.8f,JoystickIdleAlpha=.55f;
-        public static readonly Vector2 PickPosition=new Vector2(-82,82),PlacePosition=new Vector2(-176,66),DropPosition=new Vector2(-150,166);
-        public const float PickSize=76,PlaceSize=70,DropSize=62;
+        // ~15% bigger buttons (tester request). At the 1.15x control size every pair keeps a 10+ unit finger gap
+        // and PLACE stays right of the inventory pager (InventoryNext / InventoryPage at 1280 wide).
+        public static readonly Vector2 PickPosition=new Vector2(-86,86),PlacePosition=new Vector2(-192,66),DropPosition=new Vector2(-162,184);
+        public const float PickSize=88,PlaceSize=80,DropSize=72;
         public static readonly Vector2 SearchPosition=new Vector2(-72,12),MagnetPosition=new Vector2(-72,-93);
         // Top-right corner of the task card stays where the 440-wide card had it.
         const float TaskCardRight=-18,TaskCardTop=-94.5f;
@@ -51,7 +53,9 @@ namespace LabSorting.Editor
             zoneRect.anchorMin=Vector2.zero;zoneRect.anchorMax=new Vector2(ZoneWidth,ZoneHeight);zoneRect.pivot=new Vector2(.5f,.5f);zoneRect.offsetMin=zoneRect.offsetMax=Vector2.zero;
             var zoneImage=zoneRect.GetComponent<UnityEngine.UI.Image>();zoneImage.color=Color.clear;zoneImage.raycastTarget=true;
             var zone=zoneRect.GetComponent<LabTouchZone>();if(!zone)zone=zoneRect.gameObject.AddComponent<LabTouchZone>();zone.joystick=stick;
-            zoneRect.SetSiblingIndex(stick.transform.GetSiblingIndex());
+            // Directly below the stick. Re-running must not flip the order: moving an earlier sibling shifts the stick down one.
+            int stickIndex=stick.transform.GetSiblingIndex();
+            zoneRect.SetSiblingIndex(zoneRect.GetSiblingIndex()<stickIndex?stickIndex-1:stickIndex);
             stick.floatingZone=zoneRect;stick.idleAlpha=JoystickIdleAlpha;
             var group=stick.GetComponent<CanvasGroup>();if(!group)group=stick.gameObject.AddComponent<CanvasGroup>();group.alpha=1;group.interactable=true;group.blocksRaycasts=true;
             EditorUtility.SetDirty(zoneRect);EditorUtility.SetDirty(zoneImage);EditorUtility.SetDirty(zone);EditorUtility.SetDirty(stick);EditorUtility.SetDirty(group);

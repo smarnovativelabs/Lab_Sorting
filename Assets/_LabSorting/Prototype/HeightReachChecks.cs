@@ -41,11 +41,13 @@ namespace LabSorting.Prototype
                 for(int i=0;i<heights.Length;i++)
                 {
                     float h=heights[i],w=widths[i];left.transform.localPosition=new Vector3(-w*.5f-.15f,1.25f,0);right.transform.localPosition=new Vector3(w*.5f+.15f,1.25f,0);beam.transform.localPosition=new Vector3(0,h+.15f,0);beam.transform.localScale=new Vector3(w+.6f,.3f,.4f);
-                    MovePlayer(s,bay.transform.position+new Vector3(0,.03f,-2));yield return Wait(.3f);player.SetMove(Vector2.up);yield return Wait(1.5f);player.SetMove(Vector2.zero);yield return Wait(.12f);
+                    MovePlayer(s,bay.transform.position+new Vector3(0,.03f,-2));yield return Wait(.3f);player.SetMove(Vector2.up);var asked=player.Move;yield return Wait(1.5f);
+                    string state=" asked="+asked+" held="+player.Move+" blocked="+player.blocked+"/net="+player.NetworkBlocked+"/tutorial="+player.TutorialBlocked+" velocity="+player.character.Motor.BaseVelocity+" timeScale="+Time.timeScale;
+                    player.SetMove(Vector2.zero);yield return Wait(.12f);
                     float z=player.transform.position.z;bool expectedPass=i<2;
                     // Rounded capsule can approach narrow jamb corners more closely than a flat wall.
                     // Its center must remain in front of the doorway's -0.20m near face.
-                    check(expectedPass?z>1f:(z<-.2f&&z>-1.4f),"Doorway "+w.ToString("0.00")+"m wide / "+h.ToString("0.00")+"m high "+(expectedPass?"passes":"blocks")+" (z="+z.ToString("0.000")+")");
+                    check(expectedPass?z>1f:(z<-.2f&&z>-1.4f),"Doorway "+w.ToString("0.00")+"m wide / "+h.ToString("0.00")+"m high "+(expectedPass?"passes":"blocks")+" (z="+z.ToString("0.000")+state+")");
                     check(player.transform.position.y>-.01f&&player.transform.position.y<.04f,"Door traversal keeps feet grounded");
                 }
                 left.SetActive(false);right.SetActive(false);beam.SetActive(false);

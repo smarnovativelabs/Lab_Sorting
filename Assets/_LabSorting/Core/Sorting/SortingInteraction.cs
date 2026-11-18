@@ -16,6 +16,11 @@ namespace LabSorting.Sorting
         public bool TryTouchPick(Vector2 screen)
         {
             if(!Ready())return false;
+            // An item under the crosshair (outlined, PICK showing) wins a tap anywhere on the camera area.
+            // Resolve the aim at the tap, not the target cached by the last frame.
+            RefreshTarget();
+            if(TargetItem&&!TargetItem.Moving&&TargetItem.location!=ItemLocation.Hand)return TryPick(TargetItem);
+            // Nothing aimed: pick what is under the finger.
             // Exact visible geometry wins; short pixel offsets assist tiny models in dense clutter.
             // Each candidate is a first ray hit: never pick through a wall or another item.
             for(int i=0;i<9;i++)
