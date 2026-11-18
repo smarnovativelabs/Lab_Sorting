@@ -12,6 +12,9 @@ namespace LabSorting.Services
         public LabServiceSettings settings;
         public SortingSession session;
         readonly System.Collections.Generic.Dictionary<string,PendingOrder> waitingForSession=new System.Collections.Generic.Dictionary<string,PendingOrder>();
+        // Transactions already sent to ConfirmPurchase. IAP 5 hands a fetched pending order to OnPurchasePending and
+        // PurchasesFetched passes it here again; a second ConfirmPurchase would fail with ExistingPurchasePending.
+        readonly System.Collections.Generic.HashSet<string> confirmRequested=new System.Collections.Generic.HashSet<string>();
         public void BindSession(SortingSession value){if(ReferenceEquals(session,value))return;session=value;tutorial=null;tutorialSearched=false;}
         void Update(){TickInterstitial();if(waitingForSession.Count==0||!session||!session.Initialized||!session.persistence)return;var orders=waitingForSession.Values.ToArray();waitingForSession.Clear();foreach(var order in orders)OnPending(order);}
         public const string SuppressEditorServicesKey="LabSorting.SuppressEditorTestServices";
@@ -87,18 +90,37 @@ namespace LabSorting.Services
             store.OnAuthAccountChanged+=AccountChanged;
             try{await store.Connect();}catch(Exception){Status="Store unavailable. Please try later.";}
         }
-        void Connected(){store.FetchProducts(products);}
-        void Disconnected(StoreConnectionFailureDescription error){busy=false;Status="Store unavailable. Please try later.";}
+        void Connected(){storeConnected=true;store.FetchProducts(products);}
+        void Disconnected(StoreConnectionFailureDescription error){storeConnected=false;busy=false;restoring=false;Status="Store unavailable. Please try later.";}
         void ProductsFetched(System.Collections.Generic.List<Product> list){store.FetchPurchases();}
-        void ProductsFailed(ProductFetchFailed error){busy=false;Status="Store unavailable. Please try later.";}
+        void ProductsFailed(ProductFetchFailed error){busy=false;restoring=false;Status="Store unavailable. Please try later.";}
         void PurchaseFailed(FailedOrder order){LabTelemetry.Event("purchase_failed_or_cancelled");busy=false;Status="Purchase cancelled or unsuccessful.";}
         void Deferred(DeferredOrder order){LabTelemetry.Event("purchase_deferred");busy=false;Status="Purchase awaiting approval.";}
-        void Confirmed(Order order){busy=false;Status=order is ConfirmedOrder?"Purchase delivered.":"Purchase confirmation pending.";if(order is ConfirmedOrder confirmed)LabTelemetry.Purchase(confirmed);}
-        void PurchasesFetched(Orders orders){foreach(var pending in orders.PendingOrders)OnPending(pending);foreach(var confirmed in orders.ConfirmedOrders)RestoreRemoveAds(confirmed);}
-        void PurchasesFailed(PurchasesFetchFailureDescription error){busy=false;Status="Could not restore pending purchases.";}
+        // A failed confirmation leaves the order pending in the store, so the next fetch may confirm it again.
+        void Confirmed(Order order){busy=false;if(!(order is ConfirmedOrder)&&order.Info!=null)confirmRequested.Remove(order.Info.TransactionID);Status=order is ConfirmedOrder?"Purchase delivered.":"Purchase confirmation pending.";if(order is ConfirmedOrder confirmed)LabTelemetry.Purchase(confirmed);}
+        void PurchasesFetched(Orders orders)
+        {
+            foreach(var pending in orders.PendingOrders)OnPending(pending);
+            bool restored=false,unverified=false;
+            foreach(var confirmed in orders.ConfirmedOrders){var result=RestoreRemoveAds(confirmed);restored|=result==true;unverified|=result==null;}
+            if(unverified)Status="Restore verification pending.";
+            if(!restoring)return;
+            // Only a restore the player asked for reports a result. Pending orders report their own delivery.
+            restoring=false;
+            if(unverified)return;
+            if(restored)Status="Purchases restored. Ads removed.";
+            else if(!orders.PendingOrders.Any())Status="No purchases to restore.";
+        }
+        void PurchasesFailed(PurchasesFetchFailureDescription error){busy=false;Status=restoring?"Restore failed. Please try later.":"Could not restore pending purchases.";restoring=false;}
         void EntitlementChecked(Entitlement entitlement){}
+        void Confirm(PendingOrder order)
+        {
+            if(!confirmRequested.Add(order.Info.TransactionID))return;
+            try{store.ConfirmPurchase(order);}catch{confirmRequested.Remove(order.Info.TransactionID);throw;}
+        }
         void OnPending(PendingOrder order)
         {
+            if(!string.IsNullOrWhiteSpace(order.Info.TransactionID)&&confirmRequested.Contains(order.Info.TransactionID))return;
             busy=false;
             if(!session||!session.Initialized){if(!string.IsNullOrWhiteSpace(order.Info.TransactionID))waitingForSession[order.Info.TransactionID]=order;Status="Purchase delivery pending.";return;}
             if(!session||!session.persistence||string.IsNullOrWhiteSpace(order.Info.TransactionID)||string.IsNullOrWhiteSpace(settings.googlePlayPublicKey)){Status="Purchase delivery pending.";return;}
@@ -109,10 +131,10 @@ namespace LabSorting.Services
                 if(cart.Count!=1||cart[0].Quantity!=1)return;
                 string id=cart[0].Product.definition.id;
                 if(!VerifiedReceipt(order,id,order.Info.TransactionID))return;
-                if(id==settings.removeAdsProductId){if(CommerceEntitlements.GrantRemoveAds()){store.ConfirmPurchase(order);Status="Ads removed. Optional reward videos remain available.";LabTelemetry.Event("purchase_delivered",id);}return;}
-                if(id==settings.largeCashProductId){if(session.GrantSupply(SupplyKind.Cash,settings.largeCashAmount,"iap:"+order.Info.TransactionID))store.ConfirmPurchase(order);return;}
+                if(id==settings.removeAdsProductId){if(CommerceEntitlements.GrantRemoveAds()){Confirm(order);Status="Ads removed. Optional reward videos remain available.";LabTelemetry.Event("purchase_delivered",id);}return;}
+                if(id==settings.largeCashProductId){if(session.GrantSupply(SupplyKind.Cash,settings.largeCashAmount,"iap:"+order.Info.TransactionID))Confirm(order);return;}
                 foreach(SupplyKind kind in Enum.GetValues(typeof(SupplyKind)))if(ProductId(kind)==id)
-                {if(session.GrantSupply(kind,PackAmount(kind),"iap:"+order.Info.TransactionID)){store.ConfirmPurchase(order);Status="Purchase delivered.";}else Status="Saving purchase. Delivery will retry.";return;}
+                {if(session.GrantSupply(kind,PackAmount(kind),"iap:"+order.Info.TransactionID)){Confirm(order);Status="Purchase delivered.";}else Status="Saving purchase. Delivery will retry.";return;}
             }
             catch(Exception){LabTelemetry.Event("purchase_verification_pending");Status="Purchase verification pending. Please retry later.";}
         }

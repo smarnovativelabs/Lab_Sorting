@@ -7,19 +7,30 @@ namespace LabSorting.Services
 {
     public sealed partial class SupplyCommerce
     {
-        LabConsent consent;bool rewardGranted;float interstitialTimer,nextReadyCheck;int consentRetries;
+        LabConsent consent;bool rewardGranted,restoring,storeConnected;float interstitialTimer,nextReadyCheck;int consentRetries;
         LabSorting.UI.GuidedTutorial tutorial;bool tutorialSearched;
         public bool AdsRemoved=>CommerceEntitlements.RemoveAds;
         public string RemoveAdsPrice{get{var p=settings?store?.GetProductById(settings.removeAdsProductId):null;return p!=null&&p.availableToPurchase?p.metadata.localizedPriceString:null;}}
         public void BuyRemoveAds(){if(AdsRemoved||busy||store==null||RemoveAdsPrice==null||string.IsNullOrWhiteSpace(settings.googlePlayPublicKey)){Status="Store unavailable or already owned.";return;}BeginPurchase();try{store.PurchaseProduct(settings.removeAdsProductId);}catch{busy=false;Status="Store unavailable.";}}
-        public void RestorePurchases(){if(store==null){Status="Store unavailable.";return;}store.RestoreTransactions((success,error)=>{Status=success?"Restore requested.":"Restore unavailable.";if(success)store.FetchPurchases();});}
-        public void RetryServices(){if(consent&&!consent.CanRequestAds){consentRetries=0;consent.Gather(settings.underAgeOfConsent);}else if(initializedAds){LoadAd();LoadInterstitial();}if(store!=null)Reconnect();var telemetry=GetComponent<LabTelemetry>();if(telemetry)telemetry.Initialize();}
-        async void Reconnect(){try{await store.Connect();}catch{Status="Store unavailable.";}}
-        void AccountChanged(){store.FetchProducts(products);}
-        void RestoreRemoveAds(ConfirmedOrder order)
+        // Google Play has no separate restore call: RestoreTransactions succeeds at once and IAP itself runs
+        // FetchPurchases, so PurchasesFetched reports the result. A disconnected store reconnects first
+        // (Connected -> FetchProducts -> FetchPurchases). Where restore is unsupported (Editor fake store) it falls back
+        // to a plain fetch.
+        public void RestorePurchases()
         {
-            if(!settings||string.IsNullOrWhiteSpace(settings.googlePlayPublicKey))return;
-            try{if(VerifiedReceipt(order,settings.removeAdsProductId,null))CommerceEntitlements.GrantRemoveAds();}catch{Status="Restore verification pending.";}
+            if(store==null){Status="Store unavailable.";return;}
+            restoring=true;
+            if(!storeConnected){Status="Connecting to store...";Reconnect();return;}
+            store.RestoreTransactions((success,error)=>{if(!success)store.FetchPurchases();});
+        }
+        public void RetryServices(){if(consent&&!consent.CanRequestAds){consentRetries=0;consent.Gather(settings.underAgeOfConsent);}else if(initializedAds){LoadAd();LoadInterstitial();}if(store!=null)Reconnect();var telemetry=GetComponent<LabTelemetry>();if(telemetry)telemetry.Initialize();}
+        async void Reconnect(){try{await store.Connect();}catch{restoring=false;Status="Store unavailable.";}}
+        void AccountChanged(){store.FetchProducts(products);}
+        // true: Remove Ads verified and granted again. false: not a Remove Ads order. null: verification or saving failed.
+        bool? RestoreRemoveAds(ConfirmedOrder order)
+        {
+            if(!settings||string.IsNullOrWhiteSpace(settings.googlePlayPublicKey))return false;
+            try{if(!VerifiedReceipt(order,settings.removeAdsProductId,null))return false;return CommerceEntitlements.GrantRemoveAds()?true:(bool?)null;}catch{return null;}
         }
         public void ShowPrivacyOptions(){if(Application.isEditor){Status="Ad privacy options open on Android devices.";return;}if(consent)consent.PrivacyOptions();}
         void InitializeAds()
