@@ -224,7 +224,8 @@ namespace LabSorting.Editor
         static void Juice(SortingHUD hud,Transform safe)
         {
             var eco=hud.GetComponent<EconomyHUD>();var juice=Ensure<WalletJuice>(hud);juice.session=eco.session;juice.feedback=Object.FindFirstObjectByType<LabSorting.Sorting.SortingFeedback>();
-            juice.wallet=(RectTransform)eco.wallet.transform.parent;
+            // Coins fly to the wallet button; the cash number pops (the button's own scale belongs to UIButtonMotion).
+            juice.wallet=(RectTransform)eco.wallet.transform.parent;juice.bump=eco.wallet.rectTransform;
             var layer=Child(safe,"WalletCoins");layer.anchorMin=Vector2.zero;layer.anchorMax=Vector2.one;layer.pivot=Vector2.one*.5f;layer.offsetMin=layer.offsetMax=Vector2.zero;layer.localScale=Vector3.one;
             juice.layer=layer;juice.coin=AssetDatabase.LoadAllAssetsAtPath(UIRoot+"Store and settings panel sprite/Store/Green_cash_bundle_game_icon_21bc9553.png").OfType<Sprite>().First();
             Dirty(juice,layer);

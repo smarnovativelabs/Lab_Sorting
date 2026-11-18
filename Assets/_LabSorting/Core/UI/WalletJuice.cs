@@ -12,6 +12,8 @@ namespace LabSorting.UI
         public SortingSession session;
         public SortingFeedback feedback;
         public RectTransform wallet,layer;
+        [Tooltip("What pops when coins arrive. Not the wallet button itself: its UIButtonMotion rewrites the button's scale every frame.")]
+        public RectTransform bump;
         public Sprite coin;
         [Min(1)] public int coins=6;
         public float size=30,duration=.55f,stagger=.05f;
@@ -49,8 +51,8 @@ namespace LabSorting.UI
                     .Join(r.DOScale(.5f,duration).SetEase(Ease.InQuad))
                     .OnComplete(()=>go.SetActive(false));
             }
-            DOTween.Kill(wallet,true);wallet.DOPunchScale(Vector3.one*.12f,.3f,6,.6f).SetDelay(duration*.9f).SetUpdate(true).SetTarget(wallet);
+            if(bump&&!bump.GetComponent<UIButtonMotion>()){DOTween.Kill(bump,true);bump.localScale=Vector3.one;bump.DOPunchScale(Vector3.one*.18f,.32f,6,.6f).SetDelay(duration*.9f).SetUpdate(true).SetTarget(bump);}
         }
-        void OnDisable(){if(pool!=null)foreach(var image in pool)if(image){DOTween.Kill(image.rectTransform);image.gameObject.SetActive(false);}if(wallet){DOTween.Kill(wallet,true);wallet.localScale=Vector3.one;}}
+        void OnDisable(){if(pool!=null)foreach(var image in pool)if(image){DOTween.Kill(image.rectTransform);image.gameObject.SetActive(false);}if(bump){DOTween.Kill(bump,true);bump.localScale=Vector3.one;}}
     }
 }
