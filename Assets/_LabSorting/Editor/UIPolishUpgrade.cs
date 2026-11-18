@@ -229,6 +229,12 @@ namespace LabSorting.Editor
             var layer=Child(safe,"WalletCoins");layer.anchorMin=Vector2.zero;layer.anchorMax=Vector2.one;layer.pivot=Vector2.one*.5f;layer.offsetMin=layer.offsetMax=Vector2.zero;layer.localScale=Vector3.one;
             juice.layer=layer;juice.coin=AssetDatabase.LoadAllAssetsAtPath(UIRoot+"Store and settings panel sprite/Store/Green_cash_bundle_game_icon_21bc9553.png").OfType<Sprite>().First();
             Dirty(juice,layer);
+            // A1/A2: "+1" per placement and confetti per completed rack, on their own HUD layer (never on items or labels).
+            var celebration=Ensure<SortingCelebration>(hud);celebration.session=eco.session;celebration.font=bold;celebration.confettiSprite=Chip();celebration.confettiPieces=24;
+            var fx=Child(safe,"Celebrations");fx.anchorMin=Vector2.zero;fx.anchorMax=Vector2.one;fx.pivot=Vector2.one*.5f;fx.offsetMin=fx.offsetMax=Vector2.zero;fx.localScale=Vector3.one;celebration.layer=fx;
+            // A4: the '+' offer buttons breathe while their tool has no uses (driven through UIButtonMotion).
+            eco.searchPlus=Ensure<UIButtonMotion>(eco.searchButton.transform.Find("OffersPlus"));eco.magnetPlus=Ensure<UIButtonMotion>(eco.magnetButton.transform.Find("OffersPlus"));
+            Dirty(celebration,fx,eco,eco.searchPlus,eco.magnetPlus);
         }
 
         static void Progress(SortingHUD hud,Transform safe,Sprite fill)

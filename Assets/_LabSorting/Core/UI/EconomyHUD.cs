@@ -17,6 +17,8 @@ namespace LabSorting.UI
         public Image searchBadge,magnetBadge;
         [Tooltip("Gold knob while uses remain; silver knob at zero.")]
         public Sprite badgeOwned,badgeEmpty;
+        [Tooltip("The '+' offer buttons breathe gently while their tool has no uses left.")]
+        public UIButtonMotion searchPlus,magnetPlus;
         float refreshAt;
         int revision=-1;
         SortItem guidedSearchItem;
@@ -62,6 +64,7 @@ namespace LabSorting.UI
                 searchLabel.text=session.SearchType?session.SearchSeconds.ToString("0.0")+"s":"SEARCH"+(badges?"":session.SearchCredits>0?"  "+session.SearchCredits:designerSkin?"":"  +");
                 magnetLabel.text=session.MagnetSeconds>0?session.MagnetSeconds.ToString("0.0")+"s":"MAGNET"+(badges?"":session.MagnetCredits>0?"  "+session.MagnetCredits:designerSkin?"":"  +");
                 if(badges){Badge(searchCount,searchBadge,session.SearchCredits);Badge(magnetCount,magnetBadge,session.MagnetCredits);}
+                if(searchPlus)searchPlus.idlePulse=session.SearchCredits<=0;if(magnetPlus)magnetPlus.idlePulse=session.MagnetCredits<=0;
                 upgradeLabel.text=session.carried.Count+" / "+session.capacity+"  +";
                 searchButton.interactable=magnetButton.interactable=upgradeButton.interactable=enabled;
             }

@@ -20,7 +20,8 @@ namespace LabSorting.Prototype
             try
             {
                 Check(rack.compatible,"Shared compatibility material wired");
-                Check(racks.All(r=>r.compatible==rack.compatible),"All designer racks share one hint material");
+                // Rats-only containers (glass_Box) have no compatibility glow; SortRack.ApplyIndicator falls back to neutral.
+                Check(racks.Where(r=>!r.ratsOnly).All(r=>r.compatible==rack.compatible),"All designer racks share one hint material");
                 var item=s.items[0];var same=s.items.Where(i=>i.definition==item.definition).Take(4).ToArray();
                 Check(s.TryPick(item),"Pick selected type");DOTween.CompleteAll();yield return null;yield return null;
                 Check(rack.CompatibleHint&&rack.indicator.sharedMaterial==rack.compatible,"Compatible empty rack receives subtle highlight");

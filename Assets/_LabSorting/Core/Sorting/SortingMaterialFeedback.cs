@@ -31,11 +31,12 @@ namespace LabSorting.Sorting
             if(rack.label)
             {
                 shiningLabel=rack.label;labelColor=shiningLabel.color;labelScale=shiningLabel.transform.localScale;
-                // One gentle mint-white glow; only the label animates, never the sorted items.
+                // One gentle gold glow; only the label animates, never the sorted items.
                 shine=DOTween.To(()=>0f,t=>{
                     if(!shiningLabel)return;
                     float pulse=Mathf.Sin(t*Mathf.PI);
-                    shiningLabel.color=Color.Lerp(labelColor,new Color(.65f,1f,.88f,labelColor.a),pulse*.65f);
+                    // Gold, matching the coins and BEST VALUE accents (was mint-white).
+                    shiningLabel.color=Color.Lerp(labelColor,new Color(1f,.84f,.3f,labelColor.a),pulse*.7f);
                     shiningLabel.transform.localScale=labelScale*(1+.025f*pulse);
                 },1f,.75f).SetEase(Ease.Linear).OnComplete(RestoreLabel);
             }
