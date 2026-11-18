@@ -28,7 +28,7 @@ namespace LabSorting.UI
             if(paused||!focused||session.player.blocked||(tutorial&&tutorial.IsRunning)||(tour&&tour.IsRunning)||presentation.ToastBusy){readyTime=0;return;}
             readyTime+=Time.unscaledDeltaTime;if(readyTime<.8f)return;
             pending=false;Shown=true;int sorted=session.SortedCount;
-            presentation.ShowToast("WELCOME BACK!\n"+sorted+" sorted  |  "+(session.items.Length-sorted)+" remaining");
+            presentation.ShowToast("WELCOME BACK!\n"+UIFormat.Count(sorted)+" sorted  |  "+UIFormat.Count(session.items.Length-sorted)+" remaining");
         }
         void OnApplicationPause(bool value){paused=value;readyTime=0;}
         void OnApplicationFocus(bool value){focused=value;readyTime=0;}

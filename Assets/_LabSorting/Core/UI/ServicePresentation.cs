@@ -11,6 +11,11 @@ namespace LabSorting.UI
         public CanvasGroup toast;
         public UnityEngine.UI.Button dismissLoading;
         public bool automaticConnectivity=true;
+        [Tooltip("Toast card width follows its text (widest line + padding) within this range. 0 = keep the authored width.")]
+        public float toastMinWidth=260,toastMaxWidth=460,toastPadding=56;
+        [Tooltip("Left-edge badges chosen by ToastTone: something gained / something went wrong.")]
+        public GameObject toastSuccessBadge,toastAlertBadge;
+        string fittedToast;
         SupplyCommerce commerce;InternetConnectivity internet;
         bool visible,dismissedWait;
         CursorLockMode cursor;bool cursorVisible;float toastUntil;
@@ -27,6 +32,17 @@ namespace LabSorting.UI
             loadingRoot.SetActive(waiting&&!dismissedWait);
             if(loadingRoot.activeSelf){loadingRoot.transform.SetAsLastSibling();dismissLoading.gameObject.SetActive(commerce.CanClosePurchaseUI);loadingText.text=commerce.CanClosePurchaseUI?"Purchase is still pending. You can continue playing; delivery will finish when the store responds.":"Contacting store...\nPlease wait";}
             messages.Tick(Time.unscaledTime);toastUntil=messages.Until;toastText.text=messages.Text;
+            if(toastMaxWidth>0&&toastText.text!=fittedToast&&!string.IsNullOrEmpty(toastText.text))
+            {
+                fittedToast=toastText.text;var card=(RectTransform)toastText.transform.parent;var text=toastText.rectTransform;
+                var tone=ToastTone.Of(fittedToast);
+                if(toastSuccessBadge)toastSuccessBadge.SetActive(tone==ToastTone.Tone.Success);if(toastAlertBadge)toastAlertBadge.SetActive(tone==ToastTone.Tone.Alert);
+                float badge=(tone==ToastTone.Tone.Success&&toastSuccessBadge)||(tone==ToastTone.Tone.Alert&&toastAlertBadge)?32:0;
+                float width=Mathf.Clamp(TextFit.Width(toastText,fittedToast,TextFit.MaxSize(toastText))+toastPadding+badge,toastMinWidth,toastMaxWidth);
+                card.sizeDelta=new Vector2(width,card.sizeDelta.y);
+                // A text box stretched across the card follows it; a fixed-size one is resized with it.
+                if(Mathf.Approximately(text.anchorMin.x,text.anchorMax.x)){text.sizeDelta=new Vector2(width-36-badge,text.sizeDelta.y);text.anchoredPosition=new Vector2(badge*.5f,text.anchoredPosition.y);}
+            }
             toast.alpha=Mathf.MoveTowards(toast.alpha,Time.unscaledTime<toastUntil?1:0,Time.unscaledDeltaTime*7);if(toast.alpha>0)toast.transform.SetAsLastSibling();
             // Show the startup gate while verification is pending as well as while offline.
             // Previously the player was locked invisibly until two failed probe cycles.

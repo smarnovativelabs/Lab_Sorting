@@ -61,7 +61,7 @@ namespace LabSorting.Prototype
             }
             yield return new WaitForSecondsRealtime(5.2f);
             Check(!g.IsRunning&&g.Completed&&tour.Completed&&!s.player.blocked,"Tutorial ends with remembered completion and usable controls");
-            Check(s.SortedCount==1&&s.items.Length==4032,"Full flow preserves item count and actual sorted progress");
+            Check(s.SortedCount==1&&DesignerCatalog.Complete(s),"Full flow preserves item count and actual sorted progress: "+DesignerCatalog.Describe(s)+", sorted "+s.SortedCount);
             Check(!tour.BeginTour(),"Returning player does not repeat completed tour");
             var menus=g.GetComponent<DesignerMenus>();Check(!menus.pauseRoot.GetComponentsInChildren<UnityEngine.UI.Text>(true).Any(t=>t.text.ToUpperInvariant().Contains("MAIN MENU")),"Pause has no main-menu navigation");
             SortingSmokeChecks.Capture(s,"Logs/FirstFlow-Gameplay.png");

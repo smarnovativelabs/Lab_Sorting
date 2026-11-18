@@ -126,7 +126,8 @@ namespace LabSorting.UI
                     break;
                 case Step.Look:
                     if(looked>=lookDegrees){Enter(Step.Pick);return;}
-                    if(Time.unscaledTime>=lookGestureAt&&(idle||looked<1))Drag(lookArea,new Vector2(-140,-60),new Vector2(140,-60),55);else SetHand(HandMode.Hidden);
+                    // The look area spans the whole screen; demonstrate the swipe where the right thumb rests.
+                    if(Time.unscaledTime>=lookGestureAt&&(idle||looked<1))Drag(lookArea,new Vector2(-140,-60),new Vector2(140,-60),55,.75f);else SetHand(HandMode.Hidden);
                     break;
                 case Step.Pick:
                     // Hands already full (e.g. replaying the tutorial later): picking can't be practised, move on.
@@ -194,12 +195,12 @@ namespace LabSorting.UI
             float t=Mathf.Repeat(Time.unscaledTime,1f),away=t<.4f?Mathf.Lerp(30,0,Smooth(t/.4f)):t<.65f?0:Mathf.Lerp(0,30,Smooth((t-.65f)/.35f));
             PutHand(tip-(Vector2)direction*away,angle,mirror,t>=.4f&&t<.65f?.9f:1);
         }
-        void Drag(RectTransform target,Vector2 from,Vector2 to,float angle)
+        void Drag(RectTransform target,Vector2 from,Vector2 to,float angle,float across=.5f)
         {
             if(!target||!target.gameObject.activeInHierarchy){SetHand(HandMode.Hidden);return;}
             SetHand(HandMode.Drag);
             float t=Mathf.Repeat(Time.unscaledTime,1.6f)/1.6f;float k=t<.5f?Smooth(t*2):Smooth(2-t*2);
-            PutHand(Local(target)+Vector2.Lerp(from,to,k),angle,false,.92f);
+            PutHand(Local(target,across)+Vector2.Lerp(from,to,k),angle,false,.92f);
         }
         // Points at the aim cross in the middle of the screen from below-left, nudging gently. Fixed on screen.
         void Aim()

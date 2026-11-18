@@ -15,7 +15,7 @@ namespace LabSorting.Prototype
         public static IEnumerator Run()
         {
             var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();var saved=s.Capture();var hud=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();var menus=hud.GetComponent<DesignerMenus>();var settings=hud.GetComponent<SettingsTutorialPanel>();var progress=hud.GetComponent<ItemsProgressPanel>();var supply=hud.GetComponent<SupplyPanel>();
-            Check(s.items.Length==4032&&menus&&hud.designerSkin,"Designer skin wired with 4032 items");
+            Check(DesignerCatalog.Complete(s)&&menus&&hud.designerSkin,"Designer skin wired with "+DesignerCatalog.Describe(s));
             StoreReferenceChecks.Run(menus);
             Check(hud.progress.font.name=="Onlygraphic Bold"&&hud.active.font.name=="Onlygraphic Rounded","Requested heading/body fonts assigned");
             Check(UnityEngine.Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>(FindObjectsSortMode.None).Length==1&&hud.GetComponent<UnityEngine.UI.GraphicRaycaster>(),"Exactly one EventSystem and active canvas raycaster");

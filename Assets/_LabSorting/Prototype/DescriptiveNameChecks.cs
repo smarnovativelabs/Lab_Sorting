@@ -16,7 +16,8 @@ namespace LabSorting.Prototype
         public static IEnumerator Run(SortingSession s)
         {
             var definitions=s.items.Select(i=>i.definition).Distinct().ToDictionary(d=>d.id);var rows=File.ReadAllLines("Assets/_LabSorting/Localization/DescriptiveItemNames.txt").Select(l=>l.Split('|')).Where(p=>p.Length==3).ToArray();
-            Check(definitions.Count==46&&definitions.Values.Select(d=>d.displayName).Distinct().Count()==46,"All 46 categories have unique readable names");
+            // 46 original categories plus any added content (e.g. lab-rat); every one needs its own readable name.
+            Check(definitions.Count>=DesignerCatalog.BaselineTypes&&definitions.Values.All(d=>!string.IsNullOrWhiteSpace(d.displayName))&&definitions.Values.Select(d=>d.displayName).Distinct().Count()==definitions.Count,"All "+definitions.Count+" categories have unique readable names");
             foreach(var row in rows)Check(definitions[row[0]].displayName==row[1],"Verified model descriptor: "+row[1]);
             Check(definitions["lab-first-aid-box"].icon.rect.x==1676&&definitions["lab-first-aid-box-2"].icon.rect.x==76,"Green/red first aid icons match actual prefabs");
             Check(definitions["lab-radio-1"].icon.rect.x==1434&&definitions["lab-radio-2"].icon.rect.x==1086,"Compact/wide radio icons match actual prefabs");

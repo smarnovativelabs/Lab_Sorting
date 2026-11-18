@@ -41,8 +41,11 @@ namespace LabSorting.UI
             if(revision!=session.Revision||completing!=showingGoalCompletion)
             {
                 bool first=revision<0;revision=session.Revision;showingGoalCompletion=completing;
+                // When the focus line already says how many items are left, the first line only names the reward
+                // (the bar shows the count) instead of repeating it.
+                string focus=session.ShortGoalFocus();bool countInFocus=focus.EndsWith("new items to next reward");
                 milestone.text=completing?"✓ GOAL COMPLETE   +$"+SortingSession.ShortGoalBonus:session.ShortGoalsComplete?"SHORT GOALS COMPLETE":
-                    "SHORT GOAL   "+session.ShortGoalProgress+" / "+session.ShortGoalTarget+"   |   +$"+SortingSession.ShortGoalBonus+"\n"+session.ShortGoalFocus();
+                    (countInFocus?"SHORT GOAL   +$"+SortingSession.ShortGoalBonus:"SHORT GOAL   "+session.ShortGoalProgress+" / "+session.ShortGoalTarget+"   |   +$"+SortingSession.ShortGoalBonus)+"\n"+focus;
                 selectedSwatch.color=session.Active?session.Active.definition.color:new Color(.3f,.35f,.4f);
                 if(first)shownGoalProgress=session.ShortGoalFraction;else if(!completing&&goalOrdinal!=session.ShortGoalOrdinal)shownGoalProgress=0;
                 if(!completing)goalOrdinal=session.ShortGoalOrdinal;

@@ -16,7 +16,7 @@ namespace LabSorting.Prototype
             var original=s.Capture();var panel=UnityEngine.Object.FindFirstObjectByType<ItemsProgressPanel>();
             try
             {
-                s.player.SendMessage("OnApplicationFocus",true);Check(s.items.Length==4032,"Full designer catalog");
+                s.player.SendMessage("OnApplicationFocus",true);Check(DesignerCatalog.Complete(s),"Full designer catalog: "+DesignerCatalog.Describe(s));
                 Check(s.ShortGoalFocus().Contains("new items"),"Initial goal keeps simple sorting instruction");
                 var checkpoint=s.Capture();checkpoint.rewarded=s.items.Take(25).Select(i=>i.id).ToList();Check(s.Restore(checkpoint),"Existing unique-item reward history loads");
                 var item=s.items.First(i=>s.racks.Any(r=>r.CapacityFor(i.definition)>1&&r.CapacityFor(i.definition)<=s.ItemsOfType(i.definition).Count()));

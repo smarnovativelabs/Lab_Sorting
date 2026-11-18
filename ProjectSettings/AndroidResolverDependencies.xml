@@ -4,6 +4,7 @@
     <package>androidx.fragment:fragment:1.7.1</package>
     <package>androidx.lifecycle:lifecycle-process:2.6.2</package>
     <package>androidx.recyclerview:recyclerview:1.2.1</package>
+    <package>com.android.installreferrer:installreferrer:2.2</package>
     <package>com.applovin.mediation:google-adapter:[25.4.0.0]</package>
     <package>com.applovin.mediation:mintegral-adapter:17.2.21.0</package>
     <package>com.applovin.mediation:unityads-adapter:4.21.0.1</package>

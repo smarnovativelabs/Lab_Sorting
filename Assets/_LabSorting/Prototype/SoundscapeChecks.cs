@@ -25,7 +25,9 @@ namespace LabSorting.Prototype
                 Check(sound.music&&sound.music.loop&&sound.music.clip&&sound.musicVolume<=.1f,"Quiet background music loop wired");
                 Check(sound.ambience.loop&&sound.ambience.clip&&sound.click&&sound.close,"Loop and distinct UI cues wired");
                 Check(session.items.Select(i=>i.definition).Distinct().All(d=>!Regex.IsMatch(d.displayName,@"\s+\d+$")),"No numeric suffixes remain on item display names");
-                Check(session.items.Select(i=>i.definition).Distinct().Select(d=>d.id).Distinct().Count()==46,"All 46 stable item IDs retained");
+                // 46 original types must survive renaming; new content (e.g. lab-rat) may add more, each with its own stable ID.
+                var types=session.items.Select(i=>i.definition).Distinct().ToArray();
+                Check(types.Length>=DesignerCatalog.BaselineTypes&&types.All(d=>!string.IsNullOrWhiteSpace(d.id))&&types.Select(d=>d.id).Distinct().Count()==types.Length,"All "+types.Length+" item types keep unique stable IDs");
                 feedback.SetSound(true,false);yield return new WaitForSecondsRealtime(.3f);
                 Check(sound.ambience.volume>0&&sound.ambience.volume<=sound.gameplayVolume,"Ambience fades in below gameplay level");
                 Check(sound.music.isPlaying&&sound.music.volume>0&&sound.music.volume<=sound.musicVolume,"Music fades in softly below effects");

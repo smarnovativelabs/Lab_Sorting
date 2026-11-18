@@ -18,7 +18,7 @@ namespace LabSorting.Prototype
             var floor=GameObject.CreatePrimitive(PrimitiveType.Cube);floor.transform.position=new Vector3(1200,-.1f,1200);floor.transform.localScale=new Vector3(20,.2f,20);
             try
             {
-                s.RebuildTypeIndex();Check(s.items.GroupBy(i=>i.definition).All(g=>s.ItemsOfType(g.Key).Count==g.Count()),"Type index exactly matches all 4032 live items");
+                s.RebuildTypeIndex();Check(s.items.GroupBy(i=>i.definition).All(g=>s.ItemsOfType(g.Key).Count==g.Count()),"Type index exactly matches all "+s.items.Length+" live items");
                 foreach(var item in s.items.GroupBy(i=>i.definition).Select(g=>g.First()))
                 {
                     var measured=s.ReleaseBounds(item);var rotation=item.transform.rotation;var scale=item.transform.localScale;bool enabled=item.hitbox.enabled;
@@ -37,7 +37,10 @@ namespace LabSorting.Prototype
                 var pool=UnityEngine.Object.FindFirstObjectByType<DropLandingPool>();Check(pool.GetComponentsInChildren<Rigidbody>().Length==3,"Only three reusable physics bodies exist");Check(pool.ContactCount>0,"Temporary bodies produce real floor collision contacts; steps="+pool.PhysicsSteps+", reason="+pool.LastFinishReason+", position="+pool.LastFinishPosition+", target="+pool.LastTarget);
                 chosen[0].Travel(chosen[0].transform.position,Quaternion.identity,null,true);DOTween.CompleteAll();s.Restore(initial);Check(DropLandingPool.ActiveCount==0,"Restore cancels physics without orphan bodies");
                 chosen[0].Travel(chosen[0].transform.position,Quaternion.identity,null,true);DOTween.CompleteAll();pool.SendMessage("OnApplicationPause",true);Check(DropLandingPool.ActiveCount==0&&!chosen[0].Moving,"Pause completes active landing safely");
-                s.Restore(initial);yield return Wait(.2f);Check(s.hand.localPosition.x>=.479f,"Held socket is shifted toward screen-right");
+                s.Restore(initial);yield return Wait(.2f);
+                // Since the continuous clearance (75be23c) the socket sits at rest*ClearanceScale, so nearby geometry shortens it.
+                var carry=s.hand.GetComponent<LabSorting.Player.CarryPresentation>();var socket=s.hand.localPosition;
+                Check(socket.x>=.479f*carry.ClearanceScale-.001f,"Held socket is shifted toward screen-right; local="+socket.ToString("F3")+", clearance="+carry.ClearanceScale.ToString("F3"));
                 yield return Ratios(s);
             }
             finally{DOTween.CompleteAll();s.Restore(initial);floor.SetActive(false);UnityEngine.Object.Destroy(floor);}

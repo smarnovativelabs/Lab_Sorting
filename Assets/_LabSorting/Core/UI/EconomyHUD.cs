@@ -11,9 +11,31 @@ namespace LabSorting.UI
         public RectTransform safeArea;
         public Image markerBackdrop;
         public bool compact,designerSkin;
+        [Header("Owned-use badges (compact HUD)")]
+        [Tooltip("When set, owned search/magnet uses show in a badge on the button instead of inside the caption.")]
+        public Text searchCount,magnetCount;
+        public Image searchBadge,magnetBadge;
+        [Tooltip("Gold knob while uses remain; silver knob at zero.")]
+        public Sprite badgeOwned,badgeEmpty;
         float refreshAt;
         int revision=-1;
         SortItem guidedSearchItem;
+        // Designer wallet counts up to new cash (about half a second); spending shows at once.
+        float shownCash=-1;
+        void LateUpdate()
+        {
+            if(!compact||!designerSkin||!wallet||!session)return;
+            int target=session.Cash;
+            if(shownCash<0||!session.Initialized||target<shownCash){if(shownCash!=target){shownCash=target;wallet.text="$"+UIFormat.Count(target);}return;}
+            if(Mathf.Approximately(shownCash,target))return;
+            shownCash=Mathf.MoveTowards(shownCash,target,Mathf.Max(30,(target-shownCash)*4)*Time.unscaledDeltaTime);
+            wallet.text="$"+UIFormat.Count(Mathf.RoundToInt(shownCash));
+        }
+        void Badge(Text count,Image badge,int owned)
+        {
+            count.text=owned>99?"99+":owned.ToString();
+            if(badge){var sprite=owned>0?badgeOwned:badgeEmpty;if(sprite&&badge.sprite!=sprite)badge.sprite=sprite;}
+        }
         public SortItem GuidedSearchItem=>guidedSearchItem;
         void Update()
         {
@@ -35,9 +57,11 @@ namespace LabSorting.UI
             upgradeButton.interactable=enabled&&session.capacity<session.maxCapacity&&session.Cash>=session.UpgradeCost;
             if(compact)
             {
-                wallet.text="$"+session.Cash+(designerSkin?"":"  +");
-                searchLabel.text=session.SearchType?session.SearchSeconds.ToString("0.0")+"s":"SEARCH"+(session.SearchCredits>0?"  "+session.SearchCredits:designerSkin?"":"  +");
-                magnetLabel.text=session.MagnetSeconds>0?session.MagnetSeconds.ToString("0.0")+"s":"MAGNET"+(session.MagnetCredits>0?"  "+session.MagnetCredits:designerSkin?"":"  +");
+                wallet.text=designerSkin?"$"+UIFormat.Count(shownCash<0?session.Cash:Mathf.RoundToInt(shownCash)):"$"+session.Cash+"  +";
+                bool badges=searchCount&&magnetCount;
+                searchLabel.text=session.SearchType?session.SearchSeconds.ToString("0.0")+"s":"SEARCH"+(badges?"":session.SearchCredits>0?"  "+session.SearchCredits:designerSkin?"":"  +");
+                magnetLabel.text=session.MagnetSeconds>0?session.MagnetSeconds.ToString("0.0")+"s":"MAGNET"+(badges?"":session.MagnetCredits>0?"  "+session.MagnetCredits:designerSkin?"":"  +");
+                if(badges){Badge(searchCount,searchBadge,session.SearchCredits);Badge(magnetCount,magnetBadge,session.MagnetCredits);}
                 upgradeLabel.text=session.carried.Count+" / "+session.capacity+"  +";
                 searchButton.interactable=magnetButton.interactable=upgradeButton.interactable=enabled;
             }

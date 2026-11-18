@@ -65,7 +65,9 @@ namespace LabSorting.Sorting
             var result=new Bounds(item.transform.position+Vector3.Scale(box.center,scale),size);
             if(item.visual)
             {
-                var local=item.visual.localBounds;var relative=item.transform.worldToLocalMatrix*item.visual.transform.localToWorldMatrix;
+                // A SkinnedMeshRenderer's localBounds live in its root bone's space (rats), not the renderer's.
+                var space=item.visual is SkinnedMeshRenderer skinned&&skinned.rootBone?skinned.rootBone:item.visual.transform;
+                var local=item.visual.localBounds;var relative=item.transform.worldToLocalMatrix*space.localToWorldMatrix;
                 for(int i=0;i<8;i++){var corner=local.center+Vector3.Scale(local.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));result.Encapsulate(item.transform.position+Vector3.Scale(relative.MultiplyPoint3x4(corner),scale));}
             }
             return result;

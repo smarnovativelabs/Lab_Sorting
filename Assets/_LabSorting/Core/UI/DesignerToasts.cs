@@ -21,6 +21,14 @@ namespace LabSorting.UI
         public float slideDistance=26;
         [Tooltip("Seconds the slide-in takes; leaving is slightly quicker.")]
         public float showDuration=.24f;
+        [Header("Content-sized card")]
+        [Tooltip("Card width follows the message: text width + padding, clamped to this range. 0 = keep the authored width.")]
+        public float minWidth=200,maxWidth=440;
+        public float padding=48;
+        [Tooltip("Shown at the card's left edge for warnings and errors.")]
+        public GameObject alertBadge;
+        [Tooltip("Shown at the card's left edge when the message reports something gained (ToastTone.Success).")]
+        public GameObject successBadge;
         readonly ToastPriority messages=new ToastPriority();
         readonly Vector3[] corners=new Vector3[4];
         string lastSubmitted,lastError,shownText="";
@@ -72,6 +80,19 @@ namespace LabSorting.UI
             float target=Mathf.Max(Mathf.Min(y,top-gap-half),floorTop+gap+half);
             return new Vector2(rest.x,target-offset.y);
         }
+        // A fixed 520-wide bar made "Rack full" a long empty strip; size the card to its message instead.
+        void FitCard(bool alert)
+        {
+            bool success=!alert&&ToastTone.Of(shownText)==ToastTone.Tone.Success;
+            if(alertBadge&&alertBadge.activeSelf!=alert)alertBadge.SetActive(alert);
+            if(successBadge&&successBadge.activeSelf!=success)successBadge.SetActive(success);
+            if(!card||maxWidth<=0)return;
+            float badge=(alert&&alertBadge)||(success&&successBadge)?30:0;
+            float width=Mathf.Clamp(TextFit.Width(hud.status,shownText,TextFit.MaxSize(hud.status))+padding+badge,minWidth,maxWidth);
+            card.sizeDelta=new Vector2(width,card.sizeDelta.y);
+            var text=hud.status.rectTransform;
+            if(Mathf.Approximately(text.anchorMin.x,text.anchorMax.x)){text.sizeDelta=new Vector2(width-28-badge,text.sizeDelta.y);text.anchoredPosition=new Vector2(badge*.5f,text.anchoredPosition.y);}
+        }
         static float OutBack(float t){const float c=1.4f;t-=1;return 1+(c+1)*t*t*t+c*t*t;}
         void LateUpdate()
         {
@@ -81,7 +102,10 @@ namespace LabSorting.UI
             {
                 // A replacement while already on screen gets a small bump instead of a full re-entry.
                 if(show>.5f)pop=1;shownText=messages.Text;hud.status.text=shownText;
-                hud.status.color=messages.Priority>=2?new Color(1,.85f,.45f):Color.white;
+                bool alert=messages.Priority>=2;
+                hud.status.color=alert?new Color(1,.85f,.45f):Color.white;
+                // Badges follow what the message says (priority also flags good news like rewards).
+                var tone=ToastTone.Of(shownText);FitCard(shownText==lastError||tone==ToastTone.Tone.Alert);
             }
             float step=Time.unscaledDeltaTime/Mathf.Max(.01f,showDuration);
             show=Mathf.MoveTowards(show,has?1:0,has?step:step*1.3f);

@@ -22,7 +22,7 @@ namespace LabSorting.Prototype
             var fixture=GameObject.CreatePrimitive(PrimitiveType.Cube);fixture.name="Temporary buffered place rack";fixture.SetActive(false);
             try
             {
-                Check(s.items.Length==4032,"4032 designer items");yield return FullInventoryControlChecks.Run(s);s.player.SendMessage("OnApplicationFocus",true);s.player.Clear();s.player.character.Motor.enabled=false;
+                Check(DesignerCatalog.Complete(s),"Full designer catalog: "+DesignerCatalog.Describe(s));yield return FullInventoryControlChecks.Run(s);s.player.SendMessage("OnApplicationFocus",true);s.player.Clear();s.player.character.Motor.enabled=false;
                 var chosen=s.items.Where(i=>i.location==ItemLocation.Loose).GroupBy(i=>i.definition).Take(3).Select(g=>g.First()).ToArray();
                 foreach(var item in chosen){Check(s.TryPick(item),"Pick rapid-switch item");DOTween.CompleteAll();}
                 for(int i=0;i<30;i++)
@@ -40,8 +40,11 @@ namespace LabSorting.Prototype
                 var item0=chosen[0];Check(s.TryPick(item0),"Begin pickup before rapid place tap");s.RefreshTarget();Check(s.TargetRack==bufferRack,"Temporary rack is actually targeted");
                 s.BeginHold(true);s.EndHold(true);Check(s.BufferedTap,"One place tap waits for pickup/cooldown");
                 yield return Wait(()=>item0.location==ItemLocation.Rack||!s.BufferedTap);Check(item0.location==ItemLocation.Rack&&!s.BufferedTap&&!s.Holding&&bufferRack.Count==1,"Released tap executes exactly once without starting repetition; location="+item0.location+", target="+s.TargetRack+", buffer="+s.BufferedTapState+", moving="+item0.Moving+", blocked="+s.player.blocked+", dt="+Time.unscaledDeltaTime);
-                DOTween.CompleteAll();var cancelItem=s.ItemsOfType(item0.definition).First(i=>i.location==ItemLocation.Loose);Check(s.TryPick(cancelItem),"Pickup for cancel test");s.ThrowActive();Check(s.DropPending,"Busy drop queues");s.RefreshTarget();s.BeginHold(true);Check(s.BufferedTap&&!s.DropPending,"New place intent replaces queued drop");s.player.look.SetYawPitch(new Vector2(90,0));s.RefreshTarget();
+                DOTween.CompleteAll();var cancelItem=s.ItemsOfType(item0.definition).First(i=>i.location==ItemLocation.Loose);Check(s.TryPick(cancelItem),"Pickup for cancel test");s.RefreshTarget();s.BeginHold(true);Check(s.BufferedTap&&!s.DropPending,"Place intent during pickup is buffered");s.player.look.SetYawPitch(new Vector2(90,0));s.RefreshTarget();
                 yield return Wait(()=>!s.BufferedTap);Check(!s.BufferedTap&&cancelItem.location==ItemLocation.Hand&&bufferRack.Count==1,"Changing aim cancels buffered place without dropping the item");
+                // Since 631cd34 DROP releases at once, even mid-pickup; nothing is queued any more (QueueDrop has no callers).
+                s.CancelHold();var busyItem=s.ItemsOfType(item0.definition).First(i=>i.location==ItemLocation.Loose);Check(s.TryPick(busyItem)&&busyItem.Moving,"Second pickup still animating");int heldCount=s.carried.Count;
+                s.ThrowActive();Check(!s.DropPending&&busyItem.location==ItemLocation.Loose&&!s.carried.Contains(busyItem)&&s.carried.Count==heldCount-1,"Busy drop releases at once instead of queueing");
                 s.CancelHold();fixture.SetActive(false);s.racks=racks;s.Restore(initial);s.player.SendMessage("OnApplicationFocus",true);
 
                 // Use a separate real disk save, never the player's save file.
@@ -70,7 +73,7 @@ namespace LabSorting.Prototype
                 var rewards=UnityEngine.Object.FindFirstObjectByType<SortingRewardsHUD>();rewards.SendMessage("Update");Check(rewards.milestone.text.Contains("GOAL COMPLETE")&&s.ShortGoalProgress==0&&s.ShortGoalTarget==25,"Goal completes visibly and advances to next batch");
                 yield return new WaitForSecondsRealtime(1.5f);rewards.SendMessage("Update");Check((rewards.milestone.text.Contains(s.ShortGoalFocus())||rewards.milestone.text.Contains(LabSorting.Services.LabLocalization.Text(s.ShortGoalFocus())))&&rewards.shortGoalFill,"Next goal gives an achievable contextual focus and has a progress bar");
                 int goalCash=s.Cash;var repeat=s.ItemsOfType(type).First(i=>i.location==ItemLocation.Rack);Check(s.TryPick(repeat),"Retrieve rewarded item");DOTween.CompleteAll();Check(s.TryPlace(goalRack),"Replace rewarded item");DOTween.CompleteAll();Check(s.Cash==goalCash&&s.ShortGoalProgress==0,"Repeated placement cannot advance or repay short goal");
-                SortingSmokeChecks.Capture(s,"Logs/ShortGoalPresentation.png");report.AppendLine("4032-item lifecycle tests passed; unique item IDs="+s.items.Select(i=>i.id).Distinct().Count());File.WriteAllText("Logs/RapidResumeMeasurements.txt",report.ToString());
+                SortingSmokeChecks.Capture(s,"Logs/ShortGoalPresentation.png");report.AppendLine(s.items.Length+"-item lifecycle tests passed; unique item IDs="+s.items.Select(i=>i.id).Distinct().Count());File.WriteAllText("Logs/RapidResumeMeasurements.txt",report.ToString());
             }
             finally
             {

@@ -1,7 +1,7 @@
 using UnityEngine;
 namespace LabSorting.Sorting
 {
-    // Three reusable physics proxies; the 4032 scene items remain static colliders.
+    // Three reusable physics proxies; the scene items remain static colliders.
     public sealed class DropLandingPool : MonoBehaviour
     {
         sealed class Slot {public Rigidbody body;public BoxCollider box;public SortItem item;public Vector3 target,offset;public Quaternion rotation;public float until,quiet;public bool flight;public System.Action done;}

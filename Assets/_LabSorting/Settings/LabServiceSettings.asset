@@ -42,4 +42,6 @@ MonoBehaviour:
   underAgeOfConsent: 0
   enableLiveServices: 1
   testDeviceAdvertisingIds: []
-  interstitialCooldownSeconds: 180
+  interstitialCooldownSeconds: 120
+  interstitialWarningSeconds: 5
+  editorTestServices: 1

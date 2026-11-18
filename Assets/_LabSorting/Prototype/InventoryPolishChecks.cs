@@ -33,7 +33,13 @@ namespace LabSorting.Prototype
                 wall.SetActive(true);Physics.SyncTransforms();yield return Wait(.3f);var held=s.Active;count=s.carried.Count;
                 bool frontGap=s.TryThrowPosition(held,out var aroundWall);
                 check(!frontGap||(aroundWall.z>80&&aroundWall.z<wall.GetComponent<Collider>().bounds.min.z),"Wall-facing drop never goes behind the player or beyond the wall");
-                wall.SetActive(false);floor.SetActive(false);Physics.SyncTransforms();s.ThrowActive();check(s.Active==held&&s.carried.Count==count,"Missing floor rejects throw without inventory loss");
+                // DROP is an immediate release since the crowded-drop fallback (SafeThrow.FindCrowdedDrop): with no floor it
+                // never queues the item in inventory, it lifts a clear column in front of the player and releases there.
+                wall.SetActive(false);floor.SetActive(false);Physics.SyncTransforms();var kept=s.carried.FindAll(i=>i!=held);s.ThrowActive();
+                check(s.carried.Count==count-1&&!s.carried.Contains(held)&&kept.TrueForAll(s.carried.Contains)&&held.location==ItemLocation.Loose,"Missing floor still releases exactly the selected item");
+                held.CompleteMotion();var rest=held.transform.position-s.player.transform.position;
+                check(!held.Moving&&!float.IsNaN(rest.sqrMagnitude)&&rest.y>-.5f&&rest.magnitude<3&&held.SavedPosition==held.transform.position&&held.hitbox.enabled,"Floorless drop rests at a recovery point near the player without inventory loss; offset="+rest);
+                floor.SetActive(true);Physics.SyncTransforms();check(s.TryPick(held)&&s.Active==held&&s.carried.Count==count,"Released item can be picked back up");DOTween.CompleteAll();yield return Wait(.3f);
                 floor.SetActive(true);wall.SetActive(true);wall.transform.position=held.transform.position;wall.transform.localScale=Vector3.one*.15f;Physics.SyncTransforms();check(s.TryThrowPosition(held,out _),"Visual hand obstruction retracts to a safe release point");
                 // The earlier dropped item occupies the new, shorter drop zone. Clear it for this independent pivot test.
                 wall.SetActive(false);thrown.transform.position+=Vector3.right*3;Physics.SyncTransforms();var box=held.hitbox as BoxCollider;

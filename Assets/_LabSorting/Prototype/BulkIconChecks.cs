@@ -15,8 +15,8 @@ namespace LabSorting.Prototype
             var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();var h=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();var panel=h.GetComponent<ItemsProgressPanel>();var initial=s.Capture();
             try
             {
-                var types=s.items.Select(i=>i.definition).Distinct().ToArray();Check(types.Length==46&&types.All(d=>d.icon),"All 46 types have icons");Check(types.Select(d=>d.icon).Distinct().Count()==46,"Each type has its own sprite");
-                Check(s.items.Length==4032&&s.items.Select(i=>i.id).Distinct().Count()==4032,"Item count and unique IDs preserved");
+                var types=s.items.Select(i=>i.definition).Distinct().ToArray();Check(types.Length>=DesignerCatalog.BaselineTypes&&types.All(d=>d.icon),"All "+types.Length+" types have icons; missing: "+string.Join(",",types.Where(d=>!d.icon).Select(d=>d.id)));Check(types.Select(d=>d.icon).Distinct().Count()==types.Length,"Each type has its own sprite");
+                Check(DesignerCatalog.Complete(s),"Item count and unique IDs preserved: "+DesignerCatalog.Describe(s));
                 var recovery=s.GetComponent<ItemRecovery>();Check(!s.items.Any(i=>recovery.NeedsRecovery(i)),"Bulk items stay in bounds and outside environment walls");
                 foreach(var item in s.items.GroupBy(i=>i.definition).Take(7).Select(g=>g.First())){Check(s.TryPick(item),"Pick icon category");DOTween.CompleteAll();}
                 yield return new WaitForSeconds(.2f);

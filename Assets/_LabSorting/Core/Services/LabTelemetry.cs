@@ -34,7 +34,8 @@ namespace LabSorting.Services
             if(!tenjin&&!string.IsNullOrWhiteSpace(settings.tenjinApiKey)&&Application.platform==RuntimePlatform.Android)
             {
                 var go=new GameObject("Tenjin");go.transform.SetParent(transform);
-                try{var t=go.AddComponent<AndroidTenjin>();t.Init(settings.tenjinApiKey);t.OptIn();t.Connect();tenjin=t;}
+                // Same order as the Motel/Janitor projects: Init, OptIn, store type, then Connect (install/open event).
+                try{var t=go.AddComponent<AndroidTenjin>();t.Init(settings.tenjinApiKey);t.OptIn();t.SetAppStoreType(AppStoreType.googleplay);t.Connect();tenjin=t;if(Debug.isDebugBuild)Debug.Log("[LabTelemetry] Tenjin connected (googleplay).");}
                 catch{Destroy(go);Debug.LogWarning("Tenjin initialization unavailable; gameplay continues.");}
             }
             try{
@@ -60,8 +61,18 @@ namespace LabSorting.Services
                 if(instance.tenjin&&AttributionAllowed){var receipt=JsonUtility.FromJson<StoreReceipt>(order.Info.Receipt);var google=JsonUtility.FromJson<GoogleReceipt>(receipt.Payload);if(!string.IsNullOrEmpty(google.json)&&!string.IsNullOrEmpty(google.signature))instance.tenjin.Transaction(product.definition.id,product.metadata.isoCurrencyCode,1,(double)product.metadata.localizedPrice,order.Info.TransactionID,google.json,google.signature);}
             }catch{Debug.LogWarning("Purchase delivered; revenue telemetry unavailable.");}
         }
-        [Serializable] sealed class AdRevenueData{public double revenue;public string ad_revenue_currency="USD",network_name,ad_unit_id,format,placement,revenue_precision;}
-        public static void Revenue(MaxSdkBase.AdInfo info){if(info==null||info.Revenue<0)return;Event("ad_revenue",info.NetworkName,info.Revenue);if(instance&&instance.ready&&AnalyticsAllowed)FirebaseAnalytics.LogEvent("ad_impression",new Parameter("ad_platform","AppLovin"),new Parameter("ad_source",info.NetworkName),new Parameter("currency","USD"),new Parameter("value",info.Revenue));if(instance&&instance.tenjin&&AttributionAllowed)instance.tenjin.AppLovinImpressionFromJSON(JsonUtility.ToJson(new AdRevenueData{revenue=info.Revenue,network_name=info.NetworkName,ad_unit_id=info.AdUnitIdentifier,format=info.AdFormat,placement=info.Placement,revenue_precision=info.RevenuePrecision}));}
+        // Same fields as Tenjin's own TenjinAppLovinIntegration (ILRD), so Tenjin's ad revenue report is complete.
+        [Serializable] sealed class AdRevenueData{public double revenue;public string ad_revenue_currency="USD",country,network_name,ad_unit_id,format,placement,network_placement,creative_id,revenue_precision;}
+        public static void Revenue(MaxSdkBase.AdInfo info)
+        {
+            if(info==null||info.Revenue<0)return;Event("ad_revenue",info.NetworkName,info.Revenue);
+            if(!instance||Application.isEditor)return;
+            try{
+                if(instance.ready&&AnalyticsAllowed)FirebaseAnalytics.LogEvent("ad_impression",new Parameter("ad_platform","AppLovin"),new Parameter("ad_source",info.NetworkName),new Parameter("ad_format",info.AdFormat??""),new Parameter("ad_unit_name",info.AdUnitIdentifier??""),new Parameter("currency","USD"),new Parameter("value",info.Revenue));
+                if(instance.tenjin&&AttributionAllowed){string country="";try{country=MaxSdk.GetSdkConfiguration().CountryCode;}catch{}
+                    instance.tenjin.AppLovinImpressionFromJSON(JsonUtility.ToJson(new AdRevenueData{revenue=info.Revenue,country=country,network_name=info.NetworkName,ad_unit_id=info.AdUnitIdentifier,format=info.AdFormat,placement=info.Placement,network_placement=info.NetworkPlacement,creative_id=info.CreativeIdentifier,revenue_precision=info.RevenuePrecision}));}
+            }catch{Debug.LogWarning("Ad revenue telemetry unavailable.");}
+        }
         void Search(ItemDefinition item,int count)=>Event("search_used",item.id,count);
         void Magnet(ItemDefinition item,Vector3[] origins)=>Event("magnet_used",item.id,origins.Length);
         void Rack(SortRack rack)=>Event("rack_completed",rack.id);

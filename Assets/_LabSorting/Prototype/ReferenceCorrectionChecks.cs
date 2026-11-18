@@ -21,7 +21,7 @@ namespace LabSorting.Prototype
                     var b=item.hitbox.bounds;int n=Physics.RaycastNonAlloc(new Vector3(b.center.x,b.min.y+.02f,b.center.z),Vector3.down,hits,.09f,~(1<<2),QueryTriggerInteraction.Ignore);
                     if(hits.Take(n).Any(h=>!h.collider.GetComponentInParent<SortItem>()&&!h.collider.GetComponentInParent<SortRack>()&&h.normal.y>.95f))supported++;
                 }
-                Check(supported==4032,"All 4032 item bottoms are supported directly by floor");Check(s.layoutRevision==2,"New continuous layout revision active");
+                Check(DesignerCatalog.Complete(s)&&supported==s.items.Length,"All "+s.items.Length+" item bottoms are supported directly by floor; supported="+supported);Check(s.layoutRevision==2,"New continuous layout revision active");
                 s.player.SendMessage("OnApplicationFocus",true);s.player.Clear();
                 // Let the authored spawn settle before measuring floor height.
                 for(int frame=0;frame<60&&!s.player.character.Motor.GroundingStatus.IsStableOnGround;frame++)yield return new WaitForFixedUpdate();

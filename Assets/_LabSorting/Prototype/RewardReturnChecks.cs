@@ -24,7 +24,7 @@ namespace LabSorting.Prototype
             string id=c.settings.androidRewardedId;
             try
             {
-                Check(s.items.Length==4032,"Production item count is exercised");
+                Check(DesignerCatalog.Complete(s),"Production item count is exercised: "+DesignerCatalog.Describe(s));
                 foreach(SupplyKind kind in new[]{SupplyKind.Cash,SupplyKind.Search,SupplyKind.Magnet,SupplyKind.Slot})
                 {
                     if(kind==SupplyKind.Cash)menus.OpenStore();else panel.Open(kind);

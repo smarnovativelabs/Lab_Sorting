@@ -15,6 +15,8 @@ namespace LabSorting.UI
         public UnityEngine.UI.Image targetBackdrop;
         public bool compact;
         public bool designerSkin;
+        [Tooltip("Optional fill inside the SORTED title plate; its anchorMax.x follows the sorted fraction.")]
+        public RectTransform progressFill;
         public Text inventorySummary;
         public GameObject inventoryPanel;
         public UnityEngine.UI.Button previousPage,nextPage; public UnityEngine.UI.Text pageLabel;
@@ -101,7 +103,13 @@ namespace LabSorting.UI
             }
             if(revision==session.Revision&&wasBlocked==session.player.blocked) return; revision=session.Revision;wasBlocked=session.player.blocked;
             progress.text="LAB SORTING\nSorted "+session.SortedCount+" / "+session.items.Length+"    Remaining "+(session.items.Length-session.SortedCount);
-            if(compact)progress.text="SORTED  "+session.SortedCount+" / "+session.items.Length;
+            if(compact)
+            {
+                // Thousands of items read as "no progress"; a percentage and a fill make every rack count.
+                float fraction=session.items.Length>0?(float)session.SortedCount/session.items.Length:0;
+                progress.text="SORTED  "+UIFormat.Count(session.SortedCount)+" / "+UIFormat.Count(session.items.Length);
+                if(progressFill){progress.text+="   "+(fraction<.1f?(fraction*100).ToString("0.0"):Mathf.FloorToInt(fraction*100).ToString())+"%";progressFill.anchorMax=new Vector2(fraction,progressFill.anchorMax.y);progressFill.gameObject.SetActive(fraction>0);}
+            }
             // Name only: hand totals and per-type counts already live in the Collected list.
             // With a fading card, keep the last name/icon while it fades out.
             if(session.Active||!selectedCard)

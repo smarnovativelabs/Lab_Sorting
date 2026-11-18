@@ -24,7 +24,7 @@ namespace LabSorting.Prototype
             var snapshot=s.Capture();bool motor=s.player.character.Motor.enabled;SortItem a=null,b=null;GameObject wall=null;
             try
             {
-                Check(s.items.Length==4032,"4032-item designer scene");
+                Check(DesignerCatalog.Complete(s),"Full designer scene: "+DesignerCatalog.Describe(s));
                 yield return InventorySearchFinishChecks.Run(s);
                 s.player.SendMessage("OnApplicationFocus",true);s.player.Clear();s.player.character.Motor.SetPosition(new Vector3(1000,1000,1000));s.player.character.Motor.enabled=false;s.player.look.SetYawPitch(Vector2.zero);
                 var origin=s.player.view.transform.position;a=Fixture(origin+new Vector3(-.05f,0,2),s.items[0].definition);b=Fixture(origin+new Vector3(.052f,0,2),s.items[1].definition);Physics.SyncTransforms();
@@ -105,7 +105,7 @@ namespace LabSorting.Prototype
                 s.player.SetBlocked(true);rewards.SendMessage("Update");Check(rewards.PendingAnnouncements==0&&rewards.toast.text==""&&rewards.ability.text=="","Modal clears stale celebrations");s.player.SetBlocked(false);
                 s.Restore(snapshot);s.player.SendMessage("OnApplicationFocus",true);Physics.SyncTransforms();for(int i=0;i<20;i++)s.RefreshTarget();
                 long before=GC.GetAllocatedBytesForCurrentThread();var watch=System.Diagnostics.Stopwatch.StartNew();for(int i=0;i<2000;i++)s.RefreshTarget();watch.Stop();long bytes=GC.GetAllocatedBytesForCurrentThread()-before;
-                File.WriteAllText("Logs/GameplayPolishPerformance.txt","4032 items; 2000 warmed target refreshes; mean ms="+(watch.Elapsed.TotalMilliseconds/2000).ToString("F4")+"; allocated bytes="+bytes);
+                File.WriteAllText("Logs/GameplayPolishPerformance.txt",s.items.Length+" items; 2000 warmed target refreshes; mean ms="+(watch.Elapsed.TotalMilliseconds/2000).ToString("F4")+"; allocated bytes="+bytes);
                 Check(bytes<4096,"Steady targeting avoids per-refresh managed allocations");
                 Check(watch.Elapsed.TotalMilliseconds/2000<5,"Editor target refresh under generous 5ms regression budget");
             }

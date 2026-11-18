@@ -25,6 +25,12 @@ namespace LabSorting.Services
         public bool enableLiveServices;
         [Tooltip("Advertising IDs registered as test devices in MAX. No live ads by default.")]
         public string[] testDeviceAdvertisingIds = new string[0];
-        [Min(60)] public float interstitialCooldownSeconds=180;
+        [Tooltip("Seconds of active gameplay between automatic interstitials. Also restarts after every rewarded video.")]
+        [Min(30)] public float interstitialCooldownSeconds=120;
+        [Tooltip("On-screen 5, 4, 3, 2, 1 warning shown before an automatic interstitial.")]
+        [Range(1,10)] public int interstitialWarningSeconds=5;
+        [Header("Editor testing")]
+        [Tooltip("Editor only: MAX placeholder ads and Unity IAP's fake store (fake $0.01 prices, receipts accepted without Google Play validation). Never affects device builds.")]
+        public bool editorTestServices=true;
     }
 }

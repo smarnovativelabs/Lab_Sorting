@@ -38,9 +38,14 @@ namespace LabSorting.UI
             kind=value;previousBlocked=session.player.blocked;cursor=Cursor.lockState;cursorVisible=Cursor.visible;session.CancelHold();session.player.SetBlocked(true);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;root.SetActive(true);root.transform.SetAsLastSibling();status.text="";Refresh();
         }
         public void Close(){if(!IsOpen||(commerce.Busy&&!commerce.CanClosePurchaseUI))return;root.SetActive(false);session.player.SetBlocked(previousBlocked);Cursor.lockState=cursor;Cursor.visible=cursorVisible;}
-        public void BuyCash(){if(!IsOpen||commerce.Busy)return;if(kind==SupplyKind.Cash){commerce.BuyLargeCash();status.text=commerce.Status;}else if(twoOfferLayout?session.BuyOffer(kind):session.BuySupply(kind))status.text="Added to your supplies";else status.text="Not enough cash or capacity is full";Refresh();}
-        public void Watch(){if(IsOpen){commerce.Watch(kind);status.text=commerce.Status;}}
-        public void BuyStore(){if(IsOpen){commerce.Buy(kind);status.text=commerce.Status;}}
+        // Results go to the toast (with its tick / "!" badge); the panel's own line only shows work in progress.
+        ServicePresentation presentation;
+        void Result(string text){if(!presentation)presentation=FindFirstObjectByType<ServicePresentation>();if(presentation)presentation.ShowToast(text);else status.text=text;}
+        public void BuyCash(){if(!IsOpen||commerce.Busy)return;status.text="";if(kind==SupplyKind.Cash)commerce.BuyLargeCash();
+            // Success already reaches the centre toast ("Added 5 Search"); BuySupply reports its own failure, BuyOffer is silent.
+            else if(!(twoOfferLayout?session.BuyOffer(kind):session.BuySupply(kind))&&twoOfferLayout)Result("Not enough cash or capacity is full");Refresh();}
+        public void Watch(){if(IsOpen){commerce.Watch(kind);status.text="";Refresh();}}
+        public void BuyStore(){if(IsOpen){commerce.Buy(kind);status.text="";Refresh();}}
         public void Use(){if(!IsOpen||commerce.Busy)return;Close();if(kind==SupplyKind.Search)session.TrySearch();else if(kind==SupplyKind.Magnet)session.TryMagnet();else if(kind==SupplyKind.Slot)session.TryUpgradeCapacity();}
         float nextRefresh;
         void Update(){if(IsOpen&&Time.unscaledTime>=nextRefresh){nextRefresh=Time.unscaledTime+.15f;Refresh();}}
@@ -60,8 +65,7 @@ namespace LabSorting.UI
             if(kind==SupplyKind.Magnet)usable&=session.carried.Count<session.capacity&&session.MagnetSeconds<=0;
             if(kind==SupplyKind.Search)usable&=!session.SearchType;
             useButton.interactable=!commerce.Busy&&!cap&&usable&&(session.Owned(kind)>0||session.Cash>=session.SupplyPrice(kind));closeButton.interactable=!commerce.Busy||commerce.CanClosePurchaseUI;
-            if(commerce.Busy||!string.IsNullOrEmpty(commerce.Status))status.text=commerce.Status;
-            else if(!commerce.RewardReady)status.text="Video and store offers are currently unavailable.";
+            status.text=commerce.Busy?commerce.Status:!commerce.RewardReady?"Video and store offers are currently unavailable.":"";
         }
         void RefreshOffers()
         {
@@ -76,7 +80,7 @@ namespace LabSorting.UI
             cashButton.gameObject.SetActive(true);cashButton.interactable=!commerce.Busy&&session.CanBuyOffer(kind);
             adButton.interactable=!commerce.Busy&&commerce.RewardReady&&(kind!=SupplyKind.Slot||session.capacity+session.SlotCredits+commerce.AdAmount(kind)<=session.maxCapacity);
             storeButton.gameObject.SetActive(false);useButton.gameObject.SetActive(false);closeButton.interactable=!commerce.Busy||commerce.CanClosePurchaseUI;
-            if(commerce.Busy||!string.IsNullOrEmpty(commerce.Status))status.text=commerce.Status;
+            status.text=commerce.Busy?commerce.Status:"";
         }
         void OnDisable(){if(IsOpen){root.SetActive(false);session.player.SetBlocked(previousBlocked);Cursor.lockState=cursor;Cursor.visible=cursorVisible;}}
     }

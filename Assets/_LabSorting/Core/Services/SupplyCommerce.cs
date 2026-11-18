@@ -12,8 +12,32 @@ namespace LabSorting.Services
         public LabServiceSettings settings;
         public SortingSession session;
         readonly System.Collections.Generic.Dictionary<string,PendingOrder> waitingForSession=new System.Collections.Generic.Dictionary<string,PendingOrder>();
-        public void BindSession(SortingSession value){if(ReferenceEquals(session,value))return;if(!ReferenceEquals(session,null))session.RackCompleted-=CompletedRack;session=value;interstitialPending=false;if(session)session.RackCompleted+=CompletedRack;}
-        void Update(){if(waitingForSession.Count==0||!session||!session.Initialized||!session.persistence)return;var orders=waitingForSession.Values.ToArray();waitingForSession.Clear();foreach(var order in orders)OnPending(order);}
+        public void BindSession(SortingSession value){if(ReferenceEquals(session,value))return;session=value;tutorial=null;tutorialSearched=false;}
+        void Update(){TickInterstitial();if(waitingForSession.Count==0||!session||!session.Initialized||!session.persistence)return;var orders=waitingForSession.Values.ToArray();waitingForSession.Clear();foreach(var order in orders)OnPending(order);}
+        public const string SuppressEditorServicesKey="LabSorting.SuppressEditorTestServices";
+        // Editor play only: MAX placeholder ads and the IAP fake store. Automated tests set the SessionState key so they
+        // keep exercising the no-SDK path. Always false in device builds.
+        public bool EditorTestServices
+        {
+            get
+            {
+#if UNITY_EDITOR
+                return settings&&settings.editorTestServices&&!UnityEditor.SessionState.GetBool(SuppressEditorServicesKey,false);
+#else
+                return false;
+#endif
+            }
+        }
+        // Device builds always check the Google Play signature. The Editor fake store has no signed receipt, so Editor
+        // test mode only checks that the order really contains the product.
+        bool VerifiedReceipt(Order order,string productId,string transactionId)
+        {
+#if UNITY_EDITOR
+            if(EditorTestServices)return order.CartOrdered.Items().Any(i=>i.Product!=null&&i.Product.definition.id==productId);
+#endif
+            var receipts=new CrossPlatformValidator(Convert.FromBase64String(settings.googlePlayPublicKey),null,Application.identifier).Validate(order.Info.Receipt);
+            return receipts.Any(r=>r.productID==productId&&(transactionId==null||r.transactionID==transactionId));
+        }
         StoreController store;
         System.Collections.Generic.List<ProductDefinition> products;
         bool initializedAds,busy,subscribed;
@@ -41,8 +65,9 @@ namespace LabSorting.Services
         async void Start()
         {
             if(!FindFirstObjectByType<InternetConnectivity>()){var go=new GameObject("Lab Connectivity");DontDestroyOnLoad(go);var connection=go.AddComponent<InternetConnectivity>();connection.StartCoroutine(connection.InitializeRoutine());}
-            if(!settings||!settings.enableLiveServices||Application.isEditor||Application.platform!=RuntimePlatform.Android)return;
-            consent=GetComponent<LabConsent>()??gameObject.AddComponent<LabConsent>();consent.Changed+=InitializeAds;consent.Gather(settings.underAgeOfConsent);
+            if(!settings)return;
+            if(!EditorTestServices&&(!settings.enableLiveServices||Application.isEditor||Application.platform!=RuntimePlatform.Android))return;
+            consent=GetComponent<LabConsent>();if(!consent)consent=gameObject.AddComponent<LabConsent>();consent.Changed+=InitializeAds;consent.Gather(settings.underAgeOfConsent);
             products=Enum.GetValues(typeof(SupplyKind)).Cast<SupplyKind>().Select(ProductId).Where(id=>!string.IsNullOrWhiteSpace(id)).Distinct().Select(id=>new ProductDefinition(id,ProductType.Consumable)).ToList();
             if(!string.IsNullOrWhiteSpace(settings.largeCashProductId)&&products.All(p=>p.id!=settings.largeCashProductId))products.Add(new ProductDefinition(settings.largeCashProductId,ProductType.Consumable));
             if(!string.IsNullOrWhiteSpace(settings.removeAdsProductId))products.Add(new ProductDefinition(settings.removeAdsProductId,ProductType.NonConsumable));
@@ -79,12 +104,11 @@ namespace LabSorting.Services
             if(!session||!session.persistence||string.IsNullOrWhiteSpace(order.Info.TransactionID)||string.IsNullOrWhiteSpace(settings.googlePlayPublicKey)){Status="Purchase delivery pending.";return;}
             try
             {
-                var receipts=new CrossPlatformValidator(Convert.FromBase64String(settings.googlePlayPublicKey),null,Application.identifier).Validate(order.Info.Receipt);
                 var cart=order.CartOrdered.Items().ToList();
                 // The UI purchases a single configured consumable per transaction.
                 if(cart.Count!=1||cart[0].Quantity!=1)return;
                 string id=cart[0].Product.definition.id;
-                if(!receipts.Any(r=>r.productID==id&&r.transactionID==order.Info.TransactionID))return;
+                if(!VerifiedReceipt(order,id,order.Info.TransactionID))return;
                 if(id==settings.removeAdsProductId){if(CommerceEntitlements.GrantRemoveAds()){store.ConfirmPurchase(order);Status="Ads removed. Optional reward videos remain available.";LabTelemetry.Event("purchase_delivered",id);}return;}
                 if(id==settings.largeCashProductId){if(session.GrantSupply(SupplyKind.Cash,settings.largeCashAmount,"iap:"+order.Info.TransactionID))store.ConfirmPurchase(order);return;}
                 foreach(SupplyKind kind in Enum.GetValues(typeof(SupplyKind)))if(ProductId(kind)==id)
@@ -103,12 +127,13 @@ namespace LabSorting.Services
             purchaseRequested=false;rewardGranted=false;rewardKind=kind;rewardAmount=AdAmount(kind);rewardToken="ad:"+Guid.NewGuid().ToString("N");Status="Preparing video...";
             return BeginAdCountdown(true);
         }
-        void OnAdsInitialized(MaxSdkBase.SdkConfiguration config){initializedAds=true;LoadAd();LoadInterstitial();}
+        void OnAdsInitialized(MaxSdkBase.SdkConfiguration config){initializedAds=true;consentRetries=0;ResetInterstitialTimer();LoadAd();LoadInterstitial();}
         void LoadAd(){if(initializedAds&&consent&&consent.CanRequestAds)MaxSdk.LoadRewardedAd(settings.androidRewardedId);}
         void OnReward(string id,MaxSdkBase.Reward reward,MaxSdkBase.AdInfo info)
         {if(id!=settings.androidRewardedId||rewardToken==null||rewardGranted)return;rewardGranted=true;SaveAdReward();}
         void SaveAdReward(){if(session&&session.Initialized&&session.GrantSupply(rewardKind,rewardAmount,rewardToken)){Status="Reward added!";LabTelemetry.Event("reward_ad_completed",rewardKind.ToString(),rewardAmount);}else{Status="Reward saving. Please wait.";if(rewardSaveRetry==null)rewardSaveRetry=StartCoroutine(RetryAdReward());}}
-        void OnAdHidden(string id,MaxSdkBase.AdInfo info){if(id!=settings.androidRewardedId||rewardToken==null)return;QueueRewardClose();LoadAd();}
+        // A rewarded video also restarts the automatic interstitial clock, so players never get two ads back to back.
+        void OnAdHidden(string id,MaxSdkBase.AdInfo info){if(id!=settings.androidRewardedId)return;ResetInterstitialTimer();if(rewardToken==null)return;QueueRewardClose();LoadAd();}
         void EndReward(){busy=false;if(!rewardGranted)Status="Video closed. Reward requires completion.";if(rewardSaveRetry==null){rewardToken=null;rewardGranted=false;}else{busy=true;QueueRewardClose();}}
         void OnAdFailed(string id,MaxSdkBase.ErrorInfo error,MaxSdkBase.AdInfo info){if(id!=settings.androidRewardedId||rewardToken==null)return;if(rewardGranted){QueueRewardClose();return;}if(rewardCloseRoutine!=null){StopCoroutine(rewardCloseRoutine);rewardCloseRoutine=null;}busy=false;rewardToken=null;Status="Video could not play. No reward used.";Invoke(nameof(LoadAd),5);}
         void OnAdLoadFailed(string id,MaxSdkBase.ErrorInfo error){if(id==settings.androidRewardedId)Invoke(nameof(LoadAd),15);}

@@ -12,7 +12,9 @@ namespace LabSorting.UI
             bool tutorial=panel.ShowingTutorial;
             image.sprite=tutorial?tutorialSprite:settingsSprite;image.type=tutorial?UnityEngine.UI.Image.Type.Sliced:UnityEngine.UI.Image.Type.Simple;image.preserveAspect=!tutorial;image.useSpriteMesh=!tutorial;
             tutorialTitle.SetActive(tutorial);
-            panel.title.rectTransform.anchoredPosition=new Vector2(0,tutorial?220:image.rectTransform.rect.height*.427f);
+            // Tutorial heading sits inside its top plate (it used to float just under it).
+            float plate=tutorialTitle?((RectTransform)tutorialTitle.transform).anchoredPosition.y:220;
+            panel.title.rectTransform.anchoredPosition=new Vector2(0,tutorial?plate:image.rectTransform.rect.height*.427f);
         }
     }
 }

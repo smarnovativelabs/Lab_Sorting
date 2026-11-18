@@ -37,7 +37,7 @@ namespace LabSorting.Prototype
                 Check(s.GrantSupply(SupplyKind.Search,2,"animation-receipt")&&animation.Played==played+1,"Verified reward starts feedback");
                 Check(s.GrantSupply(SupplyKind.Search,2,"animation-receipt")&&animation.Played==played+1,"Duplicate receipt does not replay reward feedback");
                 Check(!s.GrantSupply(SupplyKind.Search,0,"invalid-animation")&&animation.Played==played+1,"Invalid reward has no success feedback");s.Restore(initial);s.persistence=persist;
-                Check(s.items.Length==4032&&s.capacity==10&&s.Cash==150&&s.SearchCredits==5&&s.MagnetCredits==2,"Fresh 4032-item session receives starting economy and ten slots");
+                Check(DesignerCatalog.Complete(s)&&s.capacity==10&&s.Cash==150&&s.SearchCredits==5&&s.MagnetCredits==2,"Fresh "+s.items.Length+"-item session receives starting economy and ten slots");
                 var legacySlots=s.Capture();legacySlots.slotCredits=3;Check(s.Restore(legacySlots)&&s.capacity==13&&s.SlotCredits==0,"Legacy slot purchases become usable permanent capacity");var migrated=s.Capture();Check(s.Restore(migrated)&&s.capacity==13,"Migrated slots are not applied twice");s.Restore(initial);
                 Check(!hud.GetComponent<EconomyHUD>().upgradeButton.gameObject.activeSelf,"Standalone capacity control removed");
                 supply.OpenCash();Check(menus.storeRoot.activeSelf&&!supply.IsOpen,"Cash opens store");menus.Close();
@@ -58,12 +58,12 @@ namespace LabSorting.Prototype
                     foreach(var item in group){var e=complete.items.First(x=>x.id==item.id);e.location=ItemLocation.Rack;e.rack=rack.id;e.slot=slot++;last=item;lastRack=rack;}
                 }
                 var final=complete.items.First(e=>e.id==last.id);final.location=ItemLocation.Loose;final.rack=null;final.slot=-1;
-                Check(s.Restore(complete),"4031 sorted fixture validates");p.autoShow=true;Check(s.TryPick(last),"Pick final item");DOTween.CompleteAll();Check(s.TryPlace(lastRack),"Final actual placement completes area");DOTween.CompleteAll();
+                Check(s.Restore(complete),(s.items.Length-1)+" sorted fixture validates");p.autoShow=true;Check(s.TryPick(last),"Pick final item");DOTween.CompleteAll();Check(s.TryPlace(lastRack),"Final actual placement completes area");DOTween.CompleteAll();
                 float until=Time.realtimeSinceStartup+5;while(!p.IsOpen&&Time.realtimeSinceStartup<until)yield return null;Check(p.confetti.Any(piece=>piece.gameObject.activeInHierarchy),"Completion starts visible confetti particles");Check(p.IsOpen&&s.player.blocked&&s.CompletionCount==1&&s.CompletedArea==s.areaId,"Completion opens panel and records persistent history once");SortingSmokeChecks.Capture(s,"Logs/NewCompletion.png");
                 s.Save();var finished=s.Capture();Check(s.Load()&&s.CompletionCount==1,"Reload does not duplicate completion count");yield return new WaitForSecondsRealtime(.6f);
                 int cash=s.Cash,search=s.SearchCredits,magnet=s.MagnetCredits,capacity=s.capacity;p.continueButton.onClick.Invoke();
-                Check(p.ConfirmingReplay&&s.SortedCount==4032&&s.Cash==cash,"First replay tap only shows confirmation; save and economy untouched");
-                p.ContinueExploring();Check(p.IsOpen&&!p.ConfirmingReplay&&s.SortedCount==4032,"Back cancels replay safely");
+                Check(p.ConfirmingReplay&&s.SortedCount==s.items.Length&&s.Cash==cash,"First replay tap only shows confirmation; save and economy untouched");
+                p.ContinueExploring();Check(p.IsOpen&&!p.ConfirmingReplay&&s.SortedCount==s.items.Length,"Back cancels replay safely");
                 yield return ReplayRecoveryChecks.Run(s,p,true);cash=s.Cash;search=s.SearchCredits;magnet=s.MagnetCredits;capacity=s.capacity;finished=s.Capture();
                 ReplayWriteFailureChecks.BeforeReplay(s,p);
                 p.PlayAgain();yield return new WaitForSecondsRealtime(.2f);SortingSmokeChecks.Capture(s,"Logs/ReplayConfirmation.png");p.PlayAgain();

@@ -1,3 +1,48 @@
+# Ads, IAP and Tenjin update — 2026-11-18
+
+This section supersedes the ad timing and Editor notes below.
+
+## Editor testing (new)
+
+`LabServiceSettings.editorTestServices` (on by default, Editor only, never in device builds):
+
+- **Ads:** UMP is skipped in the Editor and MAX starts with its placeholder ads. Rewarded videos show the MAX stub (press "Reward" then "Close" to receive the reward); interstitials show the stub interstitial.
+- **IAP:** Unity IAP's fake store connects, every product shows `$0.01`, and a purchase opens an IMGUI "Buy / Cancel" dialog in the Game view. The fake store has no signed receipt, so Editor test mode only checks that the order contains the product; device builds still verify the Google Play signature.
+- Buying Remove Ads in the Editor writes a real local entitlement and stops interstitials in Editor play. Clear it with Tools > Lab Sorting > Services > Editor test: reset Remove Ads purchase.
+- Automated tests set the SessionState key `LabSorting.SuppressEditorTestServices`, so they keep exercising the no-SDK path.
+
+Verified 2026-11-18 in Editor play mode: MAX initialized, rewarded stub granted +2 magnets and restarted the interstitial clock, the interstitial showed "Displaying Ad In: 5 … 1 Seconds" and then the stub, Settings open paused the clock, and a fake-store magnet pack delivered +10. The Editor save was restored afterwards.
+
+Automated tests after the change: RewardedAdReturnRecovery, DesignerServices, DesignerArtworkUI (ad countdown checks) and ConnectivityPanelTests passed. MainMenuPersistentServices fails on a stale assertion (`BootstrapChecks` still expects `enableLiveServices` off; it has been on since 631cd34). DesignerOffersReplay and DesignerServiceExperience failed because their scene objects were destroyed early in the run (the real error is hidden by the cleanup exception) while the shared Editor was also busy; neither step touches ad code. Re-run them when the Editor is free.
+
+## Interstitial rules (replaces "completed rack + Settings open")
+
+- Automatic interstitial after `interstitialCooldownSeconds` (120) of active play, preceded by a `interstitialWarningSeconds` (5) on-screen countdown.
+- The clock only runs while the player is actually playing: no pause/store/settings/offer/items/completion/review panel, no first-launch tour, no internet gate, and not while the guided tutorial is running.
+- The clock restarts after every interstitial and after every rewarded video (completed or closed early).
+- If no interstitial has loaded when the clock reaches zero, the game waits and shows the countdown as soon as one is ready. Remove Ads disables interstitials; rewarded videos stay available.
+- The completed-rack requirement and the Settings-open trigger were removed.
+
+## Device robustness
+
+- **UMP auto-retry:** a failed consent request now retries by itself while online (5 s, 10 s, 20 s, 40 s, then every 60 s), as in the Motel project. The consent form only appears where a privacy message is required (EEA/UK/Switzerland, or US states if configured); elsewhere UMP returns NotRequired and MAX starts at once.
+- Removed the deprecated `MaxSdk.SetSdkKey`; the SDK key comes from AppLovinSettings (identical to LabServiceSettings, verified).
+- **Development builds only:** MAX verbose logging (logcat tag `AppLovinSdk`), an AD DEBUGGER button in Settings > Store & Privacy (opens the MAX Mediation Debugger), and a `[dev]` line showing consent, SDK, reward and interstitial state with the seconds to the next interstitial.
+
+## Tenjin
+
+- Now sets the Google Play store type before Connect (`SetAppStoreType(AppStoreType.googleplay)`), matching the Motel and Janitor projects.
+- AppLovin impression data sent to Tenjin now includes country, network placement and creative ID (same fields as Tenjin's own AppLovin integration). Firebase `ad_impression` also carries ad format and ad unit.
+- Added `com.android.installreferrer:installreferrer:2.2` (Google Play Install Referrer) to the Tenjin dependencies and mainTemplate.gradle for install attribution.
+- Tenjin is a native Android SDK, so it stays device-only; Editor play does not send Tenjin events.
+
+## Still required outside Unity (device)
+
+- MAX dashboard: ad units `90ff4a080a00633c` (interstitial) and `86fe615b70b36b8a` (rewarded) must belong to the Android app `com.peri.games.quarantine.lab.sort.simulator`; register the test phone's GAID under Test Mode.
+- AdMob: publish the GDPR privacy message for `ca-app-pub-9058006185556068~2175955707` (needed only for EEA/UK users).
+- Play Console: upload a build to at least internal testing, create and activate the six product IDs, add the tester's Google account as a license tester. Without this the store returns no products and every price shows "Unavailable".
+- Rebuild the APK: the last build (2026-11-16) predates these changes.
+
 # Android account handoff — 2026-11-16
 
 Device APK produced: `Builds/Android/QuarantineLabSort-Android-Test.apk` (110,313,288 bytes), development/debug signed, ARM64, minimum API 25, target API 36, version 0.1.0 (1). Gradle assembleDebug succeeded after recovering from disk exhaustion and corrupt generated Gradle transform caches. APK v2 signature, package/title, billing/internet permissions and the configured AdMob app ID were verified from the packaged APK. Device QA is still pending. See `Builds/Android/DEVICE-TEST-NOTES.txt` and `BUILD-INFO.txt` for test prerequisites and SHA-256.
@@ -37,7 +82,7 @@ Current rewarded-video grants are 50 cash, 3 searches, 2 magnets, or 2 slot toke
 
 ## Consent, events, and verification
 
-UMP runs on Android startup before MAX initialization. Ad loads, retries, and presentation require CanRequestAds and pause while a privacy form is busy. Settings > Store & Privacy exposes ad privacy, retry, restore, privacy policy, and independent analytics/attribution/diagnostic switches. Firebase Analytics, Tenjin and Crashlytics remain off until their corresponding player choice is enabled; no UMP ad permission is reused as unrelated telemetry consent.
+UMP runs on Android startup before MAX initialization. Ad loads, retries, and presentation require CanRequestAds and pause while a privacy form is busy. Settings > Store & Privacy exposes ad privacy, retry, restore and privacy policy. Firebase Analytics, Tenjin attribution and Crashlytics are app-managed and always on for Android live builds; players have no switch for them (the old Attribution button is hidden at runtime). Tenjin initializes before Firebase and independently of it, so a Firebase failure does not block install attribution.
 
 Existing Firebase/Tenjin hooks cover session, tutorial, sorting progress, rack completion, search/magnet use, milestones, purchases, rewarded completion, and MAX impression revenue. IAP verifies signed receipts and durably saves rewards before confirmation; duplicate transaction IDs do not grant twice. No purchase validation bypass was added.
 

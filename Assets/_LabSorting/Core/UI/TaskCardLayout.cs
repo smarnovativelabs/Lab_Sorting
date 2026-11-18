@@ -5,6 +5,8 @@ namespace LabSorting.UI
     {
         public GuidedTutorial tutorial;
         public RectTransform card;
-        void LateUpdate(){if(!card)return;card.gameObject.SetActive(!tutorial||!tutorial.IsRunning);card.anchoredPosition=new Vector2(-238,-185);}
+        [Tooltip("Anchored position (top-right anchor) the task card is held at.")]
+        public Vector2 position=new Vector2(-238,-185);
+        void LateUpdate(){if(!card)return;card.gameObject.SetActive(!tutorial||!tutorial.IsRunning);card.anchoredPosition=position;}
     }
 }

@@ -29,16 +29,16 @@ namespace LabSorting.Prototype
                     int calls=0;var writer=new DurableSaveWriter(s.SavePath,(path,json,preserve)=>{if(++calls==failedWrite){File.WriteAllText(path+".tmp","partial replay write");throw new IOException("Injected replay write failure");}DurableSaveWriter.AtomicWrite(path,json,preserve);});Writer(s,writer);
                     if(!panel.IsOpen)typeof(LabCompletionPanel).GetMethod("Show",Private).Invoke(panel,null);
                     if(!panel.ConfirmingReplay)panel.PlayAgain();panel.PlayAgain();
-                    Check(panel.IsOpen&&panel.ConfirmingReplay&&panel.summary.text.Contains("unchanged"),"Failed replay keeps confirmation open with retry feedback: write "+failedWrite);Compare(s,expected,4032);
-                    Check(s.RequestSave(true)&&s.FlushSaves(),"Retry succeeds after write failure clears");Check(s.Load(),"Completed run reloads after failed replay");Compare(s,expected,4032);
+                    Check(panel.IsOpen&&panel.ConfirmingReplay&&panel.summary.text.Contains("unchanged"),"Failed replay keeps confirmation open with retry feedback: write "+failedWrite);Compare(s,expected,s.items.Length);
+                    Check(s.RequestSave(true)&&s.FlushSaves(),"Retry succeeds after write failure clears");Check(s.Load(),"Completed run reloads after failed replay");Compare(s,expected,s.items.Length);
                     Check(!File.Exists(s.SavePath+".tmp"),"Partial temporary file is replaced, never loaded");
                 }
                 bool blocked=true;int attempts=0;
                 var persistent=new DurableSaveWriter(s.SavePath,(path,json,preserve)=>{if(++attempts>1&&blocked)throw new IOException("Persistent storage failure");DurableSaveWriter.AtomicWrite(path,json,preserve);});Writer(s,persistent);
                 if(!panel.IsOpen)typeof(LabCompletionPanel).GetMethod("Show",Private).Invoke(panel,null);
                 if(!panel.ConfirmingReplay)panel.PlayAgain();panel.PlayAgain();
-                Check(panel.IsOpen&&panel.ConfirmingReplay,"Persistent failure keeps replay retry available");Compare(s,expected,4032);
-                blocked=false;persistent.Retry();Check(persistent.Flush(),"Pending rollback persists when storage returns");Check(s.Load(),"Persistent failure recovers completed run");Compare(s,expected,4032);
+                Check(panel.IsOpen&&panel.ConfirmingReplay,"Persistent failure keeps replay retry available");Compare(s,expected,s.items.Length);
+                blocked=false;persistent.Retry();Check(persistent.Flush(),"Pending rollback persists when storage returns");Check(s.Load(),"Persistent failure recovers completed run");Compare(s,expected,s.items.Length);
             }
             finally{Writer(s,new DurableSaveWriter(s.SavePath));if(!panel.IsOpen)typeof(LabCompletionPanel).GetMethod("Show",Private).Invoke(panel,null);if(panel.ConfirmingReplay)panel.ContinueExploring();}
         }

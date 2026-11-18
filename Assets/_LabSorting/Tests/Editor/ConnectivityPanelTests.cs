@@ -9,6 +9,9 @@ using UnityEngine.TestTools;
 
 public class ConnectivityPanelTests
 {
+    // Keep automated runs on the no-SDK path; normal Editor play uses MAX placeholder ads / IAP fake store.
+    [SetUp] public void SuppressEditorTestServices() { SessionState.SetBool("LabSorting.SuppressEditorTestServices", true); }
+    [TearDown] public void RestoreEditorTestServices() { SessionState.EraseBool("LabSorting.SuppressEditorTestServices"); }
     [UnityTest, Timeout(150000)]
     public IEnumerator OfflineOnlinePanelRecovery()
     {

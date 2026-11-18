@@ -41,7 +41,7 @@ namespace LabSorting.Prototype
                 Check(!tour.brain.enabled&&!tour.tourCamera.gameObject.activeSelf&&s.player.look.enabled,"Cinemachine releases camera to original look rig");
                 Check(guided.IsRunning,"Gameplay tutorial begins after tour");guided.Skip();
                 Check(!tour.BeginTour(),"Completed tour does not restart");
-                Check(Vector3.Distance(s.player.transform.position,playerPosition)<.1f&&s.Cash==cash&&s.items.Length==count,"Tour leaves player position, wallet and 4032 items intact: position "+playerPosition+" -> "+s.player.transform.position+", cash "+cash+" -> "+s.Cash+", items "+count+" -> "+s.items.Length);
+                Check(Vector3.Distance(s.player.transform.position,playerPosition)<.1f&&s.Cash==cash&&s.items.Length==count,"Tour leaves player position, wallet and all "+count+" items intact: position "+playerPosition+" -> "+s.player.transform.position+", cash "+cash+" -> "+s.Cash+", items "+count+" -> "+s.items.Length);
                 PlayerPrefs.DeleteKey(tour.completionKey);Check(tour.BeginTour(),"Fresh preference allows test skip");yield return new WaitForSecondsRealtime(.3f);
                 tour.overlay.transform.Find("SafeArea/Skip").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();tour.Skip();
                 while(tour.brain.enabled)yield return null;

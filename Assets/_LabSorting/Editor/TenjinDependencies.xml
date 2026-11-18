@@ -3,5 +3,6 @@
     <androidPackage spec="com.tenjin:android-sdk:1.22.0" />
     <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.1.0" />
     <androidPackage spec="com.google.android.gms:play-services-appset:16.1.0" />
+    <androidPackage spec="com.android.installreferrer:installreferrer:2.2" />
   </androidPackages>
 </dependencies>

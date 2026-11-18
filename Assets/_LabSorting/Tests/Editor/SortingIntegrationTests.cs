@@ -47,6 +47,12 @@ public class SortingIntegrationTests
         yield return new EnterPlayMode(false);Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.MinimumTouchChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
+    [UnityTest,Timeout(300000)] public IEnumerator DesignerThumbControls()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.ThumbControlsChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
     [UnityTest,Timeout(240000)] public IEnumerator DesignerControlSizesAndWelcome()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
@@ -182,12 +188,16 @@ public class SortingIntegrationTests
     bool previousEnabled;
     StackTraceLogType previousLogStack;
     EnterPlayModeOptions previousOptions;
-    [SetUp] public void Setup() { previousEnabled=EditorSettings.enterPlayModeOptionsEnabled;previousOptions=EditorSettings.enterPlayModeOptions;previousLogStack=Application.GetStackTraceLogType(LogType.Log);Application.SetStackTraceLogType(LogType.Log,StackTraceLogType.None); }
+    // Automated runs stay on the no-SDK path (unavailable ads/store); normal Editor play uses MAX placeholder ads and
+    // the IAP fake store (LabServiceSettings.editorTestServices). SupplyCommerce reads this SessionState key.
+    const string SuppressEditorServices="LabSorting.SuppressEditorTestServices";
+    [SetUp] public void Setup() { SessionState.SetBool(SuppressEditorServices,true);previousEnabled=EditorSettings.enterPlayModeOptionsEnabled;previousOptions=EditorSettings.enterPlayModeOptions;previousLogStack=Application.GetStackTraceLogType(LogType.Log);Application.SetStackTraceLogType(LogType.Log,StackTraceLogType.None); }
     [UnityTearDown] public IEnumerator Cleanup()
     {
         if(EditorApplication.isPlaying) yield return new ExitPlayMode();
         EditorSettings.enterPlayModeOptionsEnabled=previousEnabled;EditorSettings.enterPlayModeOptions=previousOptions;
         Application.SetStackTraceLogType(LogType.Log,previousLogStack);
+        SessionState.EraseBool(SuppressEditorServices);
     }
     [Test] public void PlayerPrefabHasNoPrototypeDependencies()
     {

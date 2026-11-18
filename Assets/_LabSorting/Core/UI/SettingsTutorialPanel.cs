@@ -17,6 +17,10 @@ namespace LabSorting.UI
         public UnityEngine.UI.Text joystickSizeLabel,actionSizeLabel;
         public float MoveSpeedMultiplier {get;private set;}=1;
         public UnityEngine.UI.Button openButton,closeButton,nextButton,backButton,skipButton,replayButton,resetButton,soundButton,hapticsButton;
+        [Header("Designer switches (optional; text labels are used without them)")]
+        public UnityEngine.UI.Button musicButton;
+        public SettingsSwitch musicSwitch,soundSwitch,hapticsSwitch;
+        public LabSoundscape soundscape;
         public string preferencesPrefix="LabSorting.";
         public bool autoTutorial=true;
         public bool IsOpen {get;private set;}
@@ -54,6 +58,7 @@ namespace LabSorting.UI
             float speed=PlayerPrefs.GetFloat(preferencesPrefix+"MoveSpeed",1);ApplyMoveSpeed(speed);
             if(controlSizes)controlSizes.Apply(PlayerPrefs.GetFloat(preferencesPrefix+"JoystickSize",1),PlayerPrefs.GetFloat(preferencesPrefix+"ActionSize",1));
             feedback.SetSound(PlayerPrefs.GetInt(preferencesPrefix+"Sound",1)!=0,false);feedback.SetHaptics(PlayerPrefs.GetInt(preferencesPrefix+"Haptics",1)!=0,false);
+            if(soundscape)soundscape.SetMusic(PlayerPrefs.GetInt(preferencesPrefix+"Music",1)!=0);
             sensitivitySlider.SetValueWithoutNotify(session.player.look.SensitivityMultiplier);RefreshSettings();
         }
         void Show()
@@ -64,7 +69,7 @@ namespace LabSorting.UI
             session.CancelHold();session.player.SetBlocked(true);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
             IsOpen=true;root.SetActive(true);root.transform.SetAsLastSibling();
         }
-        public void OpenSettings(){if(session.player.TutorialBlocked)return;var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;Show();ShowingTutorial=false;title.text="SETTINGS";settingsContent.SetActive(true);tutorialContent.SetActive(false);RefreshSettings();var commerce=UnityEngine.Object.FindFirstObjectByType<LabSorting.Services.SupplyCommerce>();if(commerce)commerce.TryInterstitialAtBreak();}
+        public void OpenSettings(){if(session.player.TutorialBlocked)return;var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;Show();ShowingTutorial=false;title.text="SETTINGS";settingsContent.SetActive(true);tutorialContent.SetActive(false);RefreshSettings();}
         public void ReplayTutorial(){var guided=Guided;if(guided){Close();guided.Begin(true);}else OpenTutorial(true);}
         public void OpenHowToPlay(){OpenTutorial(true);}
         public void OpenTutorial(bool restart)
@@ -100,9 +105,12 @@ namespace LabSorting.UI
         public void ChangeJoystickSize(float value){if(!controlSizes)return;controlSizes.Apply(value,controlSizes.ActionScale);PlayerPrefs.SetFloat(preferencesPrefix+"JoystickSize",controlSizes.JoystickScale);saveAt=Time.unscaledTime+.3f;RefreshSettings();}
         public void ChangeActionSize(float value){if(!controlSizes)return;controlSizes.Apply(controlSizes.JoystickScale,value);PlayerPrefs.SetFloat(preferencesPrefix+"ActionSize",controlSizes.ActionScale);saveAt=Time.unscaledTime+.3f;RefreshSettings();}
         public void ToggleSound(){feedback.SetSound(!feedback.SoundEnabled,false);PlayerPrefs.SetInt(preferencesPrefix+"Sound",feedback.SoundEnabled?1:0);PlayerPrefs.Save();RefreshSettings();}
+        public void ToggleMusic(){if(!soundscape)return;soundscape.SetMusic(!soundscape.MusicEnabled);PlayerPrefs.SetInt(preferencesPrefix+"Music",soundscape.MusicEnabled?1:0);PlayerPrefs.Save();RefreshSettings();}
         public void ToggleHaptics(){feedback.SetHaptics(!feedback.HapticsEnabled,false);PlayerPrefs.SetInt(preferencesPrefix+"Haptics",feedback.HapticsEnabled?1:0);PlayerPrefs.Save();RefreshSettings();}
-        public void ResetSettings(){ChangeSensitivity(1);ChangeMoveSpeed(1);ChangeJoystickSize(1);ChangeActionSize(1);feedback.SetSound(true,false);feedback.SetHaptics(true,false);PlayerPrefs.SetInt(preferencesPrefix+"Sound",1);PlayerPrefs.SetInt(preferencesPrefix+"Haptics",1);PlayerPrefs.Save();RefreshSettings();}
-        void RefreshSettings(){if(controlSizes){if(joystickSizeLabel)joystickSizeLabel.text="JOYSTICK SIZE  "+Mathf.RoundToInt(controlSizes.JoystickScale*100)+"%";if(actionSizeLabel)actionSizeLabel.text="ACTION SIZE  "+Mathf.RoundToInt(controlSizes.ActionScale*100)+"%";if(joystickSizeSlider)joystickSizeSlider.SetValueWithoutNotify(controlSizes.JoystickScale);if(actionSizeSlider)actionSizeSlider.SetValueWithoutNotify(controlSizes.ActionScale);}if(moveSpeedLabel)moveSpeedLabel.text="MOVE SPEED  "+MoveSpeedMultiplier.ToString("0.00")+"x";sensitivityLabel.text="LOOK SENSITIVITY  "+session.player.look.SensitivityMultiplier.ToString("0.00")+"x";soundLabel.text="SOUND: "+(feedback.SoundEnabled?"ON":"OFF");hapticsLabel.text="HAPTICS: "+(feedback.HapticsEnabled?"ON":"OFF");}
+        public void ResetSettings(){ChangeSensitivity(1);ChangeMoveSpeed(1);ChangeJoystickSize(1);ChangeActionSize(1);feedback.SetSound(true,false);feedback.SetHaptics(true,false);PlayerPrefs.SetInt(preferencesPrefix+"Sound",1);PlayerPrefs.SetInt(preferencesPrefix+"Haptics",1);if(soundscape){soundscape.SetMusic(true);PlayerPrefs.SetInt(preferencesPrefix+"Music",1);}PlayerPrefs.Save();RefreshSettings();}
+        void RefreshSettings(){if(controlSizes){if(joystickSizeLabel)joystickSizeLabel.text="JOYSTICK SIZE  "+Mathf.RoundToInt(controlSizes.JoystickScale*100)+"%";if(actionSizeLabel)actionSizeLabel.text="ACTION SIZE  "+Mathf.RoundToInt(controlSizes.ActionScale*100)+"%";if(joystickSizeSlider)joystickSizeSlider.SetValueWithoutNotify(controlSizes.JoystickScale);if(actionSizeSlider)actionSizeSlider.SetValueWithoutNotify(controlSizes.ActionScale);}if(moveSpeedLabel)moveSpeedLabel.text="MOVE SPEED  "+MoveSpeedMultiplier.ToString("0.00")+"x";sensitivityLabel.text="LOOK SENSITIVITY  "+session.player.look.SensitivityMultiplier.ToString("0.00")+"x";if(soundSwitch){soundLabel.text="SOUND";soundSwitch.Set(feedback.SoundEnabled);}else soundLabel.text="SOUND: "+(feedback.SoundEnabled?"ON":"OFF");
+            if(hapticsSwitch){hapticsLabel.text="HAPTICS";hapticsSwitch.Set(feedback.HapticsEnabled);}else hapticsLabel.text="HAPTICS: "+(feedback.HapticsEnabled?"ON":"OFF");
+            if(musicSwitch&&soundscape)musicSwitch.Set(soundscape.MusicEnabled);}
         void FlushSettings(){if(saveAt<0)return;saveAt=-1;PlayerPrefs.Save();}
         void OnApplicationPause(bool paused){if(paused)FlushSettings();}
         void OnApplicationQuit(){FlushSettings();}

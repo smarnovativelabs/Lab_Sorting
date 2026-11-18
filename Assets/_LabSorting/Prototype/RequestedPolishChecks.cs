@@ -83,9 +83,12 @@ namespace LabSorting.Prototype
                 float deadline=Time.realtimeSinceStartup+10;
                 while((released.Item.Moving||!released.Running)&&Time.realtimeSinceStartup<deadline)yield return null;
                 Check(released.Running&&released.animator.speed==1,"Dropped rat resumes animation while moving");
-                var movingBones=released.animator.GetComponentsInChildren<Transform>();var start=movingBones.Select(b=>b.localRotation).ToArray();
+                // Rat animators use CullUpdateTransforms: bones only move while the rat is on screen, and a short front
+                // drop can land below the view (about 1.2 m ahead from the spawn). Look at the rat before sampling bones.
+                s.player.look.SnapToDirection(released.Item.visual.bounds.center-s.player.view.transform.position);yield return null;yield return null;
+                var movingBones=released.animator.GetComponentsInChildren<Transform>();var start=movingBones.Select(b=>b.localRotation).ToArray();var landed=released.transform.position;
                 yield return new WaitForSecondsRealtime(.15f);
-                Check(movingBones.Select((b,i)=>Quaternion.Angle(b.localRotation,start[i])>.1f).Any(v=>v),"Released rat bones animate again");
+                Check(movingBones.Select((b,i)=>Quaternion.Angle(b.localRotation,start[i])>.1f).Any(v=>v),"Released rat bones animate again; landed="+landed.ToString("F2")+", moved="+Vector3.Distance(landed,released.transform.position).ToString("F3")+", running="+released.Running+", visible="+released.Item.visual.isVisible+", player="+s.player.transform.position.ToString("F2"));
                 var carry=s.hand.GetComponent<CarryPresentation>();
                 foreach(var item in s.items.Where(i=>i.definition.displayName.Contains("Microscope")).GroupBy(i=>i.definition).Select(g=>g.First()))
                 {
