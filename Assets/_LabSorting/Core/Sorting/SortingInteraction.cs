@@ -120,6 +120,7 @@ namespace LabSorting.Sorting
         public void BeginHold(bool place)
         {
             CancelPendingDrop();CancelHold();if(player.blocked)return;RefreshTarget();
+            if(!place&&TargetItem&&carried.Count>=capacity){FullInventoryNotice();return;}
             if(!Ready()||(place&&Active&&Active.Moving))
             {
                 if(place?Active&&TargetRack&&TargetRack.CanAccept(Active.definition):TargetItem&&!TargetItem.Moving&&carried.Count<capacity)

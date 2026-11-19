@@ -32,6 +32,7 @@ namespace LabSorting.UI
         readonly ToastPriority messages=new ToastPriority();
         readonly Vector3[] corners=new Vector3[4];
         string lastSubmitted,lastError,shownText="";
+        int lastFullNotice=-1;
         RectTransform card;Vector2 rest;float restY,show,pop;
         public string ShownText=>shownText;
         void Awake()
@@ -46,9 +47,11 @@ namespace LabSorting.UI
             if(!floor&&card.parent){var t=card.parent.Find("Crosshair");if(t)floor=(RectTransform)t;}
             toast.alpha=0;card.anchoredPosition=rest+Vector2.up*slideDistance;
         }
-        public void Present(string text,bool error)
+        public void Present(string text,bool error,int fullNoticeVersion=-1)
         {
-            if(text==lastSubmitted)return;lastSubmitted=text;
+            if(text==lastSubmitted&&fullNoticeVersion==lastFullNotice)return;
+            lastSubmitted=text;lastFullNotice=fullNoticeVersion;
+            if(error&&text==shownText)pop=1;
             if(!error&&ToastPriority.IsRoutine(text))
             {
                 // The player just acted successfully, so a complaint like "Aim at a rack" is stale.
@@ -56,7 +59,7 @@ namespace LabSorting.UI
                 return;
             }
             int priority=ToastPriority.Classify(text,error);if(error)lastError=text;
-            messages.Push(text,priority,Time.unscaledTime,error&&priority<3?2.5f:priority>0?4:2.5f);
+            messages.Push(text,priority,Time.unscaledTime,error&&priority<3?2.5f:priority>0?4:2.5f,error);
         }
         Rect LocalRect(RectTransform space,RectTransform r)
         {

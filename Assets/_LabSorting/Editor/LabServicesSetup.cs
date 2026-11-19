@@ -45,10 +45,18 @@ namespace LabSorting.Editor
             var config=AssetDatabase.LoadAssetAtPath<LabServiceSettings>(SettingsPath);
             if(!string.IsNullOrWhiteSpace(config.appTitle))PlayerSettings.productName=config.appTitle;
             if(!string.IsNullOrWhiteSpace(config.androidPackageName))PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android,config.androidPackageName);
+            if(!string.IsNullOrWhiteSpace(config.iosBundleId))PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.iOS,config.iosBundleId);
+            // Purchases use StoreKit 2's verified transaction callbacks, available from iOS 15.
+            if(!Version.TryParse(PlayerSettings.iOS.targetOSVersionString,out var iosVersion)||iosVersion<new Version(15,0))PlayerSettings.iOS.targetOSVersionString="15.0";
+            var privacy=AppLovinMax.Scripts.IntegrationManager.Editor.AppLovinInternalSettings.Instance;
+            // LabConsent owns UMP and LabTrackingAuthorization owns the bounded ATT wait.
+            privacy.ConsentFlowEnabled=false;privacy.ConsentFlowPrivacyPolicyUrl=config.privacyPolicyUrl;
+            privacy.OverrideDefaultUserTrackingUsageDescriptions=true;privacy.UserTrackingUsageDescriptionEn=config.iosTrackingUsageDescription;privacy.Save();
             AppLovinSettings.Instance.SdkKey=config.maxSdkKey??"";
             AppLovinSettings.Instance.AdMobAndroidAppId=config.googleMobileAdsAppId??"";EditorUtility.SetDirty(AppLovinSettings.Instance);
+            AppLovinSettings.Instance.AdMobIosAppId=config.iosGoogleMobileAdsAppId??"";
             var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("GoogleMobileAds.Editor.GoogleMobileAdsSettings")).FirstOrDefault(t=>t!=null);
-            if(type!=null){var asset=(UnityEngine.Object)type.GetMethod("LoadInstance",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic).Invoke(null,null);var so=new SerializedObject(asset);so.FindProperty("adMobAndroidAppId").stringValue=config.googleMobileAdsAppId??"";so.ApplyModifiedPropertiesWithoutUndo();}
+            if(type!=null){var asset=(UnityEngine.Object)type.GetMethod("LoadInstance",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic).Invoke(null,null);var so=new SerializedObject(asset);so.FindProperty("adMobAndroidAppId").stringValue=config.googleMobileAdsAppId??"";so.FindProperty("adMobIOSAppId").stringValue=config.iosGoogleMobileAdsAppId??"";so.ApplyModifiedPropertiesWithoutUndo();}
             AssetDatabase.SaveAssets();
         }
         static void CreatePanel(ServicesPanel panel,Transform safe,SettingsTutorialPanel settings)

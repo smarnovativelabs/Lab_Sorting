@@ -98953,7 +98953,7 @@ MonoBehaviour:
   ambience: {fileID: 1444661407}
   ui: {fileID: 1021224129}
   music: {fileID: 700180651}
-  musicVolume: 0.1
+  musicVolume: 0.22
   click: {fileID: 8300000, guid: 042354f1647fc4c4baef77bd31984394, type: 3}
   close: {fileID: 8300000, guid: 3b2185efa7cd54b47a6c26a22b5b4f01, type: 3}
   gameplayVolume: 0.16
@@ -136114,9 +136114,9 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: bfb2aa482506f4e47bb0c9a9d15a65b9, type: 3}
+  m_Resource: {fileID: 8300000, guid: 7c63326f9e5d66d40898a86f4e6e993f, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0
+  m_Volume: 0.22
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -262248,7 +262248,7 @@ MonoBehaviour:
   upgradeStepCost: 0
   placementReward: 0
   maxCapacity: 60
-  searchDuration: 12
+  searchDuration: 30
   aimAssistRadius: 0.09
   holdDelay: 0.42
   holdInterval: 0.28

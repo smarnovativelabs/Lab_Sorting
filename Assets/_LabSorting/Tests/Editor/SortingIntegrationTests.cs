@@ -9,6 +9,22 @@ using UnityEngine.TestTools;
 
 public class SortingIntegrationTests
 {
+    [UnityTest,Timeout(240000)] public IEnumerator AppleCashPurchasesAndRestore()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;yield return null;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.AppleCommerceChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(240000)] public IEnumerator CashSearchAndToastUpdates()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;yield return null;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.CashSearchToastChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
     [UnityTest,Timeout(600000)] public IEnumerator HeldItemSizing()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();

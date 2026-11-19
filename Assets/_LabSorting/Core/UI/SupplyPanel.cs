@@ -41,9 +41,24 @@ namespace LabSorting.UI
         // Results go to the toast (with its tick / "!" badge); the panel's own line only shows work in progress.
         ServicePresentation presentation;
         void Result(string text){if(!presentation)presentation=FindFirstObjectByType<ServicePresentation>();if(presentation)presentation.ShowToast(text);else status.text=text;}
-        public void BuyCash(){if(!IsOpen||commerce.Busy)return;status.text="";if(kind==SupplyKind.Cash)commerce.BuyLargeCash();
-            // Success already reaches the centre toast ("Added 5 Search"); BuySupply reports its own failure, BuyOffer is silent.
-            else if(!(twoOfferLayout?session.BuyOffer(kind):session.BuySupply(kind))&&twoOfferLayout)Result("Not enough cash or capacity is full");Refresh();}
+        public void BuyCash()
+        {
+            if(!IsOpen||commerce.Busy)return;
+            status.text="";
+            if(kind==SupplyKind.Cash){commerce.BuyLargeCash();Refresh();return;}
+            int amount=twoOfferLayout?session.OfferAmount(kind):1;
+            if(kind==SupplyKind.Slot&&session.capacity+session.SlotCredits+amount>session.maxCapacity){Result("Maximum capacity reached");return;}
+            int price=twoOfferLayout?session.OfferPrice(kind):session.SupplyPrice(kind);
+            if(session.Cash<price)
+            {
+                Close();
+                var menus=GetComponent<DesignerMenus>();
+                if(menus)menus.OpenStore();else Open(SupplyKind.Cash);
+                return;
+            }
+            if(!(twoOfferLayout?session.BuyOffer(kind):session.BuySupply(kind)))Result("Purchase unavailable");
+            Refresh();
+        }
         public void Watch(){if(IsOpen){commerce.Watch(kind);status.text="";Refresh();}}
         public void BuyStore(){if(IsOpen){commerce.Buy(kind);status.text="";Refresh();}}
         public void Use(){if(!IsOpen||commerce.Busy)return;Close();if(kind==SupplyKind.Search)session.TrySearch();else if(kind==SupplyKind.Magnet)session.TryMagnet();else if(kind==SupplyKind.Slot)session.TryUpgradeCapacity();}
@@ -56,7 +71,7 @@ namespace LabSorting.UI
             description.text=kind==SupplyKind.Search?"Highlight the selected item type anywhere in the lab.":kind==SupplyKind.Magnet?"Bring matching loose items into your hands.":kind==SupplyKind.Slot?"Add one permanent carry slot.":"Use cash for search, magnet and extra carry slots.";
             owned.text=kind==SupplyKind.Slot?"Capacity "+session.capacity+" / "+session.maxCapacity+"   |   Slot tokens "+session.SlotCredits:kind==SupplyKind.Cash?"Cash "+session.Cash:"Uses owned: "+session.Owned(kind)+"   |   Cash "+session.Cash;
             bool cap=kind==SupplyKind.Slot&&session.capacity>=session.maxCapacity;
-            cashButton.gameObject.SetActive(true);cashLabel.text="BUY 1\n$"+session.SupplyPrice(kind);cashButton.interactable=!commerce.Busy&&!cap&&session.Cash>=session.SupplyPrice(kind);
+            cashButton.gameObject.SetActive(true);cashLabel.text="BUY 1\n$"+session.SupplyPrice(kind);cashButton.interactable=!commerce.Busy&&!cap&&(kind!=SupplyKind.Slot||session.capacity+session.SlotCredits<session.maxCapacity);
             if(kind==SupplyKind.Cash){cashLabel.text="BIG PACK +"+(commerce.settings?commerce.settings.largeCashAmount:0)+"\n"+(commerce.LargeCashPrice()??"Unavailable");cashButton.interactable=commerce.CanBuyLargeCash;}
             adLabel.text="WATCH AD\n+"+commerce.AdAmount(kind)+" "+kind;adButton.interactable=!commerce.Busy&&!cap&&commerce.RewardReady&&(kind!=SupplyKind.Slot||session.capacity+session.SlotCredits+commerce.AdAmount(kind)<=session.maxCapacity);
             storeLabel.text="PACK +"+commerce.PackAmount(kind)+"\n"+(commerce.Price(kind)??"Unavailable");storeButton.interactable=!cap&&commerce.CanBuy(kind);
@@ -77,7 +92,7 @@ namespace LabSorting.UI
             adOfferDetails.text="Ad Offer\n1 video  →  +"+commerce.AdAmount(kind)+"\n"+noun;
             var sprite=kind==SupplyKind.Search?searchSprite:kind==SupplyKind.Magnet?magnetSprite:slotSprite;cashRewardIcon.sprite=adRewardIcon.sprite=sprite;
             cashLabel.text="USE CASH";adLabel.text="WATCH AD";
-            cashButton.gameObject.SetActive(true);cashButton.interactable=!commerce.Busy&&session.CanBuyOffer(kind);
+            cashButton.gameObject.SetActive(true);cashButton.interactable=!commerce.Busy&&(kind!=SupplyKind.Slot||session.capacity+session.SlotCredits+session.OfferAmount(kind)<=session.maxCapacity);
             adButton.interactable=!commerce.Busy&&commerce.RewardReady&&(kind!=SupplyKind.Slot||session.capacity+session.SlotCredits+commerce.AdAmount(kind)<=session.maxCapacity);
             storeButton.gameObject.SetActive(false);useButton.gameObject.SetActive(false);closeButton.interactable=!commerce.Busy||commerce.CanClosePurchaseUI;
             status.text=commerce.Busy?commerce.Status:"";

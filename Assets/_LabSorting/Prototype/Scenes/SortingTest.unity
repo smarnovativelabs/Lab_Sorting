@@ -19969,7 +19969,7 @@ MonoBehaviour:
   upgradeStepCost: 25
   placementReward: 0
   maxCapacity: 15
-  searchDuration: 8
+  searchDuration: 30
   aimAssistRadius: 0.09
   holdDelay: 0.42
   holdInterval: 0.28

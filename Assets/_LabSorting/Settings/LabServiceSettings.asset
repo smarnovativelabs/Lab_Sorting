@@ -39,6 +39,14 @@ MonoBehaviour:
   googlePlayPublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvYNe/oLve6TPy+Ss1MYoWtoOfF9h12CBkokO58tvlRv3QXlN+QrhUIZImafxBTPDk2aX0BnMxaMESd8Hb9XDR5e+7n8fK5Ibk1d9pEweqCLNtZU4ZzphXyNyIe3pmcbGtBF72TB3T6jFJMQf/BulHCr+xLaYxvVG7Id7FkytZ+cU++QtcBO4fMtGARYvLBTf1Qe/j9REnVXio9kSW7GNtZv/w2JMX9aq5X2Sg/flwBdgBZcd/LEZoF/cbkj7WocKWRM7+PCurgKApW2GVrLNsuphIPd0QQtz2S7VbkpsMGd+2PmaqmWwuLfAlMZuy7jELK5AWZMA5SX50S8KU3uq0wIDAQAB
   privacyPolicyUrl: https://perigames.com/privacy
   tenjinApiKey: HOW31HJVU6NYQ9SFDKAMS8XKZVTNCNDX
+  iosInterstitialId: e87f3ef79cadd84b
+  iosRewardedId: 81f129e0a825df1a
+  iosGoogleMobileAdsAppId: ca-app-pub-9058006185556068~4054574198
+  iosAdmobInterstitialId: ca-app-pub-9058006185556068/1675822867
+  iosAdmobRewardedId: ca-app-pub-9058006185556068/3693492449
+  iosTenjinApiKey: APGPJ6ENNHFPWMVQWASCYSXIJ4QGCIZY
+  iosBundleId: com.peri.games.quarantine.lab.sort.simulator
+  iosTrackingUsageDescription: Your device information helps us show relevant ads and measure ad performance.
   underAgeOfConsent: 0
   enableLiveServices: 1
   testDeviceAdvertisingIds: []

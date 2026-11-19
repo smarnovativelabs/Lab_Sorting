@@ -1,4 +1,49 @@
-# Ads, IAP and Tenjin update — 2026-11-18
+# Ads, IAP and Tenjin update — 2026-11-19
+
+## Apple IAP and Mac build handoff
+
+This section supersedes the earlier Google Play-only IAP limitation.
+
+- iOS now connects Unity IAP, fetches the same six products as Android, displays localized App Store prices and supports cash/tool purchases and Remove Ads. Name and bundle ID are shared with Android: `Quarantine Lab sort Simulator`, `com.peri.games.quarantine.lab.sort.simulator`.
+- Minimum iOS is 15.0. Unity IAP 5.5's native StoreKit 2 code rejects unverified transactions before purchase/restore callbacks reach the game. `ApplePurchaseBinding` additionally checks the signed payload's bundle/product/transaction, quantity and revocation against the callback. It is **not** a standalone JWS signature verifier and must never accept arbitrary externally supplied receipts. Google Play signature validation is unchanged.
+- Cash and receipt IDs are durably saved together before confirming. Pending transactions are redelivered after interruption; repeated delivery does not add cash twice. Cancelled/deferred purchases grant nothing. Restore recovers Remove Ads and pending purchases; previously consumed cash is not regranted. A disconnected restore reconnects, fetches products and then calls Apple restore.
+- The parallel services update supplies `LabTrackingAuthorization` and its native iOS bridge for the bounded ATT request; `LabConsent` owns UMP. The duplicate MAX consent flow is disabled by Apply account IDs. The app privacy URL and tracking description are configured. IAP connection is independent of ad consent. No extra `com.unity.ads.ios-support` package is needed with the existing native ATT bridge. Denial of ATT does not block purchasing.
+- Official references: [Unity IAP receipt validation](https://docs.unity.com/en-us/iap/receipt-validation), [MAX consent and ATT flow](https://developers.axon.ai/en/max/unity/overview/terms-and-privacy-policy-flow/).
+
+### App Store Connect catalog
+
+Use these exact IDs on the app with the bundle ID above. Product registration, pricing, availability and agreements must be active in App Store Connect; this workspace cannot verify those account settings.
+
+| Product ID | Apple type | Delivery |
+| --- | --- | --- |
+| `lab_sorting_cash_500` | Consumable | 500 cash |
+| `lab_sorting_cash_1500` | Consumable | 1500 cash |
+| `lab_sorting_searches_25` | Consumable | 25 searches |
+| `lab_sorting_magnets_10` | Consumable | 10 magnets |
+| `lab_sorting_slots_5` | Consumable | 5 carry slots, within capacity limit |
+| `lab_sorting_remove_ads` | Non-consumable | Disable forced ads |
+
+### Build and device verification on Mac
+
+1. Copy/commit Assets, Packages and ProjectSettings, including the Tenjin native iOS files/framework ZIP and `ProjectSettings/AppLovinInternalSettings.json`. Use the matching Unity version with iOS Build Support.
+2. Run **Tools > Lab Sorting > Services > Apply account IDs**, select iOS, and run **Validate configuration**. Keep deployment target at least iOS 15.0. The bundled Firebase plist already uses the same bundle ID.
+3. Resolve CocoaPods with External Dependency Manager when exporting. Open the generated `.xcworkspace` in Xcode, select your Apple signing team and verify the application bundle ID and In-App Purchase capability. Archive/upload through the normal App Store Connect process.
+4. Use Sandbox/TestFlight to buy both cash packs, cancel a purchase, interrupt/relaunch during a pending purchase, and restore Remove Ads. Check that each successful transaction credits exactly once and survives relaunch. Fake-store tests do not verify Apple's payment sheet, cryptography, product availability or account configuration.
+5. Test both ATT Allow and Don't Allow. Purchases must work in either case. Confirm MAX test-device ads and Tenjin attribution; App Store review notes should describe where the ATT prompt appears. Do not use real paid purchases for QA.
+
+## November 19 gameplay and iOS update
+
+- Search Count, Magnet Count and Capacity cash offers stay clickable at low balance. A valid affordable offer deducts cash and grants the bundle once; insufficient cash closes the offer and opens the In-App Store. Capacity limits still prevent unavailable upgrades.
+- Each full-hands pickup/magnet attempt refreshes “Hands full! Place or drop an item.” Repeated clicks restart the warning timer, including after the previous toast has disappeared. No cash or credits are spent.
+- SEARCH lasts at least 30 seconds, including when an older scene supplies a shorter duration. Matching loose items retain gold outlines after hover exits; hover temporarily uses its magenta outline. Search results bypass mesh batching so the outline renderer can actually display them. Pickup and expiry clear search outlines.
+- Gameplay uses the supplied LabMusic.MP3 at 22% volume. Loading music also targets 22%; saved Sound/Music switches remain respected. Tutorial instructions describe the new search, full-hands and low-cash behavior.
+- iOS-specific MAX interstitial/reward IDs, AdMob app/interstitial/reward IDs and Tenjin key are assigned in LabServiceSettings. Runtime ad requests and callbacks select the platform's IDs. Apply account IDs synchronizes both MAX and Google Mobile Ads iOS app settings. Android credentials remain separate.
+- Added the missing native iOS bridge, framework archive and build integration from [official Tenjin Unity SDK 1.20.2](https://github.com/tenjin/tenjin-unity-sdk/tree/1.20.2), matching the existing C# SDK. iOS can now initialize Tenjin independently of Firebase and request MAX ads after UMP permits them.
+- AdMob placement IDs must also be mapped in the MAX iOS mediation dashboard; storing those IDs in Unity does not configure the dashboard. Xcode/device verification of ads and attribution is still required; no iOS build or live delivery is claimed.
+- Apple IAP is now implemented as described above; the original Google Play-only limitation has been removed.
+- Validation: `CashSearchAndToastUpdates` passed in Unity (1 test, 0 failures), covering all three affordable/insufficient-cash offers, controls after closing Store, repeated toast after expiry, timer restart, real-time 30-second search/outline lifecycle, 22% LabMusic playback and existing toast/slider checks. Report: `Logs/CashSearchToastTests.xml`.
+
+Earlier entries below describe the previous Android integration.
 
 This section supersedes the ad timing and Editor notes below.
 

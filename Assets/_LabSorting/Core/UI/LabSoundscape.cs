@@ -8,7 +8,7 @@ namespace LabSorting.UI
         public FirstLaunchTour tour;
         public AudioSource ambience,ui;
         public AudioSource music;
-        [Range(0,1)] public float musicVolume=.10f;
+        [Range(0,1)] public float musicVolume=.22f;
         public AudioClip click,close;
         [Range(0,1)] public float gameplayVolume=.16f,tourVolume=.23f,uiVolume=.22f;
         bool paused,focused=true;float nextClick;

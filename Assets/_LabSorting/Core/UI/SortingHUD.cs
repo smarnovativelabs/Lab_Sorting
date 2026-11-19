@@ -117,7 +117,7 @@ namespace LabSorting.UI
                 if(activeIcon){activeIcon.sprite=session.Active?session.Active.definition.icon:null;activeIcon.enabled=activeIcon.sprite;}
                 active.text=session.Active?session.Active.definition.displayName:"SELECT AN ITEM";
             }
-            var toasts=GetComponent<DesignerToasts>();if(toasts)toasts.Present(session.Message,session.MessageIsError);else {status.text=session.Message;status.color=session.MessageIsError?new Color(1,.68f,.32f):Color.white;}
+            var toasts=GetComponent<DesignerToasts>();if(toasts)toasts.Present(session.Message,session.MessageIsError,session.FullNoticeVersion);else {status.text=session.Message;status.color=session.MessageIsError?new Color(1,.68f,.32f):Color.white;}
             int groups=0;
             for(int i=0;i<session.carried.Count;i++)
             {

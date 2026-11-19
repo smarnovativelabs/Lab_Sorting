@@ -36,7 +36,7 @@ namespace LabSorting.Editor
             if(EditorApplication.isPlayingOrWillChangePlaymode)throw new System.Exception("Exit play mode first");
             var s=Object.FindFirstObjectByType<SortingSession>();var hud=Object.FindFirstObjectByType<SortingHUD>();if(!s||!hud)throw new System.Exception("Open gameplay scene");
             var safe=(RectTransform)hud.transform.Find("SafeArea");if(!safe)throw new System.Exception("Missing SafeArea");font=hud.progress.font;
-            s.placementReward=0;s.firstTenBonus=2;s.categoryBonus=3;s.halfBonus=5;s.completeBonus=10;s.maxCapacity=30;s.searchDuration=12;
+            s.placementReward=0;s.firstTenBonus=2;s.categoryBonus=3;s.halfBonus=5;s.completeBonus=10;s.maxCapacity=30;s.searchDuration=30;
             var guided=Object.FindFirstObjectByType<GuidedTutorial>();if(guided)guided.reward=3;
             var economy=hud.GetComponent<EconomyHUD>();var actions=hud.GetComponent<ContextActionHUD>();var settings=hud.GetComponent<SettingsTutorialPanel>();var progress=hud.GetComponent<ItemsProgressPanel>();
             var commerce=Object.FindFirstObjectByType<SupplyCommerce>();if(!commerce){commerce=s.gameObject.AddComponent<SupplyCommerce>();commerce.session=s;}commerce.settings=AssetDatabase.LoadAssetAtPath<LabServiceSettings>("Assets/_LabSorting/Settings/LabServiceSettings.asset");

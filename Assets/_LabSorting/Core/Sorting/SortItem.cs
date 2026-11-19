@@ -71,7 +71,7 @@ namespace LabSorting.Sorting
             // Magenta rim identifies the single aim target (the pale cyan floor hid a cyan rim); gold belongs to paid search results.
             outline.OutlineColor=hovered?HoverColor:new Color(1f,.74f,.12f);
             outline.OutlineWidth=5f;
-            outline.enabled=hovered||(searched&&!batchHighlight);
+            outline.enabled=hovered||searched;
         }
         public void Snap(Vector3 position, Quaternion rotation, Transform parent=null)
         { selectionPresentation?.Kill();DropLandingPool.Stop(this,false);physicsLanding=false;motion?.Kill(); transform.SetParent(parent,true); transform.SetPositionAndRotation(position,rotation); transform.localScale=originalScale*(parent?CarryScale:1f); hitbox.enabled=location!=ItemLocation.Hand;PoseChanged(); }

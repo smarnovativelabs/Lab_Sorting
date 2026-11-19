@@ -21,6 +21,17 @@ namespace LabSorting.Services
         [TextArea] public string googlePlayPublicKey;
         public string privacyPolicyUrl;
         public string tenjinApiKey;
+        [Header("iOS advertising and attribution")]
+        public string iosInterstitialId,iosRewardedId,iosGoogleMobileAdsAppId;
+        [Tooltip("Configure these AdMob placements in the MAX iOS mediation dashboard.")]
+        public string iosAdmobInterstitialId,iosAdmobRewardedId,iosTenjinApiKey;
+        [Header("Apple App Store (same product IDs as the catalog above)")]
+        public string iosBundleId;
+        public string iosTrackingUsageDescription="Your device information helps us show relevant ads and measure ad performance.";
+        public string InterstitialId=>Application.platform==RuntimePlatform.IPhonePlayer?iosInterstitialId:androidInterstitialId;
+        public string RewardedId=>Application.platform==RuntimePlatform.IPhonePlayer?iosRewardedId:androidRewardedId;
+        public string MobileAdsAppId=>Application.platform==RuntimePlatform.IPhonePlayer?iosGoogleMobileAdsAppId:googleMobileAdsAppId;
+        public string TenjinApiKey=>Application.platform==RuntimePlatform.IPhonePlayer?iosTenjinApiKey:tenjinApiKey;
         public bool underAgeOfConsent;
         public bool enableLiveServices;
         [Tooltip("Advertising IDs registered as test devices in MAX. No live ads by default.")]

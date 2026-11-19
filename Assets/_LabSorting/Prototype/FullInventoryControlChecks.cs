@@ -22,7 +22,7 @@ namespace LabSorting.Prototype
                 while(s.carried.Count<s.capacity){Check(s.TryPick(s.items.First(i=>i.location==ItemLocation.Loose&&!i.Moving)),"Fill capacity");DG.Tweening.DOTween.CompleteAll();}
                 int cash=s.Cash,magnet=s.MagnetCredits,version=s.FullNoticeVersion;var extra=s.items.First(i=>i.location==ItemLocation.Loose&&!i.Moving);
                 for(int i=0;i<20;i++){s.TryPick(extra);s.TryMagnet();}
-                Check(s.FullNoticeVersion==version+1,"Rapid full pick/magnet attempts emit one notice");
+                Check(s.FullNoticeVersion==version+40,"Every full pick/magnet attempt refreshes the notice");
                 Check(s.Cash==cash&&s.MagnetCredits==magnet&&s.carried.Count==s.capacity,"Full attempts never spend or collect");
                 yield return new WaitForSecondsRealtime(.2f);
                 Check(hud.inventorySummary.transform.localScale.x>1&&hud.inventorySummary.transform.localScale.x<=1.036f,"Capacity summary uses a bounded subtle pulse");

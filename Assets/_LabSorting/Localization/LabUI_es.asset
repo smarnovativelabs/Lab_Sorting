@@ -1406,6 +1406,24 @@ MonoBehaviour:
     m_Localized: SEGUIR EXPLORANDO
     m_Metadata:
       m_Items: []
+  - m_Id: 2612985258950656
+    m_Localized: "\xA1Manos llenas! Coloca o suelta un objeto."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2612985347031040
+    m_Localized: SEARCH resalta objetos iguales durante al menos 30 segundos.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2612985347031041
+    m_Localized: "MAGNET recoge objetos iguales. \xBFManos llenas? Coloca o suelta
+      uno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2612985347031042
+    m_Localized: "Pulsa + para comprar espacios o ver un anuncio. \xBFSin dinero?
+      USE CASH abre la tienda."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

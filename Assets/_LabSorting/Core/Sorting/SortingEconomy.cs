@@ -8,7 +8,7 @@ namespace LabSorting.Sorting
         [Min(1)] public int searchCost=10,magnetCost=25,upgradeBaseCost=50,upgradeStepCost=25;
         [Min(0)] public int placementReward=0; // Legacy serialized field; placement never awards cash.
         [Range(10,60)] public int maxCapacity=15;
-        [Min(1)] public float searchDuration=8;
+        [Min(30)] public float searchDuration=30;
         HashSet<string> rewardedItems=new HashSet<string>();
         ItemDefinition searchType;
         float searchUntil;
@@ -34,7 +34,7 @@ namespace LabSorting.Sorting
             foreach(var item in ItemsOfType(type)) if(item.location==ItemLocation.Loose && item.definition==type) count++;
             if(count==0) return Fail("No loose "+type.displayName+" remaining — no charge");
             int cost=Mathf.Max(1,searchCost);if(SearchCredits<=0&&cash<cost) return Fail("Get search uses with cash, a rewarded ad or the store");
-            if(SearchCredits>0)SearchCredits--;else cash-=cost;searchType=type;searchUntil=Time.unscaledTime+Mathf.Max(1,searchDuration);
+            if(SearchCredits>0)SearchCredits--;else cash-=cost;searchType=type;searchUntil=Time.unscaledTime+Mathf.Max(30,searchDuration);
             foreach(var item in ItemsOfType(type)) if(item.location==ItemLocation.Loose && item.definition==type) item.SetSearchHighlight(true);
             Commit("Search: "+count+" loose "+type.displayName+" found");SearchStarted?.Invoke(type,count);SaveTransaction();return true;
         }

@@ -137,7 +137,9 @@ namespace LabSorting.Prototype
             var capped=s.Capture();capped.cash=10000;capped.capacity=s.maxCapacity;s.Restore(capped);wallet=s.Cash;
             Check(!s.TryUpgradeCapacity()&&s.Cash==wallet,"Maximum capacity prevents extra purchase");
             s.Restore(initial);s.TryPick(s.items[0]);DOTween.CompleteAll();s.searchDuration=1;s.TrySearch();
-            yield return WaitGameSeconds(1.2f);Check(!s.SearchType,"Search expires cleanly");s.searchDuration=8;
+            Check(s.SearchSeconds>=29.9f,"Search enforces the 30 second minimum");
+            var expiring=s.Capture();expiring.searchRemaining=.1f;s.Restore(expiring);
+            yield return WaitGameSeconds(1.2f);Check(!s.SearchType,"Search expires cleanly");s.searchDuration=30;
             s.Restore(initial);s.TryUpgradeCapacity();s.TryPick(s.items[0]);DOTween.CompleteAll();s.TryPlace(s.racks[0]);DOTween.CompleteAll();wallet=s.Cash;
             s.saveName="sorting-automated-test.json";s.persistence=true;s.Save();s.Restore(initial);
             Check(s.Load()&&s.Cash==wallet&&s.capacity==11,"Disk restores cash and purchased capacity");

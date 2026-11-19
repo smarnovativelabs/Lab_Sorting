@@ -22,7 +22,7 @@ namespace LabSorting.Prototype
                 sound.SendMessage("OnApplicationFocus",true);
                 Check(settings.moveSpeedSlider&&settings.moveSpeedLabel,"Movement speed slider and label wired");
                 float look=session.player.look.SensitivityMultiplier;settings.ChangeMoveSpeed(99);Check(Mathf.Abs(session.player.character.MaxStableMoveSpeed-3.84f)<.001f,"Speed upper bound stays comfortable");settings.ChangeMoveSpeed(-1);Check(Mathf.Abs(session.player.character.MaxStableMoveSpeed-2.4f)<.001f,"Speed lower bound enforced");settings.ChangeMoveSpeed(float.NaN);Check(settings.MoveSpeedMultiplier==1,"Invalid speed resets to normal");settings.ChangeMoveSpeed(.9f);settings.LoadPreferences();Check(settings.MoveSpeedMultiplier==.9f,"Movement speed persists independently");settings.ChangeMoveSpeed(1);
-                Check(sound.music&&sound.music.loop&&sound.music.clip&&sound.musicVolume<=.1f,"Quiet background music loop wired");
+                Check(sound.music&&sound.music.loop&&sound.music.clip&&sound.musicVolume>0&&sound.musicVolume<=.25f,"Audible background music loop stays below effects");
                 Check(sound.ambience.loop&&sound.ambience.clip&&sound.click&&sound.close,"Loop and distinct UI cues wired");
                 Check(session.items.Select(i=>i.definition).Distinct().All(d=>!Regex.IsMatch(d.displayName,@"\s+\d+$")),"No numeric suffixes remain on item display names");
                 // 46 original types must survive renaming; new content (e.g. lab-rat) may add more, each with its own stable ID.

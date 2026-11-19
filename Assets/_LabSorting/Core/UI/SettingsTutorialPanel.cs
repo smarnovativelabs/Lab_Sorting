@@ -32,9 +32,9 @@ namespace LabSorting.UI
         CursorLockMode previousCursor;
         static readonly string[] cards={
             "MOVE & LOOK\n\nUse the left joystick to move. Drag the right side to look around.\n\nOn desktop: WASD to move, drag to look. Adjust look sensitivity in Settings.",
-            "PICK & DROP\n\nAim at an outlined item. Tap PICK for one item, or hold to collect more of that type.\n\nHands start with 10 slots. DROP drops one selected item per tap.",
+            "PICK & DROP\n\nAim at an outlined item. Tap PICK for one item, or hold to collect more of that type.\n\nHands full? Place or drop an item. DROP releases one selected item per tap.",
             "SORT YOUR RACKS\n\nTap an inventory category to select it. Aim at a green rack and tap or hold PLACE.\n\nThe first item assigns the whole rack. Pick all its items back up to reset it.",
-            "TOOLS & REWARDS\n\nSEARCH and MAGNET use your selected category anywhere in the lab. Full hands never charge for magnet.\n\nSmall milestone rewards help you progress. Get tools with cash, optional reward videos or the store. ITEM PROGRESS shows what remains."
+            "TOOLS & REWARDS\n\nSEARCH outlines matching loose items for at least 30 seconds. MAGNET collects matching items into free slots.\n\nBuy tools and slots with cash or watch an ad. Low cash? USE CASH opens the Store. ITEM PROGRESS shows what remains."
         };
         // Scenes with a GuidedTutorial use it on first launch; the cards stay available as "How to play".
         GuidedTutorial Guided=>GetComponent<GuidedTutorial>();

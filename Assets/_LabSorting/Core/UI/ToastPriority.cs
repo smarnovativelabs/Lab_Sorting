@@ -11,9 +11,11 @@ namespace LabSorting.UI
         public int Priority {get;private set;}
         public float Until {get;private set;}
         public void Supersede(string prefix,float now){pending.RemoveAll(e=>e.text.StartsWith(prefix,StringComparison.OrdinalIgnoreCase));if(Text.StartsWith(prefix,StringComparison.OrdinalIgnoreCase)){Text="";Priority=0;Until=now;}}
-        public void Push(string text,int priority,float now,float duration)
+        public void Push(string text,int priority,float now,float duration,bool restart=false)
         {
-            Tick(now);if(string.IsNullOrWhiteSpace(text)||text==Text||pending.Exists(e=>e.text==text))return;
+            Tick(now);if(string.IsNullOrWhiteSpace(text))return;
+            if(text==Text){if(restart)Until=now+duration;return;}
+            if(pending.Exists(e=>e.text==text))return;
             var entry=new Entry{text=text,priority=priority,duration=duration};
             if(now>=Until||priority>Priority){Display(entry,now);return;}
             if(priority==0){if(Priority==0)Display(entry,now);return;}

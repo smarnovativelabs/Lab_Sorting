@@ -102,7 +102,7 @@ namespace LabSorting.Sorting
         public void Cycle() { if(carried.Count>0) Select((carried.IndexOf(Active)+1)%carried.Count); }
         void RemoveActive()
         {
-            nextFullNotice=0;var type=Active.definition;carried.Remove(Active); Active=null;
+            var type=Active.definition;carried.Remove(Active); Active=null;
             for(int i=carried.Count-1;i>=0;i--) if(carried[i].definition==type) {Active=carried[i];break;}
             if(!Active && carried.Count>0) Active=carried[carried.Count-1];
             if(Active) { Active.gameObject.SetActive(true); Active.Snap(hand.position,hand.rotation,hand);Active.PresentHeld(); }

@@ -10,6 +10,8 @@ namespace LabSorting.Editor
     {
         static TestRunnerApi api;
         static string reportPath="Logs/ReviewTests.xml";
+        public static void RunAppleCommerce(){RunSelected(new[]{"AppleCashPurchasesAndRestore"},"Logs/AppleCommerceTests.xml");}
+        public static void RunCashSearchToast(){RunSelected(new[]{"CashSearchAndToastUpdates"},"Logs/CashSearchToastTests.xml");}
         [MenuItem("Tools/Lab Sorting/Services/Test connectivity panel")]
         public static void RunConnectivity()
         {

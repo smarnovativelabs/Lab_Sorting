@@ -234,7 +234,7 @@ namespace LabSorting.UI
                     if(!carrying)return "Pick up another item first.";
                     if(Mode!=HandMode.Tap)return "Your item will drop forward when there is room.";
                     return "Tap DROP to throw one item gently forward."+(pc?"  (Q)":"");
-                case Step.Tools: return ToolPage==0?"SEARCH highlights loose items like the one you're holding.":ToolPage==1?"MAGNET pulls in more of the item you're holding, until your hands are full.":"Tap + beside Collected Items to add slots with cash or a reward video.";
+                case Step.Tools: return ToolPage==0?"SEARCH outlines matching loose items for at least 30 seconds.":ToolPage==1?"MAGNET collects matching items. Hands full? Place or drop an item.":"Tap + to buy slots with cash or watch an ad. Low cash? USE CASH opens the Store.";
                 default: return paid?"Well done! +$"+reward+"\nNow sort every item to finish the lab.":"Well done!\nNow sort every item to finish the lab.";
             }
         }

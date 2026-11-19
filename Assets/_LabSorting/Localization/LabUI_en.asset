@@ -2118,6 +2118,23 @@ MonoBehaviour:
     m_Localized: KEEP EXPLORING
     m_Metadata:
       m_Items: []
+  - m_Id: 2612985258950656
+    m_Localized: Hands full! Place or drop an item.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2612985347031040
+    m_Localized: SEARCH outlines matching loose items for at least 30 seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2612985347031041
+    m_Localized: MAGNET collects matching items. Hands full? Place or drop an item.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2612985347031042
+    m_Localized: Tap + to buy slots with cash or watch an ad. Low cash? USE CASH
+      opens the Store.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
