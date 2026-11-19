@@ -37,7 +37,7 @@ namespace LabSorting.UI
             if(source||!clip)return;var go=new GameObject("Boot Music");DontDestroyOnLoad(go);go.AddComponent<BootMusic>();source=go.AddComponent<AudioSource>();source.clip=clip;source.loop=true;source.spatialBlend=0;source.priority=180;source.volume=0;source.Play();
         }
         public static AudioSource Take(){var result=source;source=null;if(result)Destroy(result.GetComponent<BootMusic>());return result;}
-        void Update(){if(source){float target=PlayerPrefs.GetInt("LabSorting.Sound",1)!=0&&PlayerPrefs.GetInt("LabSorting.Music",1)!=0?.12f:0;source.volume=Mathf.MoveTowards(source.volume,target,Time.unscaledDeltaTime*.08f);}}
+        void Update(){if(source){float target=PlayerPrefs.GetInt("LabSorting.Music",1)!=0?.12f:0;source.volume=Mathf.MoveTowards(source.volume,target,Time.unscaledDeltaTime*.08f);}}
         void OnApplicationPause(bool paused){if(source){if(paused)source.Pause();else source.UnPause();}}
         void OnApplicationFocus(bool focused){if(source){if(focused)source.UnPause();else source.Pause();}}
     }

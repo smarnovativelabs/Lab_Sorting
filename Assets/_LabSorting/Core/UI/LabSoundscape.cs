@@ -12,17 +12,17 @@ namespace LabSorting.UI
         public AudioClip click,close;
         [Range(0,1)] public float gameplayVolume=.16f,tourVolume=.23f,uiVolume=.22f;
         bool paused,focused=true;float nextClick;
-        // Background music has its own switch under the master Sound switch.
+        // Background music is independent of the Sound effects switch.
         public bool MusicEnabled {get;private set;}=true;
         public void SetMusic(bool value){MusicEnabled=value;if(!value&&music){music.volume=0;music.Pause();}}
         public int ClicksPlayed {get;private set;}
         void OnEnable(){ambience.volume=0;var boot=BootMusic.Take();if(boot){if(music)Destroy(music.gameObject);music=boot;music.transform.SetParent(transform,false);}else if(music)music.volume=0;}
         void Update()
         {
-            bool audible=feedback.SoundEnabled&&!paused&&focused;
-            if(!audible){ambience.volume=0;if(ambience.isPlaying)ambience.Pause();if(music){music.volume=0;music.Pause();}ui.Stop();return;}
+            if(paused||!focused){Silence();return;}
             if(music&&!MusicEnabled){music.volume=0;if(music.isPlaying)music.Pause();}
             else if(music){if(!music.isPlaying){music.UnPause();if(!music.isPlaying)music.Play();}music.volume=Mathf.MoveTowards(music.volume,musicVolume,Time.unscaledDeltaTime*.08f);}
+            if(!feedback.SoundEnabled){ambience.volume=0;if(ambience.isPlaying)ambience.Pause();ui.Stop();return;}
             if(!ambience.isPlaying){ambience.UnPause();if(!ambience.isPlaying)ambience.Play();}
             float target=tour&&tour.IsRunning?tourVolume:gameplayVolume;
             ambience.volume=Mathf.MoveTowards(ambience.volume,target,Time.unscaledDeltaTime*.15f);
