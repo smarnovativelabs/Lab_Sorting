@@ -196,7 +196,7 @@ MonoBehaviour:
   shine: {fileID: 1102103249}
   tip: {fileID: 1696914895}
   startup: {fileID: 113322018}
-  musicClip: {fileID: 8300000, guid: bfb2aa482506f4e47bb0c9a9d15a65b9, type: 3}
+  musicClip: {fileID: 8300000, guid: 7c63326f9e5d66d40898a86f4e6e993f, type: 3}
 --- !u!1 &205222220
 GameObject:
   m_ObjectHideFlags: 0
@@ -1585,6 +1585,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86c16020f96d6b44a9ad26a45f18de8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.UI.UIButtonMotion
+  idlePulse: 0
 --- !u!1 &1948724051
 GameObject:
   m_ObjectHideFlags: 0
