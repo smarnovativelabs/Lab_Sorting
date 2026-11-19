@@ -4,7 +4,9 @@ namespace LabSorting.UI
 {
     public sealed partial class GuidedTutorial
     {
-        Image toolBlocker, toolHighlight;
+        Image toolBlocker, toolHighlight, toolTail;
+        Vector3 bubbleRest;
+        readonly Vector3[] toolCorners=new Vector3[4];
         CursorLockMode toolCursor; bool toolCursorVisible, toolModal;
         public bool ToolModalActive=>toolModal;
         void SetToolModal(bool value)
@@ -14,6 +16,7 @@ namespace LabSorting.UI
             if(session) {session.CancelHold();session.player.SetTutorialBlocked(value);}
             if(value)
             {
+                bubbleRest=bubble.localPosition;
                 toolCursor=Cursor.lockState;toolCursorVisible=Cursor.visible;
                 Cursor.lockState=CursorLockMode.None;Cursor.visible=true; if(gotItButton){gotItButton.navigation=new Navigation{mode=Navigation.Mode.None};if(UnityEngine.EventSystems.EventSystem.current)UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(gotItButton.gameObject);}
                 if(!toolBlocker)
@@ -40,6 +43,8 @@ namespace LabSorting.UI
             {
                 if(toolBlocker)toolBlocker.gameObject.SetActive(false);
                 if(toolHighlight)toolHighlight.gameObject.SetActive(false);
+                if(toolTail)toolTail.gameObject.SetActive(false);
+                if(bubble)bubble.localPosition=bubbleRest;
                 Cursor.lockState=toolCursor;Cursor.visible=toolCursorVisible;
             }
         }
@@ -51,6 +56,31 @@ namespace LabSorting.UI
             var r=toolHighlight.rectTransform;r.position=target.position;
             r.sizeDelta=new Vector2(target.rect.width*target.lossyScale.x/r.parent.lossyScale.x,target.rect.height*target.lossyScale.y/r.parent.lossyScale.y);
             r.localScale=Vector3.one*(1.04f+.025f*Mathf.Sin(Time.unscaledTime*4));
+            LayoutToolBubble(target);
+        }
+        void LayoutToolBubble(RectTransform target)
+        {
+            // Work in the bubble parent's space so the callout follows safe-area/resolution changes.
+            var parent=(RectTransform)bubble.parent;
+            target.GetWorldCorners(toolCorners);
+            Vector2 min=parent.InverseTransformPoint(toolCorners[0]),max=parent.InverseTransformPoint(toolCorners[2]);
+            var bounds=parent.rect;float width=bubble.rect.width,height=bubble.rect.height;
+            bool left=(min.x+max.x)*.5f>bounds.center.x;
+            float x=left?min.x-22-width*.5f:max.x+22+width*.5f;
+            float y=(min.y+max.y)*.5f;
+            x=Mathf.Clamp(x,bounds.xMin+width*.5f+12,bounds.xMax-width*.5f-12);
+            y=Mathf.Clamp(y,bounds.yMin+height*.5f+50,bounds.yMax-height*.5f-12);
+            bubble.localPosition=new Vector3(x+(bubble.pivot.x-.5f)*width,y+(bubble.pivot.y-.5f)*height,0);
+            if(!toolTail)
+            {
+                toolTail=new GameObject("ToolCalloutTail",typeof(RectTransform),typeof(Image)).GetComponent<Image>();
+                toolTail.transform.SetParent(bubble,false);toolTail.raycastTarget=false;
+                toolTail.color=new Color(1,.85f,.15f);toolTail.rectTransform.sizeDelta=Vector2.one*14;
+                toolTail.rectTransform.localRotation=Quaternion.Euler(0,0,45);
+            }
+            toolTail.gameObject.SetActive(true);
+            var tip=bubble.InverseTransformPoint(target.position);
+            toolTail.rectTransform.localPosition=new Vector3(left?bubble.rect.xMax:bubble.rect.xMin,Mathf.Clamp(tip.y,bubble.rect.yMin+18,bubble.rect.yMax-18),0);
         }
     }
 }

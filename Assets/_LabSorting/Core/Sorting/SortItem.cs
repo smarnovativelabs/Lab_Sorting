@@ -27,7 +27,8 @@ namespace LabSorting.Sorting
         Vector3 motionDestination;Quaternion motionRotation;
         public Vector3 SavedPosition=>Moving&&location==ItemLocation.Loose?motionDestination:transform.position;
         public Quaternion SavedRotation=>Moving&&location==ItemLocation.Loose?motionRotation:transform.rotation;
-        bool hovered,searched;
+        bool hovered,searched,heldPresentation;
+        public void SetHeldPresentation(bool value){if(heldPresentation==value)return;heldPresentation=value;ApplyHighlight();}
         public event System.Action VisualChanged;
         public event System.Action<SortItem> PersistenceChanged;
         void PoseChanged(){VisualChanged?.Invoke();PersistenceChanged?.Invoke(this);}
@@ -69,9 +70,9 @@ namespace LabSorting.Sorting
         {
             if(!outline)return;
             // Magenta rim identifies the single aim target (the pale cyan floor hid a cyan rim); gold belongs to paid search results.
-            outline.OutlineColor=hovered?HoverColor:new Color(1f,.74f,.12f);
-            outline.OutlineWidth=5f;
-            outline.enabled=hovered||searched;
+            outline.OutlineColor=heldPresentation?new Color(.45f,1f,.85f):hovered?HoverColor:new Color(1f,.74f,.12f);
+            outline.OutlineWidth=heldPresentation?2.5f:5f;
+            outline.enabled=heldPresentation||hovered||searched;
         }
         public void Snap(Vector3 position, Quaternion rotation, Transform parent=null)
         { selectionPresentation?.Kill();DropLandingPool.Stop(this,false);physicsLanding=false;motion?.Kill(); transform.SetParent(parent,true); transform.SetPositionAndRotation(position,rotation); transform.localScale=originalScale*(parent?CarryScale:1f); hitbox.enabled=location!=ItemLocation.Hand;PoseChanged(); }

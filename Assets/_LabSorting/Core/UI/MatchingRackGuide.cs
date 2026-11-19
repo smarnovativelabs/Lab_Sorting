@@ -45,7 +45,7 @@ namespace LabSorting.UI
             MarkerRack=null;
             if(session&&session.player&&!session.player.blocked&&session.Active)
             {
-                var candidate=tutorial&&tutorial.IsRunning?tutorial.GuidedRack:GuidedRack;
+                var candidate=tutorial&&tutorial.IsRunning?null:GuidedRack;
                 if(candidate&&candidate.gameObject.activeInHierarchy&&candidate.CanAccept(session.Active.definition))MarkerRack=candidate;
             }
             if(!MarkerRack){if(marker)marker.gameObject.SetActive(false);return;}

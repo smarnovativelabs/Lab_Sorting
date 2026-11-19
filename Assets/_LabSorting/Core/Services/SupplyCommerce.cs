@@ -71,6 +71,10 @@ namespace LabSorting.Services
         public bool CanClosePurchaseUI=>PurchaseBusy&&Time.unscaledTime-purchaseBegan>=30;
         void BeginPurchase(){LabTelemetry.Event("purchase_flow_opened");purchaseRequested=true;purchaseBegan=Time.unscaledTime;busy=true;Status="Opening store...";}
         public bool Busy=>busy;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public bool DebugCanArm=>!busy&&waitingForSession.Count==0&&confirmRequested.Count==0;
+        public string DebugPurchaseState=>"Pending deliveries: "+waitingForSession.Count+" | confirming: "+confirmRequested.Count+" | confirmed this run: "+confirmedTransactions.Count;
+#endif
         public bool RewardReady=>initializedAds&&consent&&consent.CanRequestAds&&!busy&&MaxSdk.IsRewardedAdReady(settings.RewardedId);
         public string ProductId(SupplyKind kind)=>!settings?"":kind==SupplyKind.Search?settings.searchPackProductId:kind==SupplyKind.Magnet?settings.magnetPackProductId:kind==SupplyKind.Slot?settings.slotPackProductId:settings.smallCashProductId;
         public int PackAmount(SupplyKind kind)=>!settings?0:kind==SupplyKind.Search?settings.searchPackAmount:kind==SupplyKind.Magnet?settings.magnetPackAmount:kind==SupplyKind.Slot?settings.slotPackAmount:settings.smallCashAmount;
@@ -82,6 +86,9 @@ namespace LabSorting.Services
         public bool BuyLargeCash(){if(!CanBuyLargeCash){Status="Store unavailable. Please try later.";return false;}BeginPurchase();try{store.PurchaseProduct(settings.largeCashProductId);return true;}catch(Exception){busy=false;Status="Store unavailable.";return false;}}
         void Start()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if(!GetComponent<CommerceDebugControls>())gameObject.AddComponent<CommerceDebugControls>();
+#endif
             if(!FindFirstObjectByType<InternetConnectivity>()){var go=new GameObject("Lab Connectivity");DontDestroyOnLoad(go);var connection=go.AddComponent<InternetConnectivity>();connection.StartCoroutine(connection.InitializeRoutine());}
             if(!settings)return;
             if(!EditorTestServices&&(!settings.enableLiveServices||Application.isEditor||(Application.platform!=RuntimePlatform.Android&&Application.platform!=RuntimePlatform.IPhonePlayer)))return;
@@ -112,7 +119,28 @@ namespace LabSorting.Services
         void PurchaseFailed(FailedOrder order){LabTelemetry.Event("purchase_failed_or_cancelled");busy=false;ScheduleStoreRetry(StoreRecovery.Purchases);Status="Purchase cancelled or unsuccessful.";}
         void Deferred(DeferredOrder order){LabTelemetry.Event("purchase_deferred");busy=false;Status="Purchase awaiting approval.";}
         // A failed confirmation leaves the order pending in the store, so the next fetch may confirm it again.
-        void Confirmed(Order order){busy=false;if(order?.Info==null)return;confirmRequested.Remove(order.Info.TransactionID);if(order is ConfirmedOrder confirmed){confirmedTransactions.Add(order.Info.TransactionID);waitingForSession.Remove(order.Info.TransactionID);LabTelemetry.Purchase(confirmed);}else ScheduleStoreRetry(StoreRecovery.Purchases);Status=order is ConfirmedOrder?"Purchase delivered.":"Purchase confirmation pending.";}
+        void Confirmed(Order order)
+        {
+            if(order?.Info==null)return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            var debug=GetComponent<CommerceDebugControls>();
+            if(debug&&debug.HoldSuccessfulConfirmation(order,()=>Confirmed(order)))return;
+#endif
+            busy=false;
+            confirmRequested.Remove(order.Info.TransactionID);
+            confirmationDeadlines.Remove(order.Info.TransactionID);
+            if(order is ConfirmedOrder)
+            {
+                waitingForSession.Remove(order.Info.TransactionID);
+                if(confirmedTransactions.Add(order.Info.TransactionID))
+                {
+                    var product=order.CartOrdered.Items().FirstOrDefault()?.Product;
+                    LabTelemetry.Event("purchase_confirmed",product?.definition.id??"",product==null?0:(double)product.metadata.localizedPrice);
+                }
+            }
+            else ScheduleStoreRetry(StoreRecovery.Purchases);
+            Status=order is ConfirmedOrder?"Purchase delivered.":"Purchase confirmation pending.";
+        }
         void PurchasesFetched(Orders orders)
         {
             if(storeRecovery==StoreRecovery.Purchases){storeRecovery=StoreRecovery.None;storeRetryAttempt=0;}
@@ -131,8 +159,23 @@ namespace LabSorting.Services
         void EntitlementChecked(Entitlement entitlement){}
         void Confirm(PendingOrder order)
         {
+            // The verified reward is already durable. Journal its revenue before the store
+            // consumes it: a confirmed consumable cannot be recovered on next launch.
+            if(!LabTelemetry.RecordDeliveredPurchase(order))throw new System.IO.IOException("Purchase telemetry save pending");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            var debug=GetComponent<CommerceDebugControls>();
+            if(debug&&debug.AfterJournal(order))return;
+#endif
             if(!confirmRequested.Add(order.Info.TransactionID))return;
-            try{store.ConfirmPurchase(order);}catch{confirmRequested.Remove(order.Info.TransactionID);throw;}
+            confirmationDeadlines[order.Info.TransactionID]=Time.realtimeSinceStartupAsDouble+ConfirmationTimeoutSeconds;
+            try
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                if(debug&&debug.InjectConfirmationStall(store,order,Confirmed))return;
+#endif
+                store.ConfirmPurchase(order);
+            }
+            catch{confirmRequested.Remove(order.Info.TransactionID);confirmationDeadlines.Remove(order.Info.TransactionID);throw;}
         }
         void OnPending(PendingOrder order)=>DeliverPending(order,true);
         void DeliverPending(PendingOrder order,bool releasePurchaseUI)

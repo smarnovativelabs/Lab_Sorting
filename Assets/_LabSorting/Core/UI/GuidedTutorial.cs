@@ -35,16 +35,16 @@ namespace LabSorting.UI
         const float TargetGrace=.3f, FadeSpeed=6;
         Vector3 lastPosition;float lastYaw,walked,looked,hideAt,lastActivity=-99,lastPickTarget=-99,lastRackTarget=-99,handAlpha;
         bool subscribed,paid,fresh,canThrow;float nextThrowCheck;string shown;Image handImage;
-        RectTransform pointedControl;
+        RectTransform pointedControl,aimCrosshair;
         float nextToolAdvance;
         float lookGestureAt;
 
-        void Awake(){Hide();}
+        void Awake(){if(area&&area.parent)aimCrosshair=area.parent.Find("Crosshair") as RectTransform;Hide();}
         void OnEnable(){Canvas.willRenderCanvases+=RefreshPointerLayout;if(IsRunning){Subscribe();SetToolModal(Current==Step.Tools);}}
         void OnDisable(){Canvas.willRenderCanvases-=RefreshPointerLayout;Unsubscribe();HideRackGuide();SetToolModal(false);}
         // Safe-area/canvas geometry may change after Update (resize, camera handoff).
         // Resolve the fingertip against the final control geometry just before rendering.
-        void RefreshPointerLayout(){if(toolModal)UpdateToolHighlight();if(IsRunning&&session&&!session.player.NetworkBlocked&&(!session.player.blocked||toolModal)&&Mode==HandMode.Tap&&pointedControl)Tap(pointedControl);}
+        void RefreshPointerLayout(){if(toolModal)UpdateToolHighlight();if(IsRunning&&session&&!session.player.NetworkBlocked&&(!session.player.blocked||toolModal)){if(Mode==HandMode.Tap&&pointedControl)Tap(pointedControl);else if(Mode==HandMode.Aim)Aim();}}
 
         // Start from the beginning, or from the step saved when the game was closed.
         public void Begin(bool restart)
@@ -78,7 +78,7 @@ namespace LabSorting.UI
             if(step==Step.Done)PlayerPrefs.DeleteKey(preferencesPrefix+"GuidedToolPage");
             PlayerPrefs.Save();
             if(gotItButton)gotItButton.gameObject.SetActive(step==Step.Tools);
-            if(gotItButton){var text=gotItButton.GetComponentInChildren<Text>(true);if(text)text.text=step==Step.Tools?"NEXT":"GOT IT";}
+            if(gotItButton){var text=gotItButton.GetComponentInChildren<Text>(true);if(text)text.text=step==Step.Tools?(ToolPage==2?"DONE":"NEXT"):"GOT IT";}
             if(skipButton)skipButton.gameObject.SetActive(step!=Step.Done&&step!=Step.Tools); SetToolModal(step==Step.Tools);
             if(stepLabel)stepLabel.text=step==Step.Done?"":"STEP "+(step==Step.Tools?5+ToolPage:Mathf.Min((int)step+1,StepCount))+" / "+StepCount;
             shown=null;
@@ -91,6 +91,7 @@ namespace LabSorting.UI
         {
             if(!IsRunning)return;
             if(cue==SortingCue.Pick&&Current<=Step.Pick)Enter(Step.Place);
+            else if(cue==SortingCue.Throw&&Current==Step.Place&&!session.Active){HideRackGuide();Enter(Step.Pick);}
             else if(cue==SortingCue.Place&&Current<=Step.Place){Enter(Step.Tools);placedHintUntil=Time.unscaledTime+1.3f;}
             else if(cue==SortingCue.Throw&&Current==Step.Throw)Enter(Step.Tools);
             // A toss is a placement made with the THROW button: it counts for either step.
@@ -134,7 +135,7 @@ namespace LabSorting.UI
                     if(session.carried.Count>=session.capacity){Enter(Step.Place);return;}
                     ShowPick();break;
                 case Step.Place:
-                    if(!session.Active){ShowPick();break;}
+                    if(!session.Active){HideRackGuide();Enter(Step.Pick);ShowPick();break;}
                     if(Recent(lastRackTarget))Tap(placeButton);else Aim();
                     break;
                 case Step.Throw:
@@ -206,7 +207,7 @@ namespace LabSorting.UI
         void Aim()
         {
             SetHand(HandMode.Aim);
-            var center=(Vector2)area.InverseTransformPoint(new Vector3(Screen.width*.5f,Screen.height*.5f,0));
+            var center=aimCrosshair?(Vector2)area.InverseTransformPoint(aimCrosshair.position):area.rect.center;
             float angle=35;var direction=(Vector2)(Quaternion.Euler(0,0,angle)*Vector3.right);
             float away=26+Mathf.Sin(Time.unscaledTime*5)*6;
             PutHand(center-direction*away,angle,false,.9f);
@@ -234,7 +235,7 @@ namespace LabSorting.UI
                     if(!carrying)return "Pick up another item first.";
                     if(Mode!=HandMode.Tap)return "Your item will drop forward when there is room.";
                     return "Tap DROP to throw one item gently forward."+(pc?"  (Q)":"");
-                case Step.Tools: return ToolPage==0?"SEARCH outlines matching loose items for at least 30 seconds.":ToolPage==1?"MAGNET collects matching items. Hands full? Place or drop an item.":"Tap + to buy slots with cash or watch an ad. Low cash? USE CASH opens the Store.";
+                case Step.Tools: return ToolPage==0?"SEARCH outlines matching loose items for at least 30 seconds.":ToolPage==1?"MAGNET collects matching items. Hands full? Place or drop an item.":"CAPACITY is how many items you can carry. The + offers extra slots for cash or an ad.";
                 default: return paid?"Well done! +$"+reward+"\nNow sort every item to finish the lab.":"Well done!\nNow sort every item to finish the lab.";
             }
         }

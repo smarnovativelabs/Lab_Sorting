@@ -27,6 +27,12 @@ namespace LabSorting.Services
                 messages.RemoveAt(messages.FindIndex(m=>m.kind=="event"));
             messages.Add(message);return true;
         }
+        internal bool JournalPurchase(TelemetryMessage message,string path)
+        {
+            if(message==null||message.kind!="purchase"||string.IsNullOrWhiteSpace(message.transaction))return false;
+            Add(message);
+            return Save(path);
+        }
         public bool Drain(Func<TelemetryMessage,bool> firebase,Func<TelemetryMessage,bool> tenjin)
         {
             bool changed=false;int sent=0;

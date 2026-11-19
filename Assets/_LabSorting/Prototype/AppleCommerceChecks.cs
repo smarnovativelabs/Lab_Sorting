@@ -34,7 +34,45 @@ namespace LabSorting.Prototype
             var window=dialog.GetComponents<MonoBehaviour>().First(c=>c.GetType().Name=="UIFakeStoreWindow");
             window.SendMessage(accept?"OnOkClicked":"OnCancelClicked");yield return null;
         }
-        public static IEnumerator Run()
+        static IEnumerator DebugPurchases(SortingSession session,SupplyCommerce commerce,LabServiceSettings settings)
+        {
+            var debug=commerce.GetComponent<CommerceDebugControls>();Check(debug,"Development controls attached");
+            var services=UnityEngine.Object.FindFirstObjectByType<LabSorting.UI.ServicesPanel>();
+            services.settingsPanel.OpenSettings();services.Open();
+            var entry=services.root.transform.Find("PurchaseDebugger");Check(entry,"IAP DEBUG entry exists in Services");
+            entry.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            var panel=commerce.GetComponent<LabSorting.UI.CommerceDebugPanel>();Check(panel&&panel.IsOpen,"Debug panel opens from Services button");
+            Directory.CreateDirectory("Logs");
+            yield return null;
+            ScreenCapture.CaptureScreenshot("Logs/PurchaseDebugPanel.png");
+            panel.Hide();services.Close();services.settingsPanel.Close();
+            int cash=session.Cash;
+            Check(debug.Arm(CommerceDebugControls.TestMode.ConfirmationStall),"Stall mode arms");
+            Check(commerce.Buy(SupplyKind.Cash),"Stalled purchase starts");yield return Respond(true);
+            float limit=Time.realtimeSinceStartup+10;
+            while(!commerce.DebugPurchaseState.Contains("confirming: 1")&&Time.realtimeSinceStartup<limit)yield return null;
+            Check(session.Cash==cash+settings.smallCashAmount&&commerce.DebugPurchaseState.Contains("confirming: 1"),"Reward saved once while SDK confirmation stalls");
+            int frames=Time.frameCount;yield return new WaitForSecondsRealtime(2);
+            Check(Time.frameCount>frames+1&&commerce.DebugPurchaseState.Contains("confirming: 1"),"Game keeps advancing while confirmation is held");
+            limit=Time.realtimeSinceStartup+40;
+            while(!commerce.DebugCanArm&&Time.realtimeSinceStartup<limit)yield return null;
+            Check(commerce.DebugCanArm&&!debug.Armed&&session.Cash==cash+settings.smallCashAmount,"Real 30-second watchdog retries confirmation without duplicate cash");
+            foreach(var mode in new[]{CommerceDebugControls.TestMode.AfterJournal,CommerceDebugControls.TestMode.AfterStoreSuccess})
+            {
+                cash=session.Cash;Check(debug.Arm(mode),"Crash checkpoint arms: "+mode);
+                Check(commerce.Buy(SupplyKind.Cash),"Checkpoint purchase starts");yield return Respond(true);
+                limit=Time.realtimeSinceStartup+10;while(!debug.Paused&&Time.realtimeSinceStartup<limit)yield return null;
+                Check(debug.Paused&&panel.IsOpen&&CommerceDebugControls.HoldTelemetry,"Checkpoint opens panel and holds telemetry: "+mode);
+                yield return new WaitForSecondsRealtime(6);
+                Check(debug.Paused&&session.Cash==cash+settings.smallCashAmount,"Delivery retry cannot bypass checkpoint or duplicate cash");
+                debug.Resume();panel.Hide();limit=Time.realtimeSinceStartup+10;
+                while(!commerce.DebugCanArm&&Time.realtimeSinceStartup<limit)yield return null;
+                Check(commerce.DebugCanArm&&!CommerceDebugControls.HoldTelemetry&&session.Cash==cash+settings.smallCashAmount,"Resume completes purchase exactly once: "+mode);
+            }
+        }
+        public static IEnumerator Run()=>Run(false);
+        public static IEnumerator DebugRun()=>Run(true);
+        static IEnumerator Run(bool debugFaults)
         {
             BindingChecks();var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();while(!s.Initialized)yield return null;
             var c=UnityEngine.Object.FindFirstObjectByType<SupplyCommerce>();var config=c.settings;var initial=s.Capture();string save=s.saveName,ledger=CommerceEntitlements.StorageFile;
@@ -56,6 +94,7 @@ namespace LabSorting.Prototype
                 limit=Time.realtimeSinceStartup+10;while(c.Busy&&Time.realtimeSinceStartup<limit)yield return null;
                 int paid=cash+isolated.smallCashAmount+isolated.largeCashAmount;
                 Check(!c.Busy&&s.Cash==paid,"Large cash delivered and confirmed");
+                if(debugFaults){yield return DebugPurchases(s,c,isolated);paid=s.Cash;}
                 s.Restore(initial);Check(s.Load()&&s.Cash==paid,"Both cash purchases survive disk reload");
                 c.BuyRemoveAds();yield return Respond(true);yield return null;
                 Check(c.AdsRemoved,"Non-consumable remove ads delivered");

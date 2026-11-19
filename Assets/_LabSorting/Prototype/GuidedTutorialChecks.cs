@@ -5,6 +5,8 @@ using DG.Tweening;
 using LabSorting.Sorting;
 using LabSorting.UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using LabSorting.Player;
 
 namespace LabSorting.Prototype
 {
@@ -26,7 +28,7 @@ namespace LabSorting.Prototype
             var local=(Vector2)target.InverseTransformPoint(g.hand.position);var r=target.rect;
             return local.x>=r.xMin-margin&&local.x<=r.xMax+margin&&local.y>=r.yMin-margin&&local.y<=r.yMax+margin;
         }
-        static bool HandNearCenter(GuidedTutorial g,float radius)=>g.hand.gameObject.activeInHierarchy&&Vector2.Distance(Tip(g),g.area.InverseTransformPoint(new Vector3(Screen.width*.5f,Screen.height*.5f,0)))<=radius;
+        static bool HandNearCenter(GuidedTutorial g,float radius)=>g.hand.gameObject.activeInHierarchy&&Vector2.Distance(Tip(g),g.area.InverseTransformPoint(g.area.parent.Find("Crosshair").position))<=radius;
         static IEnumerator Teleport(SortingSession s,Vector3 feet,Vector3 lookAt)
         {
             s.player.Clear();s.player.character.Motor.BaseVelocity=Vector3.zero;s.player.character.Motor.SetPositionAndRotation(feet,Quaternion.identity);
@@ -51,9 +53,72 @@ namespace LabSorting.Prototype
                 if(s.Active&&s.TryThrowPosition(s.Active,out _))yield break;
             }
         }
-        public static IEnumerator Run()
+        public static IEnumerator Run()=>RunFlow(60);
+        public static IEnumerator RunLowFrameRate()=>RunFlow(30);
+        public static IEnumerator Readability()
+        {
+            checks=0;var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();
+            var g=UnityEngine.Object.FindFirstObjectByType<GuidedTutorial>();
+            while(!s.Initialized)yield return null;
+            s.persistence=false;s.player.SendMessage("OnApplicationFocus",true);s.player.SetBlocked(false);s.player.SetNetworkBlocked(false);
+            yield return Wait(.3f);var initial=s.Capture();var prefix=g.preferencesPrefix;
+            var hud=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();var economy=UnityEngine.Object.FindFirstObjectByType<EconomyHUD>();
+            var carry=s.hand.GetComponent<LabSorting.Player.CarryPresentation>();
+            try
+            {
+                Check(prefix.Contains("Automated"),"Isolated test preferences");g.Begin(true);
+                var item=NearestLoose(s);Check(s.TryPick(item),"Pick first item");item.CompleteMotion();yield return Wait(.4f);
+                Check(g.Current==GuidedTutorial.Step.Place&&g.GuidedRack,"Pickup selects a suitable rack");
+                Check(g.GuidedRack.CanAccept(item.definition)&&Mathf.Abs(g.GuidedRack.transform.position.y-s.player.transform.position.y)<.8f,"Guide chooses compatible rack on same floor");
+                Check(carry.OverlayActive&&item.gameObject.layer==LayerMask.NameToLayer("HeldItem"),"Held geometry uses overlay camera");
+                Check(hud.active.text.Contains("HOLDING")&&hud.active.text.Contains(item.definition.displayName)&&hud.active.text.Contains("×1"),"Holding card names item and carried count");
+                Check(!hud.GetComponent<DesignerToasts>().ShownText.StartsWith("Picked"),"Pickup does not produce repeated toast");
+                var rack=g.GuidedRack;s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,75));yield return Wait(.3f);
+                Check(g.GuidedRack==rack&&carry.OverlayActive,"Turning down preserves rack target and held rendering");
+                ScreenCapture.CaptureScreenshot("Logs/ReadabilityHeldDown.png");yield return Wait(.2f);
+                s.ThrowActive();yield return Wait(2);item.CompleteMotion();yield return null;
+                Check(g.Current==GuidedTutorial.Step.Pick&&!g.GuidedRack&&!g.RackGuideVisible,"Last-item drop returns to Pick and hides rack marker");
+                Check(!carry.OverlayActive&&item.gameObject.layer==LayerMask.NameToLayer("SortingItem")&&hud.active.text=="HANDS EMPTY","Drop restores world rendering and empty indicator");
+                Check(s.TryPick(item),"Repick dropped item");item.CompleteMotion();yield return Wait(.4f);
+                Check(g.Current==GuidedTutorial.Step.Place&&g.GuidedRack,"Repick restores rack guidance");
+                var second=NearestLoose(s);Check(s.TryPick(second),"Pick another item");second.CompleteMotion();yield return Wait(.3f);
+                s.ThrowActive();yield return Wait(.4f);
+                Check(s.Active&&g.Current==GuidedTutorial.Step.Place,"Drop with another held item keeps Place guidance");
+                s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,0));yield return Wait(.4f);
+                ScreenCapture.CaptureScreenshot("Logs/ReadabilityRack.png");yield return Wait(.2f);
+                Check(s.TryPlace(g.GuidedRack),"Place carried item on guided rack");DOTween.CompleteAll();yield return Wait(.4f);
+                int search=s.SearchCredits,magnet=s.MagnetCredits,capacity=s.capacity;
+                for(int page=0;page<3;page++)
+                {
+                    Check(g.Current==GuidedTutorial.Step.Tools&&g.ToolPage==page&&g.ToolModalActive,"Tool explanation page "+page);
+                    var control=page==0?g.searchButton:page==1?g.magnetButton:g.capacityButton;
+                    Canvas.ForceUpdateCanvases();
+                    Check(!RectTransformUtility.RectangleContainsScreenPoint(g.bubble,control.position),"Bubble does not obscure tool "+page);
+                    Check(Vector3.Distance(g.bubble.position,control.position)<g.bubble.rect.width*g.bubble.lossyScale.x,"Bubble stays beside tool "+page);
+                    Check(g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,(RectTransform)g.gotItButton.transform,70),"Hand indicates NEXT inside callout "+page);
+                    ScreenCapture.CaptureScreenshot("Logs/ReadabilityTool"+page+".png");yield return Wait(.2f);
+                    g.GotIt();yield return Wait(.4f);
+                }
+                Check(g.Current==GuidedTutorial.Step.Done&&s.SearchCredits==search&&s.MagnetCredits==magnet&&s.capacity==capacity,"Explanations finish without using tools");
+                g.Skip();var empty=s.Capture();empty.searchCredits=0;empty.magnetCredits=0;s.Restore(empty);yield return Wait(.2f);
+                Check(economy.searchPlus.gameObject.activeSelf&&economy.magnetPlus.gameObject.activeSelf,"Refill plus visible at zero");
+                s.GrantSupply(SupplyKind.Search,1,"readability-search");s.GrantSupply(SupplyKind.Magnet,1,"readability-magnet");yield return Wait(.2f);
+                Check(!economy.searchPlus.gameObject.activeSelf&&!economy.magnetPlus.gameObject.activeSelf,"Refill plus hidden with owned uses");
+                Check(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<LabSoundscape>().musicVolume-.12f)<.001f,"Music is 12 percent");
+                Debug.Log("READABILITY_OK checks="+checks);
+            }
+            finally
+            {
+                if(g.IsRunning)g.Skip();DOTween.CompleteAll();s.Restore(initial);s.InitializeSaveCache();
+                foreach(var key in new[]{"GuidedStep","GuidedDone","GuidedToolPage","RackTurnShown.v1"})PlayerPrefs.DeleteKey(prefix+key);
+            }
+        }
+        static IEnumerator RunFlow(int frameRate)
         {
             checks=0;var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();var g=UnityEngine.Object.FindFirstObjectByType<GuidedTutorial>();var settings=g.GetComponent<SettingsTutorialPanel>();
+            int previousFrameRate=Application.targetFrameRate,previousVsync=QualitySettings.vSyncCount;
+            float previousFixedDelta=Time.fixedDeltaTime;
+            Application.targetFrameRate=frameRate;QualitySettings.vSyncCount=0;Time.fixedDeltaTime=frameRate==30?1f/30:.02f;
             s.persistence=false;s.player.SendMessage("OnApplicationFocus",true);yield return Wait(.15f);
             var initial=s.Capture();string prefix=g.preferencesPrefix;var spawn=s.player.transform.position;var motor=s.player.character.Motor;
             try
@@ -63,27 +128,57 @@ namespace LabSorting.Prototype
                 g.Begin(false);yield return Wait(.3f);
                 Check(g.IsRunning&&g.Current==GuidedTutorial.Step.Move&&g.group.alpha==1,"Starts at step 1, Move");
                 Check(g.Mode==GuidedTutorial.HandMode.Drag&&HandNear(g,g.joystick,120),"Hand drags on the joystick");
+                Check(!g.GetComponent<DesignerToasts>().ShownText.StartsWith("Pick an item, then"),"Move shows only the current tutorial instruction");
                 Check(g.message.text.Contains("joystick")&&g.stepLabel.text=="STEP 1 / 7"&&!g.gotItButton.gameObject.activeSelf,"Move text and step counter");
 
                 // Loading a save moves the player in one frame: that must not count as walking.
                 motor.SetPosition(spawn+new Vector3(0,0,2.5f));yield return Wait(.4f);motor.SetPosition(spawn);yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Move,"A teleport (like loading a save) does not complete Move");
-                // Walking: the hand gets out of the way while the player moves.
-                for(int i=1;i<=5;i++){motor.SetPosition(spawn+new Vector3(0,0,.2f*i));yield return null;yield return null;}
-                Check(g.Current==GuidedTutorial.Step.Move&&g.Mode==GuidedTutorial.HandMode.Hidden,"Hand hides while the player is walking");
+                ScreenCapture.CaptureScreenshot("Logs/Tutorial01Move.png");yield return Wait(.1f);
+                // Use the same pointer events as a thumb on the real joystick. SetPosition is a
+                // teleport, and two test-runner yields are not guaranteed to contain a game Update.
+                var stick=g.joystick.GetComponent<LabTouchArea>();
+                var pointer=new PointerEventData(EventSystem.current){pointerId=91,position=g.joystick.position};
+                var start=motor.TransientPosition;float deadline=Time.realtimeSinceStartup+15;
+                stick.OnPointerDown(pointer);
+                pointer.position=g.joystick.TransformPoint(new Vector3(0,g.joystick.rect.width*.35f,0));
+                while(Vector3.Distance(start,motor.TransientPosition)<.45f)
+                {
+                    if(Time.realtimeSinceStartup>deadline)throw new Exception("Joystick did not move player: "+motor.TransientPosition+" blocked="+s.player.blocked);
+                    stick.OnDrag(pointer);yield return null;
+                }
+                stick.OnPointerUp(pointer);yield return Wait(.12f);
+                Check(g.Current==GuidedTutorial.Step.Move&&g.Mode==GuidedTutorial.HandMode.Hidden,"Real joystick walking hides the hand before the distance threshold");
                 yield return Wait(g.idleDelay+.4f);
-                Check(g.Mode==GuidedTutorial.HandMode.Drag&&g.hand.gameObject.activeSelf,"Hand comes back after the player stops");
-                for(int i=6;i<=10;i++){motor.SetPosition(spawn+new Vector3(0,0,.2f*i));yield return null;yield return null;}
-                yield return Wait(.15f);
-                Check(g.Current==GuidedTutorial.Step.Look,"Walking 1.5 m completes Move");
+                Check(g.Current==GuidedTutorial.Step.Move&&g.Mode==GuidedTutorial.HandMode.Drag&&g.hand.gameObject.activeSelf,"Stopping below the walking threshold brings the hint back");
+                pointer.position=g.joystick.position;stick.OnPointerDown(pointer);
+                pointer.position=g.joystick.TransformPoint(new Vector3(0,g.joystick.rect.width*.35f,0));
+                deadline=Time.realtimeSinceStartup+15;
+                while(g.Current==GuidedTutorial.Step.Move)
+                {
+                    if(Time.realtimeSinceStartup>deadline)throw new Exception("Walking never completed: "+motor.TransientPosition+" blocked="+s.player.blocked);
+                    stick.OnDrag(pointer);yield return null;
+                }
+                stick.OnPointerUp(pointer);yield return Wait(.15f);
+                Check(g.Current==GuidedTutorial.Step.Look,"Walking 1.5 m through joystick input completes Move");
                 yield return Wait(g.idleDelay+.4f);
                 Check(g.Mode==GuidedTutorial.HandMode.Drag&&HandNear(g,g.lookArea,220),"Hand swipes on the look area");
-                s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw+60,10));yield return Wait(.4f);
-                Check(g.Current==GuidedTutorial.Step.Pick,"Turning 45 degrees completes Look");
+                ScreenCapture.CaptureScreenshot("Logs/Tutorial02Look.png");yield return Wait(.1f);
+                var lookTouch=g.lookArea.GetComponent<LabTouchArea>();
+                var swipe=new PointerEventData(EventSystem.current){pointerId=92,position=g.lookArea.position};
+                lookTouch.OnPointerDown(swipe);deadline=Time.realtimeSinceStartup+15;
+                while(g.Current==GuidedTutorial.Step.Look)
+                {
+                    if(Time.realtimeSinceStartup>deadline)throw new Exception("Look swipe never completed");
+                    swipe.delta=new Vector2(30,0);lookTouch.OnDrag(swipe);yield return Wait(.08f);
+                }
+                lookTouch.OnPointerUp(swipe);yield return Wait(.2f);
+                Check(g.Current==GuidedTutorial.Step.Pick,"Turning 45 degrees through touch swipes completes Look");
 
                 // Not aiming at anything: the hand points at the aim cross and stays there when the camera turns.
                 s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,-75));yield return Wait(.6f);
-                Check(!g.actions.PickVisible&&g.Mode==GuidedTutorial.HandMode.Aim&&HandNearCenter(g,60)&&g.message.text.StartsWith("Aim the +"),"Nothing aimed at: hand points at the aim cross");
+                Check(!g.actions.PickVisible&&g.Mode==GuidedTutorial.HandMode.Aim&&HandNearCenter(g,60)&&g.message.text.StartsWith("Aim the +"),"Nothing aimed at: hand points at the actual crosshair");
+                ScreenCapture.CaptureScreenshot("Logs/Tutorial03Pick.png");yield return Wait(.1f);
                 var before=Tip(g);s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw+40,-70));yield return Wait(.25f);
                 Check(g.Mode==GuidedTutorial.HandMode.Aim&&Vector2.Distance(before,Tip(g))<16,"Hand stays put on screen when the camera turns");
                 var item=NearestLoose(s);
@@ -94,30 +189,56 @@ namespace LabSorting.Prototype
                 }
                 yield return Wait(.15f);
                 Check(g.actions.PickVisible&&g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,g.pickButton,70)&&g.message.text.StartsWith("Tap PICK"),"Aiming at an item moves the hand to PICK");
-                Check(s.TryPick(s.TargetItem),"Pick the aimed item");DOTween.CompleteAll();yield return Wait(.3f);
+                item=s.TargetItem;var pickTap=new PointerEventData(EventSystem.current){pointerId=93};
+                g.actions.pickHold.OnPointerDown(pickTap);g.actions.pickHold.OnPointerUp(pickTap);yield return Wait(.4f);
+                Check(s.Active==item,"PICK button picks the aimed item");
 
                 Check(g.Current==GuidedTutorial.Step.Place,"Picking completes the Pick step"); Check(g.GuidedRack&&g.RackGuideVisible,"Tutorial marks a compatible same-floor rack");
+                var carry=s.hand.GetComponent<LabSorting.Player.CarryPresentation>();var hud=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();
+                Check(carry.OverlayActive&&s.Active.gameObject.layer==LayerMask.NameToLayer("HeldItem"),"Held model renders separately from floor geometry");
+                Check(hud.active.text.Contains("HOLDING")&&hud.active.text.Contains(item.definition.displayName)&&hud.active.text.Contains("×1"),"Holding card identifies selected type and carried count");
+                Check(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<LabSoundscape>().musicVolume-.12f)<.001f,"Music target is 12 percent");
+                var dropTap=new PointerEventData(EventSystem.current){pointerId=95,position=g.throwButton.position};
+                ExecuteEvents.Execute(g.throwButton.gameObject,dropTap,ExecuteEvents.pointerDownHandler);
+                ExecuteEvents.Execute(g.throwButton.gameObject,dropTap,ExecuteEvents.pointerUpHandler);
+                ExecuteEvents.Execute(g.throwButton.gameObject,dropTap,ExecuteEvents.pointerClickHandler);
+                yield return Wait(2f);item.CompleteMotion();yield return null;
+                Check(g.Current==GuidedTutorial.Step.Pick&&!g.GuidedRack&&!g.RackGuideVisible,"Dropping the last item returns to Pick and removes rack guidance");
+                Check(item.gameObject.layer==LayerMask.NameToLayer("SortingItem")&&!carry.OverlayActive&&hud.active.text=="HANDS EMPTY","Dropped item returns to world rendering and empty-hands indicator");
+                Check(s.TryPick(item),"Pick the dropped item again");item.CompleteMotion();yield return Wait(.4f);
+                Check(g.Current==GuidedTutorial.Step.Place&&g.GuidedRack,"Picking again resumes rack guidance");
+                s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,75));yield return Wait(.3f);
+                Check(carry.OverlayActive&&Mathf.Max(carry.HeldScreenRect.width,carry.HeldScreenRect.height)>s.player.view.pixelHeight*.1f,"Held item stays readable while looking at the floor");
+                ScreenCapture.CaptureScreenshot("Logs/ReadabilityHeldDown.png");yield return Wait(.1f);
                 s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,-75));yield return Wait(.6f);
                 Check(g.Mode==GuidedTutorial.HandMode.Aim&&g.message.text.Contains("rack"),"Not at a rack: hand points at the aim cross and explains the green bar");
                 var rack=RackFor(s);var front=rack.transform.TransformPoint(new Vector3(0,0,-1.6f));front.y=rack.transform.position.y+.03f;
                 yield return Teleport(s,front,rack.label.transform.position);yield return Wait(.1f);
                 Check(s.TargetRack==rack&&g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,g.placeButton,70)&&g.message.text.Contains("decides"),"At the rack the hand taps PLACE and explains rack types");
                 ScreenCapture.CaptureScreenshot("Logs/SoftTutorialPlace.png");yield return Wait(.1f);
-                Check(s.TryPlace(rack),"Place on the rack");DOTween.CompleteAll();yield return Wait(.3f);
+                var placeTap=new PointerEventData(EventSystem.current){pointerId=94};
+                g.actions.placeHold.OnPointerDown(placeTap);g.actions.placeHold.OnPointerUp(placeTap);yield return Wait(.4f);
+                Check(item.location==ItemLocation.Rack&&item.rack==rack,"PLACE button places item on the aimed rack");
 
                 Check(g.Current==GuidedTutorial.Step.Tools&&g.gotItButton.gameObject.activeSelf,"Placing completes the main task; optional tools and GOT IT appear");
                 Check(g.ToolModalActive&&s.player.TutorialBlocked&&g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,g.gotItButton.transform as RectTransform,70)&&!g.skipButton.gameObject.activeSelf,"Tools highlight their button but hand points only to NEXT");
+                var bubbleCorners=new Vector3[4];g.bubble.GetWorldCorners(bubbleCorners);
+                Check(!RectTransformUtility.RectangleContainsScreenPoint(g.bubble,g.searchButton.position),"Search callout does not cover highlighted control");
+                Check(Vector3.Distance(g.bubble.position,g.searchButton.position)<g.bubble.rect.width*g.bubble.lossyScale.x,"Search explanation sits beside its button");
+                ScreenCapture.CaptureScreenshot("Logs/ReadabilitySearch.png");yield return Wait(.1f);
                 int cash=s.Cash;g.gotItButton.onClick.Invoke();yield return Wait(.4f);
                 int search=s.SearchCredits,magnet=s.MagnetCredits,capacity=s.capacity;
                 Check(g.ToolPage==1&&g.ToolModalActive,"NEXT explains magnet without using it");
                 g.gotItButton.onClick.Invoke();yield return Wait(.4f);
                 Check(g.ToolPage==2&&g.capacityButton&&g.ToolModalActive,"Capacity explanation points at collected-items plus");
+                Check(g.gotItButton.GetComponentInChildren<UnityEngine.UI.Text>().text=="DONE","Final explanation clearly offers DONE");
                 g.Begin(false);yield return Wait(.4f);Check(g.ToolPage==2,"Capacity explanation resumes safely");
                 Check(s.Cash==cash&&s.SearchCredits==search&&s.MagnetCredits==magnet&&s.capacity==capacity,"Explanations consume no cash, tools or capacity upgrades");
                 g.gotItButton.onClick.Invoke();yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Done&&s.TutorialRewarded&&s.Cash==cash+g.reward,"Finishing pays the reward: +$"+g.reward);
                 yield return Wait(.4f);
                 Check(g.Completed&&g.message.text.StartsWith("Well done")&&!g.hand.gameObject.activeSelf&&!g.skipButton.gameObject.activeSelf,"Well done message, tutorial remembered as finished");
+                ScreenCapture.CaptureScreenshot("Logs/Tutorial07Complete.png");yield return Wait(.1f);
                 yield return Wait(5.4f);
                 Check(!g.IsRunning&&g.group.alpha==0,"Message hides after a few seconds");
 
@@ -158,13 +279,20 @@ namespace LabSorting.Prototype
                 var writer=new System.IO.StringWriter();new SaveJsonStream().Write(writer,snapshot);
                 var loaded=JsonUtility.FromJson<SortingSession.Snapshot>(writer.ToString());
                 Check(loaded.tutorialRewarded&&s.Restore(loaded)&&s.TutorialRewarded&&!s.ClaimTutorialReward(g.reward),"Reward flag survives save and load");
-                Debug.Log("GUIDED_TUTORIAL_OK checks="+checks);
+                var economy=UnityEngine.Object.FindFirstObjectByType<EconomyHUD>();
+                var emptyTools=s.Capture();emptyTools.searchCredits=0;emptyTools.magnetCredits=0;s.Restore(emptyTools);yield return Wait(.2f);
+                Check(economy.searchPlus.gameObject.activeSelf&&economy.magnetPlus.gameObject.activeSelf,"Zero credits reveal refill plus buttons");
+                s.GrantSupply(SupplyKind.Search,1,"readability-search");s.GrantSupply(SupplyKind.Magnet,1,"readability-magnet");yield return Wait(.2f);
+                Check(!economy.searchPlus.gameObject.activeSelf&&!economy.magnetPlus.gameObject.activeSelf,"Owned credits hide refill plus buttons");
+                s.Restore(initial);yield return Wait(.2f);
+                Debug.Log("GUIDED_TUTORIAL_OK checks="+checks+" targetFPS="+frameRate+" fixedDelta="+Time.fixedDeltaTime);
             }
             finally
             {
+                s.player.Clear();Application.targetFrameRate=previousFrameRate;QualitySettings.vSyncCount=previousVsync;Time.fixedDeltaTime=previousFixedDelta;
                 if(g.IsRunning)g.Skip();if(settings.IsOpen)settings.Close();DOTween.CompleteAll();
                 s.Restore(initial);s.InitializeSaveCache();
-                foreach(var key in new[]{"GuidedStep","GuidedDone"})PlayerPrefs.DeleteKey(prefix+key);
+                foreach(var key in new[]{"GuidedStep","GuidedDone","GuidedToolPage","RackTurnShown.v1"})PlayerPrefs.DeleteKey(prefix+key);
             }
         }
     }

@@ -26,7 +26,7 @@ namespace LabSorting.UI
         // Moment-to-moment feedback the HUD already shows elsewhere (held item, Selected card,
         // Collected list pulse, ability popup). Kept out of the center toast so it never
         // covers the aim point on every pick/place.
-        static readonly string[] routinePrefixes={"Picked ","Placed ","Selected ","Dropped ","Nice shot!","Magnet collected ","Search: "};
+        static readonly string[] routinePrefixes={"Pick an item, then assign an empty rack.","Picked ","Placed ","Selected ","Dropped ","Nice shot!","Magnet collected ","Search: "};
         public static bool IsRoutine(string text)
         {
             if(string.IsNullOrEmpty(text))return false;

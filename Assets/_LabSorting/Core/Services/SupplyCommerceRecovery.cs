@@ -1,10 +1,62 @@
 using System;
 using System.Linq;
+using System.Reflection;
+using UnityEngine.Purchasing;
 using UnityEngine;
 namespace LabSorting.Services
 {
     public sealed partial class SupplyCommerce
     {
+        internal const double ConfirmationTimeoutSeconds=30;
+        readonly System.Collections.Generic.Dictionary<string,double> confirmationDeadlines=new System.Collections.Generic.Dictionary<string,double>();
+        internal void RecoverStalledConfirmations(double now)
+        {
+            foreach(var pair in confirmationDeadlines.ToArray())
+            {
+                if(now<pair.Value)continue;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                var debug=GetComponent<CommerceDebugControls>();
+                if(debug&&debug.IsPaused(pair.Key))continue;
+#endif
+                // IAP 5.5 also retains an internal confirmation request. Reporting its
+                // timeout through the SDK failure callback releases that request without
+                // consuming, refunding, or granting anything. A late native success is safe.
+                if(store!=null&&waitingForSession.TryGetValue(pair.Key,out var order))
+                {
+                    try
+                    {
+                        var callback=FindConfirmationCallback(store);
+                        if(callback==null)Debug.LogError("IAP confirmation recovery binding unavailable; check installed IAP version.");
+                        else callback.OnConfirmOrderFailed(new FailedOrder(order,PurchaseFailureReason.Unknown,"Confirmation callback timed out; retrying."));
+                    }
+                    catch(Exception e){Debug.LogWarning("IAP confirmation recovery failed: "+e.GetType().Name);}
+                }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                if(debug)debug.WatchdogExpired(pair.Key);
+#endif
+                confirmationDeadlines.Remove(pair.Key);
+                confirmRequested.Remove(pair.Key);
+                // Keep the saved reward/transaction id. Re-fetch and retry confirmation;
+                // GrantSupply's durable receipt prevents a second reward.
+                ScheduleStoreRetry(StoreRecovery.Purchases);
+            }
+        }
+        // Version-bound adapter for Unity IAP 5.5, which exposes the callback interface
+        // but no cancellation API. link.xml preserves these fields in IL2CPP builds.
+        internal static IStorePurchaseConfirmCallback FindConfirmationCallback(object owner)
+        {
+            if(owner==null)return null;
+            if(owner is IStorePurchaseConfirmCallback callback)return callback;
+            for(var type=owner.GetType();type!=null;type=type.BaseType)
+            {
+                foreach(var name in new[]{"m_PurchaseService","m_BaseInternalPurchaseService","m_ConfirmOrderUseCase"})
+                {
+                    var field=type.GetField(name,BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.DeclaredOnly);
+                    if(field!=null)return FindConfirmationCallback(field.GetValue(owner));
+                }
+            }
+            return null;
+        }
         enum StoreRecovery { None, Connect, Products, Purchases }
         StoreRecovery storeRecovery;
         bool storeConnecting,maxStarting;
@@ -34,6 +86,7 @@ namespace LabSorting.Services
         void TickServiceRecovery()
         {
             double now=Time.realtimeSinceStartupAsDouble;
+            RecoverStalledConfirmations(now);
             if(now>=consentRetryAt){consentRetryAt=double.PositiveInfinity;RetryConsent();}
             if(now>=rewardLoadAt){rewardLoadAt=double.PositiveInfinity;LoadAd();}
             if(now>=interstitialLoadAt){interstitialLoadAt=double.PositiveInfinity;LoadInterstitial();}

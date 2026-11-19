@@ -80,7 +80,11 @@ public class TenjinAdMobIntegration
             String adResponseId = responseInfo.GetResponseId();
             try
             {
-                AdMobImpressionDataToJSON adMobImpressionDataToJSON = new AdMobImpressionDataToJSON()
+#if UNITY_IPHONE
+                var adMobImpressionDataToJSON = new AdMobIosImpressionDataToJSON()
+#else
+                var adMobImpressionDataToJSON = new AdMobImpressionDataToJSON()
+#endif
                 {
                     ad_unit_id = adUnitId,
     #if UNITY_ANDROID
@@ -115,11 +119,19 @@ internal class AdMobImpressionDataToJSON
     public string response_id;
     public string precision_type;
     public string mediation_adapter_class_name;
-#if UNITY_IPHONE
+    // Keep this serialized layout identical in Editor and every player target.
+    public long value_micros;
+}
+
+// Tenjin's iOS bridge uses currency units, whereas Android uses integer micros.
+// Separate DTOs preserve that existing wire contract without conditional field types.
+[System.Serializable]
+internal class AdMobIosImpressionDataToJSON
+{
+    public string currency_code;
+    public string ad_unit_id;
+    public string response_id;
+    public string precision_type;
+    public string mediation_adapter_class_name;
     public double value_micros;
-#elif UNITY_ANDROID
-    public long value_micros;
-#else
-    public long value_micros;
-#endif
 }

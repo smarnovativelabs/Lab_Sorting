@@ -98953,7 +98953,7 @@ MonoBehaviour:
   ambience: {fileID: 1444661407}
   ui: {fileID: 1021224129}
   music: {fileID: 700180651}
-  musicVolume: 0.22
+  musicVolume: 0.12
   click: {fileID: 8300000, guid: 042354f1647fc4c4baef77bd31984394, type: 3}
   close: {fileID: 8300000, guid: 3b2185efa7cd54b47a6c26a22b5b4f01, type: 3}
   gameplayVolume: 0.16
@@ -136116,7 +136116,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 7c63326f9e5d66d40898a86f4e6e993f, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.22
+  m_Volume: 0.12
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -294704,7 +294704,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 711028657}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.13573264
+  m_Size: 0.13573265
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

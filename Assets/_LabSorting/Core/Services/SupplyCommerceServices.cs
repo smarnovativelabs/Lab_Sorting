@@ -48,6 +48,9 @@ namespace LabSorting.Services
             if(initializedAds){LoadAd();LoadInterstitial();return;}
             if(string.IsNullOrWhiteSpace(settings.maxSdkKey)||string.IsNullOrWhiteSpace(settings.RewardedId)||string.IsNullOrWhiteSpace(settings.MobileAdsAppId))return;
             if(!PrepareIosTracking())return;
+            // MAX revenue callbacks default to a background thread. Our handlers
+            // persist telemetry and update game state, so dispatch all callbacks on Unity's thread.
+            MaxSdkBase.InvokeEventsOnUnityMainThread=true;
             if(subscribed){TryInitializeMax();return;}
             MaxSdkCallbacks.OnSdkInitializedEvent+=OnAdsInitialized;MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent+=OnReward;MaxSdkCallbacks.Rewarded.OnAdHiddenEvent+=OnAdHidden;MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent+=OnAdFailed;MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent+=OnAdLoadFailed;
             MaxSdkCallbacks.Rewarded.OnAdRevenuePaidEvent+=AdRevenue;MaxSdkCallbacks.Interstitial.OnAdRevenuePaidEvent+=AdRevenue;

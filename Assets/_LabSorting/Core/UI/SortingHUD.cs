@@ -34,7 +34,7 @@ namespace LabSorting.UI
         {
             if(!selectedCard)return;
             selectedCard.interactable=false;selectedCard.blocksRaycasts=false;
-            selectedCard.alpha=Mathf.MoveTowards(selectedCard.alpha,session.Active?1:0,Time.unscaledDeltaTime*6);
+            selectedCard.alpha=Mathf.MoveTowards(selectedCard.alpha,session.Active?1:.75f,Time.unscaledDeltaTime*6);
             if(session.Active&&session.Active!=cardItem&&selectedCard.alpha>.5f)cardPop=1;
             if(session.Active)cardItem=session.Active;
             // Pop the contents, not the card: CarryPresentation sizes the held item from the card's rect.
@@ -79,7 +79,7 @@ namespace LabSorting.UI
             if(scroll.verticalScrollbar){var guard=scroll.verticalScrollbar.GetComponent<InventoryAutoScroll>();if(!guard)guard=scroll.verticalScrollbar.gameObject.AddComponent<InventoryAutoScroll>();guard.owner=autoScroll;}
         }
         public void ChangePage(int delta) {if(session.player.blocked)return;page=Mathf.Clamp(page+delta,0,pageCount-1);revision=-1;}
-        void Start() { ResolveSelectedCard();if(selectedCard)selectedCard.alpha=session.Active?1:0; if(previousPage)previousPage.onClick.AddListener(()=>ChangePage(-1));if(nextPage)nextPage.onClick.AddListener(()=>ChangePage(1)); for(int i=0;i<inventoryButtons.Length;i++){int index=i;inventoryButtons[i].onClick.AddListener(()=>SelectType(buttonTypes[index]));} }
+        void Start() { ResolveSelectedCard();if(selectedCard)selectedCard.alpha=session.Active?1:.75f; if(previousPage)previousPage.onClick.AddListener(()=>ChangePage(-1));if(nextPage)nextPage.onClick.AddListener(()=>ChangePage(1)); for(int i=0;i<inventoryButtons.Length;i++){int index=i;inventoryButtons[i].onClick.AddListener(()=>SelectType(buttonTypes[index]));} }
         string TossText()
         {
             var rack=session.TossRack;float distance=Vector3.Distance(session.player.view.transform.position,rack.transform.position);
@@ -110,13 +110,11 @@ namespace LabSorting.UI
                 progress.text="SORTED  "+UIFormat.Count(session.SortedCount)+" / "+UIFormat.Count(session.items.Length);
                 if(progressFill){progress.text+="   "+(fraction<.1f?(fraction*100).ToString("0.0"):Mathf.FloorToInt(fraction*100).ToString())+"%";progressFill.anchorMax=new Vector2(fraction,progressFill.anchorMax.y);progressFill.gameObject.SetActive(fraction>0);}
             }
-            // Name only: hand totals and per-type counts already live in the Collected list.
-            // With a fading card, keep the last name/icon while it fades out.
-            if(session.Active||!selectedCard)
-            {
-                if(activeIcon){activeIcon.sprite=session.Active?session.Active.definition.icon:null;activeIcon.enabled=activeIcon.sprite;}
-                active.text=session.Active?session.Active.definition.displayName:"SELECT AN ITEM";
-            }
+            // Keep the held state explicit even when the floor is covered in similar items.
+            if(activeIcon){activeIcon.sprite=session.Active?session.Active.definition.icon:null;activeIcon.enabled=activeIcon.sprite;}
+            int heldCount=0;
+            if(session.Active)foreach(var item in session.carried)if(item.definition==session.Active.definition)heldCount++;
+            active.text=session.Active?"HOLDING\n"+session.Active.definition.displayName+" ×"+heldCount:"HANDS EMPTY";
             var toasts=GetComponent<DesignerToasts>();if(toasts)toasts.Present(session.Message,session.MessageIsError,session.FullNoticeVersion);else {status.text=session.Message;status.color=session.MessageIsError?new Color(1,.68f,.32f):Color.white;}
             int groups=0;
             for(int i=0;i<session.carried.Count;i++)

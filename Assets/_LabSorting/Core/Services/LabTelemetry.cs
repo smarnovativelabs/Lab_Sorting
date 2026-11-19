@@ -21,6 +21,13 @@ namespace LabSorting.Services
         Task<DependencyStatus> dependencies;
         TelemetryOutbox outbox;
         bool dirty;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        int debugPurchaseEventsLoaded;
+        public string DebugOutboxState=>outbox==null?"Outbox not loaded":
+            "Purchase events restored at startup: "+debugPurchaseEventsLoaded+" | queued now: "+outbox.messages.Count(m=>m.kind=="purchase")+
+            " | Firebase waiting: "+outbox.messages.Count(m=>m.kind=="purchase"&&!m.firebaseSent)+
+            " | Tenjin waiting: "+outbox.messages.Count(m=>m.kind=="purchase"&&!m.tenjinSent);
+#endif
         string OutboxPath=>Path.Combine(Application.persistentDataPath,"lab-telemetry-outbox.json");
         [Serializable] sealed class StoreReceipt{public string Payload;}
         [Serializable] sealed class GoogleReceipt{public string json,signature;}
@@ -31,7 +38,14 @@ namespace LabSorting.Services
         public static event Action<string> Observed;
         bool Live=>settings&&settings.enableLiveServices&&!Application.isEditor;
         bool AttributionReady=>Application.platform!=RuntimePlatform.IPhonePlayer||iosConsentComplete;
-        void Awake(){instance=this;outbox=Application.isEditor?new TelemetryOutbox():TelemetryOutbox.Load(OutboxPath);}
+        void Awake()
+        {
+            instance=this;outbox=Application.isEditor?new TelemetryOutbox():TelemetryOutbox.Load(OutboxPath);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            debugPurchaseEventsLoaded=outbox.messages.Count(m=>m.kind=="purchase");
+            Debug.Log("[IAP TEST] "+DebugOutboxState);
+#endif
+        }
         public void BindSession(SortingSession value){if(ReferenceEquals(session,value))return;OnDisable();session=value;if(isActiveAndEnabled)OnEnable();}
         void OnEnable(){if(session){session.SearchStarted+=Search;session.MagnetCollected+=Magnet;session.RackCompleted+=Rack;session.ItemPlaced+=Placed;session.MilestoneEarned+=Goal;}}
         void Start(){Initialize();}
@@ -86,6 +100,9 @@ namespace LabSorting.Services
         void Flush()
         {
             if(outbox==null||!Persist())return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if(CommerceDebugControls.HoldTelemetry)return;
+#endif
             if(outbox.Drain(SendFirebase,SendTenjin)){dirty=true;Persist();}
         }
         bool SendFirebase(TelemetryMessage m)
@@ -116,13 +133,24 @@ namespace LabSorting.Services
             Observed?.Invoke(name);
             if(instance)instance.Enqueue(new TelemetryMessage{kind="event",name=name,context=context,value=value});
         }
-        public static void Purchase(ConfirmedOrder order)
+        // Called only after receipt verification and durable reward delivery, before
+        // ConfirmPurchase. Failure leaves the order pending so delivery can retry.
+        internal static bool RecordDeliveredPurchase(Order order)
         {
-            if(!instance||order?.Info==null||string.IsNullOrWhiteSpace(order.Info.TransactionID))return;
-            var product=order.CartOrdered.Items().FirstOrDefault()?.Product;if(product==null)return;
-            if(instance.outbox!=null&&instance.outbox.purchases.Contains(order.Info.TransactionID))return;
-            Event("purchase_confirmed",product.definition.id,(double)product.metadata.localizedPrice);
-            instance.Enqueue(new TelemetryMessage{kind="purchase",transaction=order.Info.TransactionID,product=product.definition.id,currency=product.metadata.isoCurrencyCode,value=(double)product.metadata.localizedPrice,receipt=order.Info.Receipt,apple=Application.platform==RuntimePlatform.IPhonePlayer});
+            if(Application.isEditor)return true;
+            if(!instance)return false;
+            if(!instance.settings)return false;
+            if(!instance.Live)return true;
+            if(order?.Info==null||string.IsNullOrWhiteSpace(order.Info.TransactionID))return false;
+            var product=order.CartOrdered.Items().FirstOrDefault()?.Product;if(product==null)return false;
+            if(instance.outbox==null)instance.outbox=TelemetryOutbox.Load(instance.OutboxPath);
+            var message=new TelemetryMessage{kind="purchase",transaction=order.Info.TransactionID,product=product.definition.id,currency=product.metadata.isoCurrencyCode,value=(double)product.metadata.localizedPrice,receipt=order.Info.Receipt,apple=Application.platform==RuntimePlatform.IPhonePlayer};
+            // Always save, including duplicate retries: an earlier Add may have succeeded
+            // in memory while its disk write failed. Never acknowledge that as durable.
+            instance.dirty=true;
+            if(!instance.outbox.JournalPurchase(message,instance.OutboxPath))return false;
+            instance.dirty=false;
+            return true;
         }
         public static void Revenue(MaxSdkBase.AdInfo info)
         {

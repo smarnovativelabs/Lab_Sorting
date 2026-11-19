@@ -9,6 +9,14 @@ using UnityEngine.TestTools;
 
 public class SortingIntegrationTests
 {
+    [UnityTest,Timeout(240000)] public IEnumerator DevelopmentPurchaseRecoveryControls()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;yield return null;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.AppleCommerceChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("DebugRun").Invoke(null,null);yield return new ExitPlayMode();
+    }
     [UnityTest,Timeout(240000)] public IEnumerator AppleCashPurchasesAndRestore()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
@@ -368,18 +376,35 @@ public class SortingIntegrationTests
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
     }
+    [UnityTest,Timeout(240000)]
+    public IEnumerator DesignerReadabilityTutorial()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        var guidedType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.UI.GuidedTutorial")).First(t=>t!=null);
+        var guided=UnityEngine.Object.FindFirstObjectByType(guidedType);
+        guidedType.GetField("preferencesPrefix").SetValue(guided,"LabSorting.AutomatedReadability.");
+        foreach(var key in new[]{"GuidedStep","GuidedDone","GuidedToolPage","RackTurnShown.v1"})PlayerPrefs.DeleteKey("LabSorting.AutomatedReadability."+key);
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.GuidedTutorialChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Readability").Invoke(null,null);
+        yield return new ExitPlayMode();
+    }
     [UnityTest,Timeout(600000)]
-    public IEnumerator DesignerGuidedTutorial()
+    public IEnumerator DesignerGuidedTutorial()=>RunFullGuidedTutorial("Run");
+    [UnityTest,Timeout(600000)]
+    public IEnumerator DesignerGuidedTutorialLowFrameRate()=>RunFullGuidedTutorial("RunLowFrameRate");
+    IEnumerator RunFullGuidedTutorial(string routine)
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         var guidedType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.UI.GuidedTutorial")).First(t=>t!=null);
         var guided=UnityEngine.Object.FindFirstObjectByType(guidedType);Assert.IsNotNull(guided,"Lab scene has the guided tutorial");
         guidedType.GetField("preferencesPrefix").SetValue(guided,"LabSorting.AutomatedGuided.");
-        foreach(var key in new[]{"GuidedStep","GuidedDone"})PlayerPrefs.DeleteKey("LabSorting.AutomatedGuided."+key);
+        foreach(var key in new[]{"GuidedStep","GuidedDone","GuidedToolPage","RackTurnShown.v1"})PlayerPrefs.DeleteKey("LabSorting.AutomatedGuided."+key);
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
         yield return new EnterPlayMode(false);Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.GuidedTutorialChecks")).First(t=>t!=null);
-        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
+        yield return (IEnumerator)type.GetMethod(routine).Invoke(null,null);
         yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(180000)]

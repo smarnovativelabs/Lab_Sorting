@@ -1,0 +1,11 @@
+<linker>
+  <!-- Unity IAP 5.5 confirmation watchdog adapter; see SupplyCommerceRecovery. -->
+  <assembly fullname="Unity.Purchasing">
+    <type fullname="UnityEngine.Purchasing.StoreController" preserve="fields" />
+    <type fullname="UnityEngine.Purchasing.PurchaseService" preserve="fields" />
+    <type fullname="UnityEngine.Purchasing.ExtensiblePurchaseService" preserve="fields" />
+    <type fullname="UnityEngine.Purchasing.ConfirmOrderUseCase" preserve="all" />
+    <!-- Constructor used by development-only stalled-request injection. -->
+    <type fullname="UnityEngine.Purchasing.ConfirmOrderRequest" preserve="all" />
+  </assembly>
+</linker>

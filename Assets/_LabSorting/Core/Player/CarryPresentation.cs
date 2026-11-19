@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 namespace LabSorting.Player
 {
     // Presentation only: inventory, item colliders and saved world poses remain unchanged.
@@ -13,6 +14,75 @@ namespace LabSorting.Player
         readonly Vector3[] uiCorners=new Vector3[4];
         public Rect HeldScreenRect {get;private set;}
         public Rect HeldSafeRect {get;private set;}
+        Camera heldCamera;
+        Light heldLight;
+        LabSorting.Sorting.SortItem displayedItem;
+        Transform[] heldParts;
+        int[] originalLayers;
+        int originalMask;
+        int heldLayer=-1;
+        public bool OverlayActive=>heldCamera&&heldCamera.enabled&&displayedItem;
+        void EnsureOverlay()
+        {
+            if(heldCamera||!view)return;
+            heldLayer=LayerMask.NameToLayer("HeldItem");if(heldLayer<0)return;
+            var data=view.GetUniversalAdditionalCameraData();
+            if(data.renderType!=CameraRenderType.Base||data.cameraStack==null)return;
+            originalMask=view.cullingMask;view.cullingMask&=~(1<<heldLayer);
+            var go=new GameObject("Held Item Camera");go.transform.SetParent(view.transform,false);
+            heldCamera=go.AddComponent<Camera>();heldCamera.CopyFrom(view);
+            heldCamera.cullingMask=1<<heldLayer;heldCamera.useOcclusionCulling=false;
+            var overlay=heldCamera.GetUniversalAdditionalCameraData();overlay.renderType=CameraRenderType.Overlay;overlay.renderPostProcessing=false;overlay.renderShadows=false;
+            data.cameraStack.Add(heldCamera);
+            heldLight=go.AddComponent<Light>();heldLight.type=LightType.Point;heldLight.range=3;heldLight.intensity=.65f;heldLight.shadows=LightShadows.None;heldLight.cullingMask=1<<heldLayer;
+        }
+        void RestoreHeldVisual()
+        {
+            if(heldParts!=null)for(int i=0;i<heldParts.Length;i++)if(heldParts[i])heldParts[i].gameObject.layer=originalLayers[i];
+            if(displayedItem)displayedItem.SetHeldPresentation(false);
+            displayedItem=null;heldParts=null;originalLayers=null;
+        }
+        void UpdateHeldVisual()
+        {
+            EnsureOverlay();
+            LabSorting.Sorting.SortItem active=null;
+            foreach(Transform child in transform)
+            {
+                if(!child.gameObject.activeInHierarchy)continue;
+                var item=child.GetComponent<LabSorting.Sorting.SortItem>();
+                if(item&&item.location==LabSorting.Sorting.ItemLocation.Hand){active=item;break;}
+            }
+            if(active!=displayedItem)
+            {
+                RestoreHeldVisual();displayedItem=active;
+                if(active)
+                {
+                    active.SetHeldPresentation(true);
+                    if(heldCamera)
+                    {
+                        heldParts=active.GetComponentsInChildren<Transform>(true);originalLayers=new int[heldParts.Length];
+                        for(int i=0;i<heldParts.Length;i++){originalLayers[i]=heldParts[i].gameObject.layer;heldParts[i].gameObject.layer=heldLayer;}
+                    }
+                }
+            }
+            // Save restores can reset item layers without changing the selected object.
+            if(heldParts!=null)foreach(var part in heldParts)if(part)part.gameObject.layer=heldLayer;
+            if(heldCamera)
+            {
+                heldCamera.enabled=active&&view.enabled;
+                heldCamera.aspect=view.aspect;heldCamera.fieldOfView=view.fieldOfView;heldCamera.nearClipPlane=view.nearClipPlane;heldCamera.farClipPlane=view.farClipPlane;
+                heldCamera.rect=view.rect;heldLight.enabled=heldCamera.enabled;
+            }
+        }
+        void OnDisable()
+        {
+            RestoreHeldVisual();
+            if(heldCamera)
+            {
+                if(view){view.GetUniversalAdditionalCameraData().cameraStack.Remove(heldCamera);view.cullingMask=originalMask;}
+                Destroy(heldCamera.gameObject);heldCamera=null;
+            }
+        }
         void Start()
         {
             actions=FindFirstObjectByType<LabSorting.UI.ContextActionHUD>();
@@ -73,10 +143,11 @@ namespace LabSorting.Player
             HeldScreenRect=ProjectBounds(item.visual.bounds);
         }
         public float ClearanceScale {get;private set;}=1;
-        void Awake(){rest=transform.localPosition;mask=~((1<<2)|(1<<LayerMask.NameToLayer("SortingItem")));}
+        void Awake(){rest=transform.localPosition;mask=~((1<<2)|LayerMask.GetMask("SortingItem","HeldItem"));}
         void LateUpdate()
         {
             if(!view)return;
+            UpdateHeldVisual();
             Vector3 desired=transform.parent.TransformPoint(rest),origin=view.transform.position;
             var delta=desired-origin;float distance=delta.magnitude;
             bool blocked=Physics.SphereCast(origin,.20f,delta.normalized,out var hit,distance,mask,QueryTriggerInteraction.Ignore);
@@ -94,7 +165,7 @@ namespace LabSorting.Player
                 if(!child.gameObject.activeSelf)continue;
                 var item=child.GetComponent<LabSorting.Sorting.SortItem>();if(!item||item.location!=LabSorting.Sorting.ItemLocation.Hand)continue;
                 if((!item.Moving&&!item.Presenting)||ClearanceScale<1)child.localScale=item.originalScale*item.CarryScale*ClearanceScale;
-                if(!item.Moving&&!item.Presenting){child.localPosition=Vector3.zero;FitHeldItem(item);}
+                if(!item.Moving&&!item.Presenting){child.localPosition=Vector3.zero;child.localRotation=Quaternion.Euler(-20,-20,-5);FitHeldItem(item);}
             }
         }
         public Vector3 MagnetEntry(float delay)

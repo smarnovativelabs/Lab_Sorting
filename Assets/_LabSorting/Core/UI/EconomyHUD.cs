@@ -38,6 +38,12 @@ namespace LabSorting.UI
             count.text=owned>99?"99+":owned.ToString();
             if(badge){var sprite=owned>0?badgeOwned:badgeEmpty;if(sprite&&badge.sprite!=sprite)badge.sprite=sprite;}
         }
+        static void SetRefill(UIButtonMotion plus,bool visible)
+        {
+            if(!plus)return;
+            plus.idlePulse=visible;
+            if(plus.gameObject.activeSelf!=visible)plus.gameObject.SetActive(visible);
+        }
         public SortItem GuidedSearchItem=>guidedSearchItem;
         void Update()
         {
@@ -64,7 +70,8 @@ namespace LabSorting.UI
                 searchLabel.text=session.SearchType?session.SearchSeconds.ToString("0.0")+"s":"SEARCH"+(badges?"":session.SearchCredits>0?"  "+session.SearchCredits:designerSkin?"":"  +");
                 magnetLabel.text=session.MagnetSeconds>0?session.MagnetSeconds.ToString("0.0")+"s":"MAGNET"+(badges?"":session.MagnetCredits>0?"  "+session.MagnetCredits:designerSkin?"":"  +");
                 if(badges){Badge(searchCount,searchBadge,session.SearchCredits);Badge(magnetCount,magnetBadge,session.MagnetCredits);}
-                if(searchPlus)searchPlus.idlePulse=session.SearchCredits<=0;if(magnetPlus)magnetPlus.idlePulse=session.MagnetCredits<=0;
+                SetRefill(searchPlus,session.SearchCredits<=0&&!session.SearchType);
+                SetRefill(magnetPlus,session.MagnetCredits<=0&&session.MagnetSeconds<=0);
                 upgradeLabel.text=session.carried.Count+" / "+session.capacity+"  +";
                 searchButton.interactable=magnetButton.interactable=upgradeButton.interactable=enabled;
             }

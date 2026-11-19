@@ -8,6 +8,22 @@ namespace LabSorting.UI
         public SupplyCommerce commerce;public SettingsTutorialPanel settingsPanel;
         public GameObject root;public Text status,removeLabel,analyticsLabel,attributionLabel,diagnosticsLabel,languageLabel;public Button removeButton;
         Button adDebugger;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        Button purchaseDebugger;
+        void CreatePurchaseDebugger()
+        {
+            if(purchaseDebugger||!root)return;
+            var template=root.transform.Find("Retry");
+            var slot=attributionLabel?attributionLabel.GetComponentInParent<Button>(true):null;
+            if(!template||!slot)return;
+            var copy=Instantiate(template.gameObject,template.parent,false);copy.name="PurchaseDebugger";
+            ((RectTransform)copy.transform).anchoredPosition=((RectTransform)slot.transform).anchoredPosition;
+            purchaseDebugger=copy.GetComponent<Button>();purchaseDebugger.onClick=new Button.ButtonClickedEvent();
+            purchaseDebugger.onClick.AddListener(()=>CommerceDebugPanel.Open(commerce,status?status.font:null));
+            var label=copy.GetComponentInChildren<Text>(true);if(label)label.text="IAP DEBUG";
+            copy.SetActive(true);
+        }
+#endif
         public void Open(){if(!settingsPanel.IsOpen)return;HideTelemetryOptions();root.SetActive(true);root.transform.SetAsLastSibling();Refresh();}
         public void Close(){if(commerce.Busy)return;root.SetActive(false);}
         public void RemoveAds(){commerce.BuyRemoveAds();Refresh();}
@@ -18,7 +34,11 @@ namespace LabSorting.UI
         public void Policy(){if(commerce.settings&&System.Uri.TryCreate(commerce.settings.privacyPolicyUrl,System.UriKind.Absolute,out var uri)&&uri.Scheme=="https")Application.OpenURL(uri.AbsoluteUri);}
         public void Language(){LabLocalization.NextLanguage();Refresh();}
         void HideTelemetryOptions(){foreach(var label in new[]{analyticsLabel,attributionLabel,diagnosticsLabel}){if(!label)continue;var button=label.GetComponentInParent<Button>();if(button)button.gameObject.SetActive(false);}}
-        void OnEnable(){HideTelemetryOptions();if(LabLocalization.EnglishOnly&&languageLabel){var button=languageLabel.GetComponentInParent<Button>();if(button)button.gameObject.SetActive(false);}CreateAdDebugger();}
+        void OnEnable(){HideTelemetryOptions();if(LabLocalization.EnglishOnly&&languageLabel){var button=languageLabel.GetComponentInParent<Button>();if(button)button.gameObject.SetActive(false);}CreateAdDebugger();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            CreatePurchaseDebugger();
+#endif
+        }
         // Development builds only (never in a release build): an AD DEBUGGER button in the slot of the hidden Analytics
         // button opens the MAX Mediation Debugger, and the status line shows the live ad pipeline state.
         void CreateAdDebugger()

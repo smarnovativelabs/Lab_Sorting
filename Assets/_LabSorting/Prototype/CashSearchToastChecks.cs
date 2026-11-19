@@ -39,9 +39,15 @@ namespace LabSorting.Prototype
                 int version=s.FullNoticeVersion,cash=s.Cash,credits=s.MagnetCredits;
                 s.TryPick(extra);hud.SendMessage("Update");yield return null;
                 var toast=hud.GetComponent<DesignerToasts>();
+                float firstToastDeadline=Time.realtimeSinceStartup+.5f;
+                while(toast.ShownText!="Hands full! Place or drop an item."&&Time.realtimeSinceStartup<firstToastDeadline)yield return null;
                 Check(toast.ShownText=="Hands full! Place or drop an item.","Short full-hands toast appears");
                 yield return new WaitForSecondsRealtime(2.7f);
-                s.TryPick(extra);hud.SendMessage("Update");yield return null;
+                s.TryPick(extra);hud.SendMessage("Update");
+                // The toast animates in LateUpdate; a coroutine can resume before that
+                // frame's LateUpdate in batch mode. Wait for visibility with a bound.
+                float toastDeadline=Time.realtimeSinceStartup+.5f;
+                while((toast.ShownText!="Hands full! Place or drop an item."||toast.toast.alpha<=0)&&Time.realtimeSinceStartup<toastDeadline)yield return null;
                 Check(toast.ShownText=="Hands full! Place or drop an item."&&toast.toast.alpha>0,"Identical toast appears again after expiry");
                 s.TryPick(extra);s.TryMagnet();
                 Check(s.FullNoticeVersion==version+4&&s.Cash==cash&&s.MagnetCredits==credits,"Every repeated click notifies without charging");
