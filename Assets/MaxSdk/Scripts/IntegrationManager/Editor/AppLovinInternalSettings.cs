@@ -98,7 +98,16 @@ namespace AppLovinMax.Scripts.IntegrationManager.Editor
         /// </summary>
         public bool ConsentFlowEnabled
         {
-            get { return consentFlowEnabled; }
+            get
+            {
+#if UNITY_IOS
+                // Lab Sorting owns UMP and ATT on iOS (LabConsent / LabTrackingBuild).
+                // Keep this target-specific so Android retains the serialized MAX flow.
+                return false;
+#else
+                return consentFlowEnabled;
+#endif
+            }
             set
             {
                 var previousValue = consentFlowEnabled;
@@ -199,7 +208,15 @@ namespace AppLovinMax.Scripts.IntegrationManager.Editor
         /// </summary>
         public bool UserTrackingUsageLocalizationEnabled
         {
-            get { return userTrackingUsageLocalizationEnabled; }
+            get
+            {
+#if UNITY_IOS
+                // Use the tracking description supplied by LabTrackingBuild on iOS.
+                return false;
+#else
+                return userTrackingUsageLocalizationEnabled;
+#endif
+            }
             set
             {
                 var previousValue = userTrackingUsageLocalizationEnabled;
