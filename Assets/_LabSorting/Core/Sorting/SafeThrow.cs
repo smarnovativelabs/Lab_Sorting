@@ -55,7 +55,20 @@ namespace LabSorting.Sorting
                 fallback.y=Mathf.Max(top,fallback.y+.1f);
             }
             throwLaunchPosition=fallback-offset;
-            return throwLaunchPosition;
+            // Release from that clear column, but land on whatever is below it: a mid-air landing target is where the
+            // item stays when the landing physics times out or no landing body is free. With nothing below, keep the old point.
+            var landing=fallback;float below=float.PositiveInfinity;
+            foreach(var hit in Physics.BoxCastAll(fallback,half,Vector3.down,Quaternion.identity,6,~0,QueryTriggerInteraction.Ignore))
+            {
+                if(hit.distance<=0||!ThrowObstacle(hit.collider,item,true)||hit.collider.transform.IsChildOf(player.transform))continue;
+                below=Mathf.Min(below,hit.distance);
+            }
+            if(!float.IsInfinity(below))
+            {
+                var grounded=fallback+Vector3.down*Mathf.Max(0,below-.025f);
+                if(!DropLandingPool.Reserved(new Bounds(grounded,half*2),item))landing=grounded;
+            }
+            return landing-offset;
         }
         public Bounds ReleaseBounds(SortItem item)
         {

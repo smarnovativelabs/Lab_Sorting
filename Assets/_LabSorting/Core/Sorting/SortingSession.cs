@@ -44,6 +44,7 @@ namespace LabSorting.Sorting
         void Update()
         {
             PollSaveWriter();
+            TickSupportChecks();
             UpdateSearch();
             UpdateRackHints();
             if(saveAt>=0 && Time.unscaledTime>=saveAt) { saveAt=-1; RequestSave(); }
@@ -74,6 +75,8 @@ namespace LabSorting.Sorting
             if(player.blocked) return false;
             if(!item || item.location==ItemLocation.Hand || item.Moving) return Fail("No available item in reach");
             if(carried.Count>=capacity) return FullInventoryNotice();
+            // Measured before docking disables the collider: whatever rested on this item must not stay in the air.
+            bool fromFloor=item.location==ItemLocation.Loose&&item.hitbox&&item.hitbox.enabled;var vacated=fromFloor?item.hitbox.bounds:default;
             if(item.rack) item.rack.Remove(item);
             item.SetSearchHighlight(false); item.location=ItemLocation.Hand; item.slot=-1; item.rack=null; item.Highlight(false);
             item.GetComponent<LabRat>()?.StopRunning();
@@ -82,6 +85,7 @@ namespace LabSorting.Sorting
             recentPickType=item.definition;recentPickUntil=Time.unscaledTime+.6f;
             if(item.definition.isRat)item.GetComponent<LabRat>()?.colony.PlayInteraction(item);
             item.DockAt(hand,magnet,delay,()=>{if(item&&item.location==ItemLocation.Hand&&Active!=item)item.gameObject.SetActive(false);});
+            if(fromFloor)QueueSupportCheck(vacated);
             if(!magnet){Commit("Picked "+item.definition.displayName); Feedback?.Invoke(SortingCue.Pick);}return true;
         }
         public void Select(int index)
@@ -182,6 +186,7 @@ namespace LabSorting.Sorting
             var milestones=new HashSet<string>();
             if(data.version>=3){if(data.milestones==null)return false;foreach(var id in data.milestones)if(id==null||Array.IndexOf(milestoneIds,id)<0||!milestones.Add(id))return false;}
             var rackRewards=new HashSet<string>(); if(data.completedRacks!=null){foreach(var id in data.completedRacks)if(id==null||!rackLookup.ContainsKey(id)||!rackRewards.Add(id))return false;} else {foreach(var rack in racks){int count=0;foreach(var e in data.items)if(e.location==ItemLocation.Rack&&e.rack==rack.id)count++;int full=types.TryGetValue(rack.id,out var rackType)?rack.CapacityFor(rackType):0;if(full>0&&count==full)rackRewards.Add(rack.id);}}
+            supportChecks.Clear();
             RebuildTypeIndex();CancelPendingDrop();RestoreSupplies(data);RestoreCompletionHistory(data);completedRacks=rackRewards;VisualsReset?.Invoke();CompletionAcknowledged=data.version>=3&&data.completionAcknowledged;TutorialRewarded=data.tutorialRewarded;claimedMilestones=milestones;
             lastFailure=null;MessageIsError=false;CancelHold();EndSearch();ResetMagnetFeedback();cash=data.version>=2?data.cash:200;rewardedItems=rewards;
             ClearTarget(); EndTossStreak(); rackBounds.Clear();  foreach(var rack in racks) rack.Initialize(); carried.Clear(); Active=null; capacity=data.capacity;

@@ -16,19 +16,36 @@ namespace LabSorting.Sorting
         public int RecoveredCount {get;private set;}
         public string LastStatus {get;private set;}="Ready";
         readonly Dictionary<SortItem,float> invalidSince=new Dictionary<SortItem,float>();
+        readonly Dictionary<SortItem,float> floatingSince=new Dictionary<SortItem,float>();
+        public int SettledCount {get;private set;}
         readonly Collider[] overlaps=new Collider[64];
         readonly RaycastHit[] floorHits=new RaycastHit[64];
         float nextScan;int cursor;
         public bool Configured=>session&&playableBounds&&playableBounds.enabled&&playableBounds.isTrigger&&safePoints!=null&&safePoints.Length>0;
         void OnEnable(){if(session)session.VisualsReset+=ResetScan;}
         void OnDisable(){if(session)session.VisualsReset-=ResetScan;ResetScan();}
-        void ResetScan(){invalidSince.Clear();cursor=0;nextScan=0;}
+        void ResetScan(){invalidSince.Clear();floatingSince.Clear();cursor=0;nextScan=0;}
         void Update()
         {
             if(!automatic||!Configured||Time.unscaledTime<nextScan||session.items==null||session.items.Length==0)return;
             nextScan=Time.unscaledTime+Mathf.Max(.1f,scanInterval);int recovered=0;
-            for(int i=0;i<Mathf.Min(Mathf.Max(1,itemsPerScan),session.items.Length);i++){if(cursor>=session.items.Length)cursor=0;if(Recover(session.items[cursor++],true))recovered++;}
+            for(int i=0;i<Mathf.Min(Mathf.Max(1,itemsPerScan),session.items.Length);i++)
+            {
+                if(cursor>=session.items.Length)cursor=0;var item=session.items[cursor++];
+                if(Recover(item,true))recovered++;
+                else if(item&&!invalidSince.ContainsKey(item))SettleFloating(item,true);
+            }
             if(recovered>0)session.ReportRecovery(recovered);
+        }
+        // Static items never fall. A loose item still hanging in the air after the grace period (something under it
+        // was taken, an old save) is lowered straight down; embedded or lost items stay with Recover's safe points.
+        public bool SettleFloating(SortItem item,bool waitForGrace)
+        {
+            if(!Configured||!ItemSupport.Floating(item)){if(item)floatingSince.Remove(item);return false;}
+            if(waitForGrace){if(!floatingSince.TryGetValue(item,out float since)){floatingSince[item]=Time.unscaledTime;return false;}if(Time.unscaledTime-since<Mathf.Max(.1f,graceSeconds))return false;}
+            floatingSince.Remove(item);
+            if(!session.SettleDown(item,true))return false;
+            SettledCount++;LastStatus="Set down "+item.id;return true;
         }
         public bool Contains(Vector3 world)
         {

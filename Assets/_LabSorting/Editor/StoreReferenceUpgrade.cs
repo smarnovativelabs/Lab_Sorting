@@ -40,7 +40,7 @@ namespace LabSorting.Editor
                 var price=m.prices[i];price.transform.SetParent(badge,false);Pos(price,0,0,160,28);Text(price,20);price.color=Color.white;
                 Pos(button,0,-149,184,40);var label=button.transform.Find("PurchaseLabel")?.GetComponent<UnityEngine.UI.Text>();if(!label){label=UnityEngine.Object.Instantiate(price,button.transform);label.name="PurchaseLabel";}label.text="PURCHASE";label.color=new Color(.02f,.06f,.18f);Pos(label,0,0,160,32);Text(label,19);
             }
-            Pos(shop.Find("ProductsScrollbar"),0,-194,900,8);Pos(m.cashAdButton,0,-229,340,40);Pos(m.storeStatus,0,-270,880,24);Text(m.storeStatus,17);Pos(m.storeClose,474,218,42,42);scroll.horizontalNormalizedPosition=0;
+            Pos(shop.Find("ProductsScrollbar"),0,-194,900,8);Pos(m.cashAdButton,0,-229,340,40);Pos(m.storeStatus,0,-270,880,24);Text(m.storeStatus,17);Pos(m.storeClose,470,212,56,56);scroll.horizontalNormalizedPosition=0;
             EditorSceneManager.MarkSceneDirty(hud.gameObject.scene);EditorSceneManager.SaveScene(hud.gameObject.scene);AssetDatabase.SaveAssets();
         }
     }

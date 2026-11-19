@@ -94,7 +94,7 @@ namespace LabSorting.UI
             var rack=session.TargetRack;
             target.text=session.player.blocked?"":rack&&session.Active&&rack.Type==session.Active.definition&&rack.AvailabilityHint.Length>0?rack.AvailabilityHint:session.TargetItem?session.TargetItem.definition.displayName:rack?(rack.Type?rack.Type.displayName:"Empty rack — assign selected item"):session.TossRack?TossText():"";
             if(targetBackdrop)targetBackdrop.enabled=target.text.Length>0;
-            target.color=session.TargetItem?new Color(.35f,1,1):Color.white;
+            target.color=session.TargetItem?SortItem.HoverLabelColor:Color.white;
             if(!session.player.blocked&&rack&&session.Active)
             {
                 bool accepts=rack.CanAccept(session.Active.definition);

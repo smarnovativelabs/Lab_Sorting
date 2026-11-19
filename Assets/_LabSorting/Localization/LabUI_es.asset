@@ -1318,11 +1318,12 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 415328998375424
-    m_Localized: SEARCH resalta los objetos sueltos del tipo seleccionado.
+    m_Localized: SEARCH resalta los objetos sueltos iguales al que sostienes.
     m_Metadata:
       m_Items: []
   - m_Id: 415329031929856
-    m_Localized: MAGNET recoge el tipo seleccionado hasta llenar tus manos.
+    m_Localized: "MAGNET atrae m\xE1s objetos iguales al que sostienes hasta llenar
+      tus manos."
     m_Metadata:
       m_Items: []
   - m_Id: 415329031929857

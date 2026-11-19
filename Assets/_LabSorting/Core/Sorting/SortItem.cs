@@ -61,14 +61,16 @@ namespace LabSorting.Sorting
             foreach(var child in GetComponentsInChildren<Transform>(true))child.gameObject.layer=layer;
         }
         public void DisableShadows(){foreach(var renderer in GetComponentsInChildren<Renderer>(true)){renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=false;}}
+        public static readonly Color HoverColor=new Color(1f,.18f,.77f);
+        public static readonly Color HoverLabelColor=new Color(1f,.5f,.88f);
         public void Highlight(bool value) { if(hovered==value)return;hovered=value;ApplyHighlight();VisualChanged?.Invoke(); }
         public void SetSearchHighlight(bool value) { if(searched==value)return;searched=value;ApplyHighlight();VisualChanged?.Invoke(); }
         void ApplyHighlight()
         {
             if(!outline)return;
-            // Cyan rim identifies the single aim target; gold belongs to paid search results.
-            outline.OutlineColor=hovered?new Color(.2f,1f,1f):new Color(1f,.74f,.12f);
-            outline.OutlineWidth=hovered?4f:5f;
+            // Magenta rim identifies the single aim target (the pale cyan floor hid a cyan rim); gold belongs to paid search results.
+            outline.OutlineColor=hovered?HoverColor:new Color(1f,.74f,.12f);
+            outline.OutlineWidth=5f;
             outline.enabled=hovered||(searched&&!batchHighlight);
         }
         public void Snap(Vector3 position, Quaternion rotation, Transform parent=null)

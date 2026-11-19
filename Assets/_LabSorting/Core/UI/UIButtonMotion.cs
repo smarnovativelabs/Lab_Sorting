@@ -15,10 +15,23 @@ namespace LabSorting.UI
         Vector3 rest=Vector3.one;
         bool pressed;
         float releasedAt=-1;
+        // Raycast padding of the button's own hit graphic as authored (negative = touch margin past the visual).
+        Graphic hit;Vector4 authoredPadding;
         [Tooltip("Gentle breathing to invite a tap (e.g. the + offers button when no uses are left).")]
         public bool idlePulse;
-        public void SetRestScale(Vector3 value){rest=value;transform.localScale=rest*(pressed?PressScale:1f);}
-        void Awake(){button=GetComponent<Button>();rest=transform.localScale;}
+        public void SetRestScale(Vector3 value){rest=value;transform.localScale=rest*(pressed?PressScale:1f);KeepHitArea();}
+        void Awake(){button=GetComponent<Button>();rest=transform.localScale;hit=button.targetGraphic&&button.targetGraphic.transform==transform?button.targetGraphic:null;if(hit)authoredPadding=hit.raycastPadding;}
+        // The press dip, release pop and pulse scale the raycast rect too: a thumb near the edge of a 92% button
+        // "exits" it, which cancels a hold and loses a click. Counter-pad so the hit area stays the rest-scale area.
+        void KeepHitArea()
+        {
+            if(!hit||rest.x<=0)return;
+            float f=transform.localScale.x/rest.x;
+            if(Mathf.Abs(f-1)<.0001f){hit.raycastPadding=authoredPadding;return;}
+            var r=hit.rectTransform.rect;
+            hit.raycastPadding=new Vector4(-r.xMin-(-r.xMin-authoredPadding.x)/f,-r.yMin-(-r.yMin-authoredPadding.y)/f,r.xMax-(r.xMax-authoredPadding.z)/f,r.yMax-(r.yMax-authoredPadding.w)/f);
+        }
+        void LateUpdate(){KeepHitArea();}
         void OnEnable(){pressed=false;releasedAt=-1;}
         public void OnPointerDown(PointerEventData e){pressed=button&&button.IsInteractable();releasedAt=-1;}
         // A completed tap pops slightly past rest and settles back within PopDuration; sliding off just releases.
@@ -39,6 +52,6 @@ namespace LabSorting.UI
             if((transform.localScale-target).sqrMagnitude<.000001f){transform.localScale=target;return;}
             transform.localScale=Vector3.Lerp(transform.localScale,target,1f-Mathf.Exp(-24f*Time.unscaledDeltaTime));
         }
-        void OnDisable(){pressed=false;releasedAt=-1;transform.localScale=rest;}
+        void OnDisable(){pressed=false;releasedAt=-1;transform.localScale=rest;if(hit)hit.raycastPadding=authoredPadding;}
     }
 }

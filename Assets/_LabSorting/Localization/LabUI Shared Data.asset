@@ -2024,11 +2024,12 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 415328998375424
-    m_Key: SEARCH highlights loose items of your selected type.
+    m_Key: SEARCH highlights loose items like the one you're holding.
     m_Metadata:
       m_Items: []
   - m_Id: 415329031929856
-    m_Key: MAGNET collects your selected type until your hands are full.
+    m_Key: MAGNET pulls in more of the item you're holding, until your hands are
+      full.
     m_Metadata:
       m_Items: []
   - m_Id: 415329031929857

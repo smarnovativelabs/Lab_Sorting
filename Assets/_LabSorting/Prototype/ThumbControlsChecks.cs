@@ -24,6 +24,8 @@ namespace LabSorting.Prototype
         static readonly Vector3[] corners=new Vector3[4];
         // HUD canvas is Screen Space - Overlay, so world corners are screen pixels.
         static Rect Screen(RectTransform r){r.GetWorldCorners(corners);return Rect.MinMaxRect(corners[0].x,corners[0].y,corners[2].x,corners[2].y);}
+        // Hit rect of a button: its rect grown by the hit graphic's raycast padding (negative padding = touch margin).
+        static Rect Touch(RectTransform r){var p=r.GetComponent<UnityEngine.UI.Button>().targetGraphic.raycastPadding*r.lossyScale.x;var v=Screen(r);return Rect.MinMaxRect(v.xMin+p.x,v.yMin+p.y,v.xMax-p.z,v.yMax-p.w);}
         static GameObject Hit(Vector2 position)
         {
             var hits=new List<RaycastResult>();EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current){position=position},hits);
@@ -96,6 +98,8 @@ namespace LabSorting.Prototype
             var pick=(RectTransform)actions.pick.transform;var place=(RectTransform)actions.place.transform;var drop=(RectTransform)actions.drop.transform;
             var search=(RectTransform)economy.searchButton.transform;var magnet=(RectTransform)economy.magnetButton.transform;
             var pagers=new[]{"InventoryNext","InventoryPage"}.Select(n=>safe.Find(n) as RectTransform).Where(r=>r&&r.gameObject.activeInHierarchy).ToArray();
+            // The pager hides while the inventory fits one page; its spot must stay clear either way.
+            var pagerSpots=new[]{"InventoryNext","InventoryPage"}.Select(n=>safe.Find(n) as RectTransform).Where(r=>r).ToArray();
             var top=new[]{"CashOffers","DesignerStoreButton","Wallet","DesignerTitle_Progress"}.Select(n=>safe.Find(n) as RectTransform).Where(r=>r&&r.gameObject.activeInHierarchy).ToArray();
             float joy=sizes.JoystickScale,act=sizes.ActionScale;
             try
@@ -120,6 +124,9 @@ namespace LabSorting.Prototype
                         {float gap=(Vector2.Distance(Screen(a).center,Screen(b).center)-(Screen(a).width+Screen(b).width)*.5f)/unit;Check(gap>=10,a.name+"-"+b.name+" finger gap "+gap.ToString("F0")+" units x"+scale+at);}
                         foreach(var c in new[]{pick,place,drop,search,magnet})Check(Screen(c).width/unit>=52,c.name+" touch size "+(Screen(c).width/unit).ToString("F0")+" units x"+scale+at);
                         foreach(var pager in pagers)foreach(var c in new[]{pick,place,drop})Check(!Screen(c).Overlaps(Screen(pager)),c.name+" clear of "+pager.name+" x"+scale+at);
+                        // Invisible touch margins stay apart and off Search, Magnet and the pager spot.
+                        foreach(var (a,b) in new[]{(pick,place),(pick,drop),(place,drop)})Check(!Touch(a).Overlaps(Touch(b)),a.name+" and "+b.name+" touch margins apart x"+scale+at);
+                        foreach(var c in new[]{pick,place,drop})foreach(var other in new[]{search,magnet}.Concat(pagerSpots))Check(!Touch(c).Overlaps(Screen(other)),c.name+" touch margin clear of "+other.name+" x"+scale+at);
                         var card=Screen(task.card);
                         Check(card.xMin>=area.xMin-1&&card.xMax<=area.xMax+1&&card.yMin>=area.yMin-1&&card.yMax<=area.yMax+1,"Task card inside safe area x"+scale+at);
                         foreach(var tool in new[]{search,magnet})Check(card.yMin>Screen(tool).yMax+8*unit||card.xMax+8*unit<Screen(tool).xMin,"Task card leaves "+tool.name+" clear x"+scale+at);
@@ -127,6 +134,34 @@ namespace LabSorting.Prototype
                     }
                     sizes.Apply(1,1);Canvas.ForceUpdateCanvases();yield return null;
                     var cardSize=Screen(task.card).size/unit;Check(Mathf.Abs(cardSize.x-352)<2,"Task card is 80% width ("+cardSize.x.ToString("F0")+"x"+cardSize.y.ToString("F0")+" units)"+at);
+
+                    if(ratio.name=="16x9")
+                    {
+                        actions.enabled=false;foreach(var g in new[]{actions.pick,actions.place,actions.drop}){g.alpha=1;g.blocksRaycasts=true;g.interactable=true;}Canvas.ForceUpdateCanvases();
+                        // A press just past each circle's lower edge (inside the margin) lands on that button.
+                        foreach(var c in new[]{pick,place,drop})
+                        {
+                            var v=Screen(c);var below=new Vector2(v.center.x,(v.yMin+Touch(c).yMin)*.5f);var got=Hit(below);
+                            Check(Touch(c).yMin<v.yMin-2*unit&&got&&got.transform.IsChildOf(c),c.name+" lower touch margin takes a press, got "+Path(got)+at);
+                        }
+                        // The 92% press dip must not shrink the touch area: a thumb near the rim keeps the button.
+                        var motion=pick.GetComponent<UIButtonMotion>();var hitGraphic=pick.GetComponent<UnityEngine.UI.Button>().targetGraphic;var authored=hitGraphic.raycastPadding;
+                        var restTouch=Touch(pick);var restWidth=Screen(pick).width;var rim=new Vector2(restTouch.center.x,restTouch.yMax-2*unit);
+                        var dip=new PointerEventData(EventSystem.current){pointerId=61,button=PointerEventData.InputButton.Left,position=Screen(pick).center};
+                        motion.OnPointerDown(dip);float until=Time.realtimeSinceStartup+.4f;while(Time.realtimeSinceStartup<until)yield return null;Canvas.ForceUpdateCanvases();
+                        var rimHit=Hit(rim);
+                        var rimAll=new List<RaycastResult>();EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current){position=rim},rimAll);
+                        var midAll=new List<RaycastResult>();EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current){position=Screen(pick).center},midAll);
+                        string why=" [rim="+rim+" restTouch="+restTouch+" now="+Screen(pick)+" pad="+hitGraphic.raycastPadding+" scale="+pick.localScale.x.ToString("F3")+" rimHits="+rimAll.Count+" midHits="+midAll.Count+":"+string.Join(",",midAll.Select(h=>h.gameObject.name))+" screen="+UnityEngine.Screen.width+"x"+UnityEngine.Screen.height+"]";
+                        Check(Screen(pick).width<restWidth*.95f&&rimHit&&rimHit.transform.IsChildOf(pick),"Pressed PICK ("+(Screen(pick).width/restWidth).ToString("F2")+"x) still owns its rest-size rim, got "+Path(rimHit)+at+why);
+                        motion.OnPointerUp(dip);until=Time.realtimeSinceStartup+.4f;while(Time.realtimeSinceStartup<until)yield return null;
+                        Check(Mathf.Abs(Screen(pick).width-restWidth)<.5f&&hitGraphic.raycastPadding==authored,"Released PICK returns to its rest size and authored touch margin"+at);
+                        // DROP acts on finger down, wired once (not also on Button.onClick, which would drop twice).
+                        var dropButton=drop.GetComponent<UnityEngine.UI.Button>();var dropPress=drop.GetComponent<PressActionButton>();
+                        bool clickThrows=Enumerable.Range(0,dropButton.onClick.GetPersistentEventCount()).Any(i=>dropButton.onClick.GetPersistentMethodName(i)==nameof(SortingSession.ThrowActive));
+                        Check(dropPress&&dropPress.onPress.GetPersistentEventCount()==1&&dropPress.onPress.GetPersistentMethodName(0)==nameof(SortingSession.ThrowActive)&&!clickThrows,"DROP throws on finger down, once per tap");
+                        actions.enabled=true;actions.Refresh();
+                    }
 
                     // Who receives a touch where.
                     Vector2 P(float x,float y)=>new Vector2(Mathf.Lerp(area.xMin,area.xMax,x),Mathf.Lerp(area.yMin,area.yMax,y));

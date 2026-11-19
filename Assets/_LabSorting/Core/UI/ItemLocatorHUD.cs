@@ -11,7 +11,7 @@ namespace LabSorting.UI
         readonly Vector2[] markerPositions=new Vector2[6];
         float nextScan;
         Vector2[] beaconSizes;
-        void Awake(){beaconSizes=new Vector2[beacons.Length];for(int i=0;i<beacons.Length;i++)beaconSizes[i]=beacons[i].rectTransform.sizeDelta;}
+        void Awake(){var corners=focusFrame?focusFrame.GetComponent<UnityEngine.UI.Graphic>():null;if(corners){var c=SortItem.HoverColor;c.a=.9f;corners.color=c;}beaconSizes=new Vector2[beacons.Length];for(int i=0;i<beacons.Length;i++)beaconSizes[i]=beacons[i].rectTransform.sizeDelta;}
         public int LooseSearchCount {get;private set;}
         bool cleanupMode;
         int cleanupRevision=-1;
