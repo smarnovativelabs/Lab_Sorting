@@ -20,7 +20,7 @@ namespace LabSorting.Sorting
             // An item under the crosshair (outlined, PICK showing) wins a tap anywhere on the camera area.
             // Resolve the aim at the tap, not the target cached by the last frame.
             RefreshTarget();
-            if(TargetItem&&!TargetItem.Moving&&TargetItem.location!=ItemLocation.Hand)return TryPick(TargetItem);
+            if(TargetItem&&!TargetItem.Moving&&!TargetItem.PickLocked&&TargetItem.location!=ItemLocation.Hand)return TryPick(TargetItem);
             // Nothing aimed: pick what is under the finger.
             // Exact visible geometry wins; short pixel offsets assist tiny models in dense clutter.
             // Each candidate is a first ray hit: never pick through a wall or another item.
@@ -32,8 +32,8 @@ namespace LabSorting.Sorting
                 if(!Physics.Raycast(ray,out var hit,reach,~(1<<2),QueryTriggerInteraction.Ignore))continue;
                 var item=hit.collider.GetComponentInParent<SortItem>();
                 var container=hit.collider.GetComponentInParent<SortRack>();
-                if(!item&&container&&container.ratsOnly)foreach(var rat in container.contents)if(rat&&!rat.Moving){item=rat;break;}
-                if(item&&!item.Moving&&item.location!=ItemLocation.Hand)return TryPick(item);
+                if(!item&&container&&container.ratsOnly)foreach(var rat in container.contents)if(rat&&!rat.Moving&&!rat.PickLocked){item=rat;break;}
+                if(item&&!item.Moving&&!item.PickLocked&&item.location!=ItemLocation.Hand)return TryPick(item);
                 if(i==0&&hit.distance<.4f)return false;
             }
             return false;
@@ -54,7 +54,7 @@ namespace LabSorting.Sorting
         bool Candidate(SortItem item,float radius,out float score)
         {
             score=float.MaxValue;
-            if(!item||!item.gameObject.activeInHierarchy||item.Moving||item.location==ItemLocation.Hand||!item.hitbox||!item.hitbox.enabled) return false;
+            if(!item||!item.gameObject.activeInHierarchy||item.Moving||item.PickLocked||item.location==ItemLocation.Hand||!item.hitbox||!item.hitbox.enabled) return false;
             var origin=player.view.transform.position;var forward=player.view.transform.forward;
             float depth=Vector3.Dot(item.hitbox.bounds.center-origin,forward);
             if(depth<=0||depth>reach) return false;
@@ -73,7 +73,7 @@ namespace LabSorting.Sorting
             {item=direct.collider.GetComponentInParent<SortItem>();rack=direct.collider.GetComponentInParent<SortRack>();}
             if(item&&!Candidate(item,aimAssistRadius,out _))item=null;
             // Transparent enclosure is itself the visible target for retrieving a captured rat.
-            if(!item&&rack&&rack.ratsOnly)foreach(var rat in rack.contents)if(rat&&!rat.Moving){item=rat;break;}
+            if(!item&&rack&&rack.ratsOnly)foreach(var rat in rack.contents)if(rat&&!rat.Moving&&!rat.PickLocked){item=rat;break;}
             // The rack's whole silhouette is targetable, including gaps between its boards.
             // Real foreground geometry still wins, so this cannot select through a wall or loose item.
             if(!item||item.location==ItemLocation.Rack)
@@ -140,7 +140,7 @@ namespace LabSorting.Sorting
         void TickBufferedTap()
         {
             if(!bufferedTap)return;
-            bool valid=!player.blocked&&Time.unscaledTime<=bufferedUntil&&(bufferedPlace?Active&&Active.definition==bufferedType&&TargetRack==bufferedRack&&bufferedRack&&bufferedRack.CanAccept(bufferedType):TargetItem&&TargetItem==bufferedItem&&!TargetItem.Moving&&TargetItem.location!=ItemLocation.Hand&&carried.Count<capacity);
+            bool valid=!player.blocked&&Time.unscaledTime<=bufferedUntil&&(bufferedPlace?Active&&Active.definition==bufferedType&&TargetRack==bufferedRack&&bufferedRack&&bufferedRack.CanAccept(bufferedType):TargetItem&&TargetItem==bufferedItem&&!TargetItem.Moving&&!TargetItem.PickLocked&&TargetItem.location!=ItemLocation.Hand&&carried.Count<capacity);
             if(!valid){bool expired=Time.unscaledTime>bufferedUntil;CancelHold();BufferedTapState=expired?TapBufferState.Expired:TapBufferState.TargetChanged;return;}
             if(!Ready()||(bufferedPlace&&Active.Moving))return;
             bool place=bufferedPlace,repeat=bufferedRepeat;var type=bufferedType;var rack=bufferedRack;bufferedTap=false;

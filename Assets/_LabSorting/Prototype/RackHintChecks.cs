@@ -35,10 +35,7 @@ namespace LabSorting.Prototype
                 Check(s.TryPick(same[3]),"Carry extra compatible item");DOTween.CompleteAll();yield return null;yield return null;
                 Check(!rack.CompatibleHint&&rack.AvailabilityHint=="FULL","Full rack excludes highlight and reports FULL");
                 rack.Preview(same[3].definition);Check(rack.indicator.sharedMaterial==rack.invalid,"Full hover stays red");rack.Preview(null);
-                Check(s.TryPick(item),"Retrieve from full rack");DOTween.CompleteAll();yield return null;yield return null;
-                // EditMode runner yields can advance before the next runtime Update. Wait for the observable update.
-                s.player.SendMessage("OnApplicationFocus",true);float hintDeadline=Time.realtimeSinceStartup+3;while(!rack.CompatibleHint&&Time.realtimeSinceStartup<hintDeadline)yield return null;
-                Check(rack.CompatibleHint&&rack.AvailabilityHint=="1 SLOT LEFT","Retrieval refreshes capacity and compatibility; blocked="+s.player.blocked+", count="+rack.Count+", hint="+rack.AvailabilityHint);
+                Check(!s.TryPick(item)&&rack.AvailabilityHint=="FULL"&&!rack.CompatibleHint,"Completed rack stays locked and full");
                 var other=s.items.First(i=>i.definition!=item.definition);Check(s.TryPick(other),"Select different item type");DOTween.CompleteAll();yield return WaitForHint(rack,false);
                 Check(!rack.CompatibleHint,"Wrong type removes highlight");
                 s.Select(s.carried.IndexOf(item));yield return WaitForHint(rack,true);Check(rack.CompatibleHint,"Inventory reselection refreshes highlight");

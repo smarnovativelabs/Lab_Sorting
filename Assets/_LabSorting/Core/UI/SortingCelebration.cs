@@ -4,7 +4,7 @@ using DG.Tweening;
 using LabSorting.Sorting;
 namespace LabSorting.UI
 {
-    // HUD-only placement feedback, so it can never disturb item poses, batching or the rack label glow
+    // HUD-only confetti, accompanying the separate item wave and rack label glow
     // (SortingFeedback.Celebrate owns the label):
     //  - placement increments are handled by SortedProgressFeedback at the top progress badge;
     //  - a completed rack: a short confetti burst from the rack label.

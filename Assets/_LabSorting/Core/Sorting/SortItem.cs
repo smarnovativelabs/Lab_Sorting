@@ -3,13 +3,14 @@ using UnityEngine;
 namespace LabSorting.Sorting
 {
     public enum ItemLocation { Loose, Hand, Rack }
-    public sealed class SortItem : MonoBehaviour
+    public sealed partial class SortItem : MonoBehaviour
     {
         public string id;
         public ItemDefinition definition;
         public ItemLocation location;
         public SortRack rack;
         public int slot=-1;
+        public bool PickLocked => location==ItemLocation.Rack && rack && rack.IsFull;
         public Collider hitbox;
         public Renderer visual;
         public Outline outline;
@@ -100,7 +101,7 @@ namespace LabSorting.Sorting
             outline.enabled=heldPresentation||hovered||searched||IsShining;
         }
         public void Snap(Vector3 position, Quaternion rotation, Transform parent=null)
-        { ClearShine();selectionPresentation?.Kill();DropLandingPool.Stop(this,false);physicsLanding=false;motion?.Kill(); transform.SetParent(parent,true); transform.SetPositionAndRotation(position,rotation); transform.localScale=originalScale*(parent?CarryScale:1f); hitbox.enabled=location!=ItemLocation.Hand;PoseChanged(); }
+        { StopCompletionFloat();ClearShine();selectionPresentation?.Kill();DropLandingPool.Stop(this,false);physicsLanding=false;motion?.Kill(); transform.SetParent(parent,true); transform.SetPositionAndRotation(position,rotation); transform.localScale=originalScale*(parent?CarryScale:1f); hitbox.enabled=location!=ItemLocation.Hand;PoseChanged(); }
         public void PlaceOnRack(Pose pose,Transform socket,float delay,System.Action arrived)
         {
             ClearShine();selectionPresentation?.Kill();motion?.Kill();Highlight(false);hitbox.enabled=false;
@@ -217,8 +218,7 @@ namespace LabSorting.Sorting
             PoseChanged();
         }
         void OnEnable(){PoseChanged();}
-        void OnDisable(){PoseChanged();}
+        void OnDisable(){StopCompletionFloat();PoseChanged();}
         void OnDestroy() { DropLandingPool.Stop(this,false);motion?.Kill();selectionPresentation?.Kill();placementShine?.Kill(); }
     }
 }
-

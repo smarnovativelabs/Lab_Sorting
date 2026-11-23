@@ -10,6 +10,7 @@ namespace LabSorting.Editor
     {
         static TestRunnerApi api;
         static string reportPath="Logs/ReviewTests.xml";
+        public static void RunRackCompletion(){RunSelected(new[]{"DesignerMaterialFeedback"},"Logs/RackCompletionTests.xml");}
         public static void RunTourProfile(){RunSelected(new[]{"DesignerTourFrameProfile"},"Logs/TourProfileTests.xml");}
         public static void RunPerformanceAudit()
         {

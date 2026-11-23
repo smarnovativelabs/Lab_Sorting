@@ -7,7 +7,7 @@ namespace LabSorting.Sorting
         public AudioClip glassPlace,plasticPlace,metalPlace,rackChime;
         public int Celebrations {get;private set;}
         public event System.Action<SortRack> RackCelebrated;
-        public bool IsCelebrating=>shine!=null&&shine.IsActive()&&shine.IsPlaying();
+        public bool IsCelebrating=>CompletionPending||(shine!=null&&shine.IsActive()&&shine.IsPlaying());
         public ItemDefinition LastPlacedDefinition=>lastPlaced;
         ItemDefinition lastPlaced;
         TextMesh shiningLabel;
@@ -28,12 +28,13 @@ namespace LabSorting.Sorting
         {
             if(!isActiveAndEnabled||!rack)return;
             StopCelebration();Celebrations++;
+            FloatRack(rack);
             RackCelebrated?.Invoke(rack);
             completedRackFeedback=rack.GetComponent<RackTargetFeedback>()??rack.gameObject.AddComponent<RackTargetFeedback>();completedRackFeedback.CompletionPulse(rack);
             if(rack.label)
             {
                 shiningLabel=rack.label;labelColor=shiningLabel.color;labelScale=shiningLabel.transform.localScale;
-                // One gentle gold glow; only the label animates, never the sorted items.
+                // The label glow accompanies the render-only item wave.
                 shine=DOTween.To(()=>0f,t=>{
                     if(!shiningLabel)return;
                     float pulse=Mathf.Sin(t*Mathf.PI);

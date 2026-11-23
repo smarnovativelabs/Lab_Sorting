@@ -79,6 +79,7 @@ namespace LabSorting.Sorting
             CancelPendingDrop();
             if(player.blocked) return false;
             if(!item || item.location==ItemLocation.Hand || item.Moving) return Fail("No available item in reach");
+            if(item.PickLocked)return Fail("Rack complete! Items are locked");
             if(carried.Count>=capacity) return FullInventoryNotice();
             // Measured before docking disables the collider: whatever rested on this item must not stay in the air.
             bool fromFloor=item.location==ItemLocation.Loose&&item.hitbox&&item.hitbox.enabled;var vacated=fromFloor?item.hitbox.bounds:default;

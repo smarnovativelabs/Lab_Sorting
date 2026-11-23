@@ -78,7 +78,7 @@ namespace LabSorting.Sorting
             {
                 var item=source.item;var renderer=source.renderer;if(!item||!renderer)continue;
                 bool active=item.gameObject.activeInHierarchy&&renderer.enabled&&!source.forceOff;
-                bool batch=active&&item.location!=ItemLocation.Hand&&!item.Moving&&!item.Hovered&&!item.Searched&&!item.IsShining;
+                bool batch=active&&item.location!=ItemLocation.Hand&&!item.Moving&&!item.Hovered&&!item.Searched&&!item.IsShining&&!item.CompletionFloating;
                 item.SetBatchHighlight(active&&item.location!=ItemLocation.Hand&&!item.Moving);
                 renderer.forceRenderingOff=source.forceOff||batch;if(!batch)continue;
                 var center=renderer.bounds.center;

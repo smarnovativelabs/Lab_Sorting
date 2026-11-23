@@ -6,6 +6,18 @@ namespace LabSorting.Sorting
     public sealed partial class SortingFeedback
     {
         readonly List<SortRack> awaitingCelebration=new List<SortRack>();
+        readonly List<SortItem> floatingItems=new List<SortItem>();
+        public bool CompletionPending => awaitingCelebration.Count>0 || floatingItems.Exists(i=>i&&i.CompletionFloating);
+        void FloatRack(SortRack rack)
+        {
+            floatingItems.RemoveAll(i=>!i||!i.CompletionFloating);
+            for(int i=0;i<rack.contents.Length;i++)
+            {
+                var item=rack.contents[i];if(!item)continue;
+                rack.CompletionWave(i,out float delay,out float height);
+                item.PlayCompletionFloat(delay,height);floatingItems.Add(item);
+            }
+        }
         ParticleSystem sparkles;
         Material sparkleMaterial;
         Texture2D sparkleTexture;
@@ -39,7 +51,7 @@ namespace LabSorting.Sorting
             }
         }
         void ResetPresentation()
-        {awaitingCelebration.Clear();StopCelebration();if(sparkles)sparkles.Clear(true);}
+        {awaitingCelebration.Clear();foreach(var item in floatingItems)if(item)item.StopCompletionFloat();floatingItems.Clear();StopCelebration();if(sparkles)sparkles.Clear(true);}
         void EmitSparkles(Vector3 position,int count)
         {
             if(Time.unscaledTime<nextSparkle)return;nextSparkle=Time.unscaledTime+.07f;

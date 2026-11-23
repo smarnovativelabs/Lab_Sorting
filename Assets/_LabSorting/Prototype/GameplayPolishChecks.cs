@@ -99,8 +99,8 @@ namespace LabSorting.Prototype
                 Check(MatchingRackGuide.FindRack(s,first.definition)!=rack,"Rack guidance excludes full racks");
                 var rewards=UnityEngine.Object.FindFirstObjectByType<SortingRewardsHUD>();yield return null;Check(rewards.ability.text.Contains("Rack complete!"),"Rack completion feedback reaches dedicated ability HUD");
                 yield return new WaitForSecondsRealtime(.85f);Check(!pulse.CompletionActive,"Completion pulse expires");
-                int cash=s.Cash;Check(s.TryPick(supply[0]),"Retrieve completed rack item");DOTween.CompleteAll();Check(s.TryPlace(rack),"Replace completed item");DOTween.CompleteAll();Check(s.Cash==cash&&feedback.Celebrations==celebrations+1,"Repeating completed rack grants no cash or repeated celebration");
-                Check(s.TryPick(supply[0]),"Open matching rack slot for guidance");DG.Tweening.DOTween.CompleteAll();Check(MatchingRackGuide.FindRack(s,first.definition)==rack,"Assigned matching rack wins over empty racks");
+                int cash=s.Cash;Check(!s.TryPick(supply[0])&&s.Cash==cash&&feedback.Celebrations==celebrations+1,"Completed rack stays locked without repeat rewards");
+                Check(s.Restore(snapshot),"Restore incomplete run for guidance");Check(s.TryPick(first),"Pick guidance fixture");DOTween.CompleteAll();Check(s.TryPlace(rack),"Assign incomplete rack for guidance");DOTween.CompleteAll();Check(MatchingRackGuide.FindRack(s,first.definition)==rack,"Assigned matching rack wins over empty racks");
                 for(int i=0;i<8;i++)rewards.SendMessage("Announce","Fixture "+i);
                 Check(rewards.PendingAnnouncements==3,"Rapid reward queue is bounded");
                 s.player.SetBlocked(true);rewards.SendMessage("Update");Check(rewards.PendingAnnouncements==0&&rewards.toast.text==""&&rewards.ability.text=="","Modal clears stale celebrations");s.player.SetBlocked(false);

@@ -33,6 +33,7 @@ namespace LabSorting.Sorting
         public bool AlmostFull=>Type&&RemainingSlots>0&&RemainingSlots<=Mathf.Clamp(Mathf.CeilToInt(Capacity*.1f),1,5);
         public ItemDefinition Type { get; private set; }
         public int Count { get; private set; }
+        public bool IsFull => Capacity>0 && Count==Capacity;
         public bool SizeBased => shelves!=null && shelves.Length>0;
         // Points for the assigned type; zero while a size-based rack is empty.
         public int Capacity => SizeBased ? (Type?CapacityFor(Type):0) : (slots!=null?slots.Length:0);
@@ -117,6 +118,23 @@ namespace LabSorting.Sorting
             return true;
         }
         int Fit(float length,float size)=>size<=0||length<size?0:Mathf.FloorToInt((length+itemGap)/(size+itemGap)+.0001f);
+        public void CompletionWave(int index,out float delay,out float height)
+        {
+            height=.035f;delay=0;
+            if(!SizeBased){delay=Capacity>1?index*1.05f/(Capacity-1):0;return;}
+            int totalRows=0,rowStart=0;
+            for(int i=0;i<shelves.Length;i++)if(Layout(Type,i,out var g))totalRows+=g.rows;
+            for(int i=0;i<shelves.Length;i++)
+            {
+                if(!Layout(Type,i,out var g))continue;
+                int count=g.columns*g.rows;
+                if(index>=count){index-=count;rowStart+=g.rows;continue;}
+                delay=totalRows>1?(rowStart+index/g.columns)*1.05f/(totalRows-1):0;
+                if(g.columns>1)delay+=.06f*(index%g.columns)/(g.columns-1);
+                height=Mathf.Min(height,Mathf.Max(0,(shelves[i].clearance-g.bounds.size.y-SurfaceOffset)*.75f));
+                return;
+            }
+        }
         // Axis-aligned bounds of the item model after rotation, relative to its pivot.
         public static Bounds RotatedBounds(ItemDefinition type,Quaternion rotation)
         {

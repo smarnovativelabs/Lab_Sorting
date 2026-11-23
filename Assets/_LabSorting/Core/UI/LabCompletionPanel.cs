@@ -36,6 +36,7 @@ namespace LabSorting.UI
             if(IsOpen){TickConfetti();if(Keyboard.current!=null&&Keyboard.current.escapeKey.wasPressedThisFrame)ContinueExploring();return;}
             if(!autoShow||!pending||session.player.blocked||Time.unscaledTime<showAfter)return;
             foreach(var item in session.items)if(item.Moving)return;
+            var feedback=session.GetComponent<SortingFeedback>();if(feedback&&feedback.isActiveAndEnabled&&feedback.CompletionPending)return;
             Show();
         }
         void Show()
