@@ -68,7 +68,7 @@ namespace LabSorting.Sorting
             {
                 float gravity=Mathf.Max(.1f,-Physics.gravity.y),rise=Mathf.Max(root.y,target.y)+Mathf.Lerp(.30f,.22f,weight)-root.y;
                 float up=Mathf.Sqrt(2*gravity*rise),time=up/gravity+Mathf.Sqrt(2*(root.y+rise-target.y)/gravity);
-                var velocity=(target-root)/Mathf.Max(.25f,time);velocity.y=up;slot.body.linearVelocity=velocity;slot.body.angularVelocity=new Vector3(0,Mathf.Lerp(.65f,.2f,weight),0);FullFlightStarts++;
+                var velocity=(target-root)/Mathf.Max(.25f,time);velocity.y=up;slot.body.linearVelocity=velocity;slot.body.angularVelocity=new Vector3(0,Mathf.Lerp(2.2f,.7f,weight),0);FullFlightStarts++;
             }
             return true;
         }
@@ -93,7 +93,7 @@ namespace LabSorting.Sorting
             {
                 PhysicsSteps++;
                 if(slot.item.location!=ItemLocation.Loose){Release(slot);continue;}
-                slot.item.transform.SetPositionAndRotation(slot.body.position-slot.body.rotation*slot.offset,slot.body.rotation);
+                slot.item.ApplyDropPose(slot.body.position,slot.offset,slot.body.rotation,slot.flight);
                 if(slot.flight)
                 {
                     slot.quiet=slot.body.linearVelocity.sqrMagnitude<.0064f&&slot.body.angularVelocity.sqrMagnitude<.04f?slot.quiet+Time.fixedDeltaTime:0;
@@ -104,7 +104,7 @@ namespace LabSorting.Sorting
                 if(Time.time>=slot.until||slot.body.IsSleeping()||Vector3.Distance(slot.body.position-slot.offset,slot.target)>.12f){LastFinishReason=Time.time>=slot.until?"timeout":slot.body.IsSleeping()?"sleep":"deviation";Finish(slot);}
             }
         }
-        void LateUpdate(){foreach(var slot in slots)if(slot.item)slot.item.transform.SetPositionAndRotation(slot.body.transform.position-slot.body.transform.rotation*slot.offset,slot.body.transform.rotation);}
+        void LateUpdate(){foreach(var slot in slots)if(slot.item)slot.item.ApplyDropPose(slot.body.transform.position,slot.offset,slot.body.transform.rotation,slot.flight);}
         void OnApplicationPause(bool paused){if(paused)foreach(var slot in slots)if(slot.item)Finish(slot);}
         void OnDestroy(){foreach(var slot in slots)if(slot!=null&&slot.item)Finish(slot);reservations.Clear();if(material)Destroy(material);}
     }

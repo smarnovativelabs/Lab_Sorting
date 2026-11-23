@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
+using Unity.Profiling;
 using LabSorting.Sorting;
 
 namespace LabSorting.UI
@@ -9,6 +10,7 @@ namespace LabSorting.UI
     [DefaultExecutionOrder(11000)]
     public sealed class FirstLaunchTour : MonoBehaviour
     {
+        static readonly ProfilerMarker TickMarker=new ProfilerMarker("LabSorting.FirstLaunchTour");
         public SortingSession session;
         public SettingsTutorialPanel settings;
         public CanvasGroup gameplayUI;
@@ -68,6 +70,10 @@ namespace LabSorting.UI
         public void Skip(){if(IsRunning&&!skipping&&elapsed<duration){skipping=true;skipTime=0;}}
         void LateUpdate()
         {
+            using(TickMarker.Auto())Tick();
+        }
+        void Tick()
+        {
             if(!IsRunning||paused||!focused||session.player.NetworkBlocked)return;
             if(Keyboard.current!=null&&Keyboard.current.escapeKey.wasPressedThisFrame)Skip();
             float dt=Mathf.Min(Time.unscaledDeltaTime,.05f);
@@ -97,8 +103,11 @@ namespace LabSorting.UI
         }
         void RestoreCamera()
         {
-            brain.enabled=false;tourCamera.gameObject.SetActive(false);
-            var camera=session.player.view;camera.transform.localPosition=localPosition;camera.transform.localRotation=localRotation;camera.fieldOfView=oldFov;
+            // Scene teardown can destroy the separate tour rig before this HUD owner.
+            if(brain)brain.enabled=false;
+            if(tourCamera)tourCamera.gameObject.SetActive(false);
+            var camera=session&&session.player?session.player.view:null;
+            if(camera){camera.transform.localPosition=localPosition;camera.transform.localRotation=localRotation;camera.fieldOfView=oldFov;}
         }
         public void SamplePose(float time,out Vector3 position,out Quaternion rotation)
         {
@@ -115,13 +124,17 @@ namespace LabSorting.UI
         {
             if(!IsRunning)return;
             IsRunning=false;RestoreCamera();
-            session.player.look.enabled=lookEnabled;session.hand.gameObject.SetActive(handVisible);
-            gameplayUI.alpha=oldAlpha;gameplayUI.interactable=oldInteractable;gameplayUI.blocksRaycasts=oldRaycasts;
-            settings.enabled=settingsEnabled;if(progress)progress.enabled=progressEnabled;
-            overlay.SetActive(false);session.player.SetBlocked(false);session.player.Clear();
+            if(session)
+            {
+                if(session.player){if(session.player.look)session.player.look.enabled=lookEnabled;session.player.SetBlocked(false);session.player.Clear();}
+                if(session.hand)session.hand.gameObject.SetActive(handVisible);
+            }
+            if(gameplayUI){gameplayUI.alpha=oldAlpha;gameplayUI.interactable=oldInteractable;gameplayUI.blocksRaycasts=oldRaycasts;}
+            if(settings)settings.enabled=settingsEnabled;if(progress)progress.enabled=progressEnabled;
+            if(overlay)overlay.SetActive(false);
             Cursor.lockState=oldCursor;Cursor.visible=oldCursorVisible;
             if(remember){PlayerPrefs.SetInt(completionKey,1);PlayerPrefs.Save();ResumeTutorial();}
-            else settings.autoTutorial=tutorialAfterTour;
+            else if(settings)settings.autoTutorial=tutorialAfterTour;
         }
         void ResumeTutorial()
         {

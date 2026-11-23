@@ -93,6 +93,7 @@ namespace LabSorting.Prototype
                 var rack=s.racks.First(r=>r.CapacityFor(first.definition)>0&&r.CapacityFor(first.definition)<=s.ItemsOfType(first.definition).Count());
                 var supply=s.ItemsOfType(first.definition).Take(rack.CapacityFor(first.definition)).ToArray();var feedback=UnityEngine.Object.FindFirstObjectByType<SortingFeedback>();int celebrations=feedback.Celebrations;
                 foreach(var item in supply){Check(s.TryPick(item),"Collect rack fixture");DOTween.CompleteAll();Check(s.TryPlace(rack),"Fill rack fixture");DOTween.CompleteAll();}
+                yield return null; // Arrival-complete celebration is dispatched on the next presentation update.
                 var pulse=rack.GetComponent<RackTargetFeedback>();rack.Preview(null);
                 Check(rack.Count==rack.Capacity&&pulse.CompletionActive&&feedback.Celebrations==celebrations+1,"Full rack triggers one short pulse and existing chime");
                 Check(MatchingRackGuide.FindRack(s,first.definition)!=rack,"Rack guidance excludes full racks");

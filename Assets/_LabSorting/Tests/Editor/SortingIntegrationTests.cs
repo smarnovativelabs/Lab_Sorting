@@ -13,7 +13,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;yield return null;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;yield return null;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.AppleCommerceChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("DebugRun").Invoke(null,null);yield return new ExitPlayMode();
     }
@@ -21,7 +21,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;yield return null;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;yield return null;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.AppleCommerceChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
@@ -29,7 +29,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;yield return null;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;yield return null;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.CashSearchToastChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
@@ -37,7 +37,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RequestedPolishChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("HeldSizing").Invoke(null,null);yield return new ExitPlayMode();
     }
@@ -45,7 +45,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RequestedPolishChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Corrections").Invoke(null,null);yield return new ExitPlayMode();
     }
@@ -53,7 +53,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RequestedPolishChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
@@ -61,32 +61,32 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Sorting.RatGameplayChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(240000)] public IEnumerator DesignerMinimumTouch()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.MinimumTouchChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerThumbControls()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.ThumbControlsChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(240000)] public IEnumerator DesignerControlSizesAndWelcome()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.ControlWelcomeChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(180000)] public IEnumerator DesignerCleanupFocus()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.CleanupFocusChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(180000)] public IEnumerator LoadingArtworkRatios()
@@ -95,8 +95,16 @@ public class SortingIntegrationTests
         var startup=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Services.LabStartup")).First(t=>t!=null);
         startup.GetField("autoLoad").SetValue(UnityEngine.Object.FindFirstObjectByType(startup),false);
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.LoadingAspectChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(180000)] public IEnumerator DesignerTourFrameProfile()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;yield return null;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.TourPerformanceChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(180000)] public IEnumerator DesignerFirstLaunchTour()
@@ -107,38 +115,38 @@ public class SortingIntegrationTests
         foreach(var name in new[]{"LabSorting.UI.SettingsTutorialPanel","LabSorting.UI.GuidedTutorial"}){var t=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(name)).First(a=>a!=null);var instance=UnityEngine.Object.FindFirstObjectByType(t);t.GetField("preferencesPrefix").SetValue(instance,"LabSorting.TestTour.");if(name.EndsWith("SettingsTutorialPanel"))t.GetField("autoTutorial").SetValue(instance,true);}
         PlayerPrefs.DeleteKey("LabSorting.TestTour.GuidedDone");PlayerPrefs.DeleteKey("LabSorting.TestTour.GuidedStep");
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.EnvironmentTourChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(180000)] public IEnumerator RewardedAdReturnRecovery()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RewardReturnChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerServiceExperience()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.ServiceExperienceChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerOffersReplay()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.OffersReplayChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerArtworkUI()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.DesignerUIChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerRapidResume()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RapidResumeChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(180000)] public IEnumerator MainMenuPersistentServices()
@@ -148,51 +156,51 @@ public class SortingIntegrationTests
         startupType.GetField("autoLoad").SetValue(UnityEngine.Object.FindFirstObjectByType(startupType),false);
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
         UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode> loaded=(scene,mode)=>{if(scene.path=="Assets/Scenes/Lab_Sorting.unity")PrepareDesignerSession();};
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded+=loaded;
-        try {yield return new EnterPlayMode(false);Application.runInBackground=true;var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.BootstrapChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();}
+        testSceneLoaded=loaded;UnityEngine.SceneManagement.SceneManager.sceneLoaded+=loaded;
+        try {yield return EnterPreparedPlayMode();Application.runInBackground=true;var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.BootstrapChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();}
         finally {UnityEngine.SceneManagement.SceneManager.sceneLoaded-=loaded;}
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerGameplayPolish()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.GameplayPolishChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerSpanishAndRackFeedback()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.SpanishRackChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerServices()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.ServiceChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerLandingFeel()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.LandingFeelChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerFloatingItems()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.FloatingItemChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)] public IEnumerator DesignerFullFlight()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.FullFlightChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(300000)]
     public IEnumerator DesignerDevicePerformance()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.DevicePerformanceChecks")).First(t=>t!=null);yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
     }
     [UnityTest,Timeout(180000)]
@@ -200,7 +208,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.FrontDropChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -222,8 +230,16 @@ public class SortingIntegrationTests
     // the IAP fake store (LabServiceSettings.editorTestServices). SupplyCommerce reads this SessionState key.
     const string SuppressEditorServices="LabSorting.SuppressEditorTestServices";
     [SetUp] public void Setup() { SessionState.SetBool(SuppressEditorServices,true);previousEnabled=EditorSettings.enterPlayModeOptionsEnabled;previousOptions=EditorSettings.enterPlayModeOptions;previousLogStack=Application.GetStackTraceLogType(LogType.Log);Application.SetStackTraceLogType(LogType.Log,StackTraceLogType.None); }
+    UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode> testSceneLoaded;
+    Action testFlowCleanup;
     [UnityTearDown] public IEnumerator Cleanup()
     {
+        // NUnit can abort a nested IEnumerator without resuming the parent's finally.
+        // Always remove scene hooks here so a failed boot test cannot re-enable the
+        // first-run tour or overwrite preference keys in every later test.
+        if(testSceneLoaded!=null)UnityEngine.SceneManagement.SceneManager.sceneLoaded-=testSceneLoaded;
+        testSceneLoaded=null;
+        testFlowCleanup?.Invoke();testFlowCleanup=null;
         if(EditorApplication.isPlaying) yield return new ExitPlayMode();
         EditorSettings.enterPlayModeOptionsEnabled=previousEnabled;EditorSettings.enterPlayModeOptions=previousOptions;
         Application.SetStackTraceLogType(LogType.Log,previousLogStack);
@@ -252,7 +268,7 @@ public class SortingIntegrationTests
         foreach(var key in new[]{"LookSensitivity","Sound","Haptics","TutorialDone","TutorialPage"})PlayerPrefs.DeleteKey("LabSorting.AutomatedTutorial."+key);
         EditorSettings.enterPlayModeOptionsEnabled=true;
         EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);
+        yield return EnterPreparedPlayMode();
         var checkType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.SortingSmokeChecks")).First(t=>t!=null);
         Assert.IsNotNull(checkType);
         yield return (IEnumerator)checkType.GetMethod("Run").Invoke(null,null);
@@ -274,7 +290,7 @@ public class SortingIntegrationTests
         var catalogType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.StressCatalog")).First(t=>t!=null);
         var catalog=UnityEngine.Object.FindFirstObjectByType(catalogType);catalogType.GetField("autoStart").SetValue(catalog,false);
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);UnityEngine.Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();UnityEngine.Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.StressPerformanceChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -286,7 +302,7 @@ public class SortingIntegrationTests
         var catalogType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.StressCatalog")).First(t=>t!=null);
         catalogType.GetField("autoStart").SetValue(UnityEngine.Object.FindFirstObjectByType(catalogType),false);
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.SortingSoakChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -295,6 +311,20 @@ public class SortingIntegrationTests
     {
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Editor.IntegrationValidationChecks")).First(t=>t!=null);
         type.GetMethod("Run").Invoke(null,null);
+    }
+    static EnterPlayMode EnterPreparedPlayMode()
+    {
+        // Reflection-based fixture assignments need prefab overrides as well as
+        // scene dirtiness, or scene reload can restore the authored first-run gates.
+        var fixtureTypes=new[]{"FirstLaunchTour","SettingsTutorialPanel","GuidedTutorial","ServicePresentation","SortingSession","LabCompletionPanel","ItemRecovery","StressCatalog","LabStartup"};
+        foreach(var component in UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include,FindObjectsSortMode.None))
+            if(component&&fixtureTypes.Contains(component.GetType().Name))
+            {
+                EditorUtility.SetDirty(component);
+                if(PrefabUtility.IsPartOfPrefabInstance(component))PrefabUtility.RecordPrefabInstancePropertyModifications(component);
+            }
+        EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        return new EnterPlayMode(false);
     }
     static void PrepareDesignerSession()
     {
@@ -311,7 +341,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.DesignerGameplayChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -321,7 +351,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.MaterialFeedbackChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -331,7 +361,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RackHintChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -341,7 +371,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.BulkIconChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -351,7 +381,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.CompactControlsChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -361,7 +391,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.ReferenceCorrectionChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -371,7 +401,7 @@ public class SortingIntegrationTests
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.SoftInteractionChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -385,7 +415,7 @@ public class SortingIntegrationTests
         guidedType.GetField("preferencesPrefix").SetValue(guided,"LabSorting.AutomatedReadability.");
         foreach(var key in new[]{"GuidedStep","GuidedDone","GuidedToolPage","RackTurnShown.v1"})PlayerPrefs.DeleteKey("LabSorting.AutomatedReadability."+key);
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.GuidedTutorialChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod("Readability").Invoke(null,null);
         yield return new ExitPlayMode();
@@ -402,7 +432,7 @@ public class SortingIntegrationTests
         guidedType.GetField("preferencesPrefix").SetValue(guided,"LabSorting.AutomatedGuided.");
         foreach(var key in new[]{"GuidedStep","GuidedDone","GuidedToolPage","RackTurnShown.v1"})PlayerPrefs.DeleteKey("LabSorting.AutomatedGuided."+key);
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
-        yield return new EnterPlayMode(false);Application.runInBackground=true;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
         var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.GuidedTutorialChecks")).First(t=>t!=null);
         yield return (IEnumerator)type.GetMethod(routine).Invoke(null,null);
         yield return new ExitPlayMode();
@@ -413,10 +443,10 @@ public class SortingIntegrationTests
         EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity");
         EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
         UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode> loaded=(scene,mode)=>PrepareDesignerSession();
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded+=loaded;
+        testSceneLoaded=loaded;UnityEngine.SceneManagement.SceneManager.sceneLoaded+=loaded;
         try
         {
-            yield return new EnterPlayMode(false);Application.runInBackground=true;
+            yield return EnterPreparedPlayMode();Application.runInBackground=true;
               // Deterministic connectivity fixture: test transition without an external endpoint.
               yield return null;
               var networkType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Services.InternetConnectivity")).First(t=>t!=null);
@@ -440,11 +470,12 @@ public class SortingIntegrationTests
       {
           EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity");EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
           var helper=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.FirstLaunchFlowChecks")).First(t=>t!=null);
+          testFlowCleanup=()=>helper.GetMethod("Cleanup").Invoke(null,null);
           UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode> loaded=(scene,mode)=>{if(scene.path=="Assets/Scenes/Lab_Sorting.unity"){PrepareDesignerSession();helper.GetMethod("Configure").Invoke(null,null);}};
-          UnityEngine.SceneManagement.SceneManager.sceneLoaded+=loaded;
+          testSceneLoaded=loaded;UnityEngine.SceneManagement.SceneManager.sceneLoaded+=loaded;
           try
           {
-              yield return new EnterPlayMode(false);Application.runInBackground=true;yield return null;
+              yield return EnterPreparedPlayMode();Application.runInBackground=true;yield return null;
               var networkType=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Services.InternetConnectivity")).First(t=>t!=null);
               var network=(MonoBehaviour)UnityEngine.Object.FindFirstObjectByType(networkType);network.enabled=false;networkType.GetProperty("IsReady").SetValue(network,true);networkType.GetMethod("SetStatus",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(network,new[]{Enum.Parse(networkType.GetProperty("Status").PropertyType,"Online")});
               float deadline=Time.realtimeSinceStartup+45;while(UnityEngine.SceneManagement.SceneManager.GetActiveScene().path!="Assets/Scenes/Lab_Sorting.unity"&&Time.realtimeSinceStartup<deadline)yield return null;

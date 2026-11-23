@@ -26,6 +26,11 @@ namespace LabSorting.Sorting
         public event Action Backgrounded;
         public event Action<SortingCue> Feedback;
         public event Action<SortItem> ItemPlaced;
+        public event Action<SortItem> ItemPlacementArrived;
+        public event Action<SortItem,Vector3> ItemPicked;
+        [Tooltip("Place all carried items of the selected type, with staggered flights to reserved slots.")]
+        public bool batchPlacement=true;
+        bool settlingPresentation;
         public int Revision { get; private set; }
         public float reach=3.5f;
         float nextAction, saveAt=-1;
@@ -80,13 +85,14 @@ namespace LabSorting.Sorting
             if(item.rack) item.rack.Remove(item);
             item.SetSearchHighlight(false); item.location=ItemLocation.Hand; item.slot=-1; item.rack=null; item.Highlight(false);
             item.GetComponent<LabRat>()?.StopRunning();
-            if(Active&&(!magnet||!Active.Moving)){Active.CompleteMotion();Active.gameObject.SetActive(false);}
+            if(Active&&!Active.Moving)Active.gameObject.SetActive(false);
             carried.Add(item); Active=item; item.gameObject.SetActive(true);
             recentPickType=item.definition;recentPickUntil=Time.unscaledTime+.6f;
             if(item.definition.isRat)item.GetComponent<LabRat>()?.colony.PlayInteraction(item);
+            var pickupPosition=item.visual?item.visual.bounds.center:item.transform.position;
             item.DockAt(hand,magnet,delay,()=>{if(item&&item.location==ItemLocation.Hand&&Active!=item)item.gameObject.SetActive(false);});
             if(fromFloor)QueueSupportCheck(vacated);
-            if(!magnet){Commit("Picked "+item.definition.displayName); Feedback?.Invoke(SortingCue.Pick);}return true;
+            if(!magnet){Commit("Picked "+item.definition.displayName);ItemPicked?.Invoke(item,pickupPosition); Feedback?.Invoke(SortingCue.Pick);}return true;
         }
         public void Select(int index)
         {
@@ -107,8 +113,26 @@ namespace LabSorting.Sorting
             if(!Active && carried.Count>0) Active=carried[carried.Count-1];
             if(Active) { Active.gameObject.SetActive(true); Active.Snap(hand.position,hand.rotation,hand);Active.PresentHeld(); }
         }
-        public void PlaceTarget() { if(Ready()) TryPlace(TargetRack); }
-        public bool TryPlace(SortRack rack)
+        public void PlaceTarget() { if(Ready()) PlaceMatching(TargetRack); }
+        // TryPlace remains a single-item primitive for tutorial, replay and scripted actions.
+        public bool TryPlace(SortRack rack) => PlaceOne(rack,0);
+        public bool PlaceMatching(SortRack rack)
+        {
+            if(!batchPlacement)return TryPlace(rack);
+            if(player.blocked||!Active||Active.Moving||!rack||!rack.CanAccept(Active.definition))return TryPlace(rack);
+            var type=Active.definition;int count=0;
+            foreach(var item in carried)if(item.definition==type)count++;
+            count=Mathf.Min(count,rack.CapacityFor(type)-rack.Count);
+            float interval=count>1?Mathf.Min(.14f,1.5f/(count-1)):0;
+            // CarryPresentation offsets the visible model from the raw hand socket to fit the HUD.
+            // Every item in this batch must leave that same visible grip, not the unadjusted socket.
+            var launch=new Pose(Active.transform.position,Active.transform.rotation);var launchScale=Active.transform.localScale;
+            int placed=0;
+            while(placed<count&&Active&&Active.definition==type&&rack.CanAccept(type))
+            { if(!PlaceOne(rack,placed*interval,launch,launchScale))break;placed++; }
+            return placed>0;
+        }
+        bool PlaceOne(SortRack rack,float delay,Pose? launch=null,Vector3? launchScale=null)
         {
             CancelPendingDrop();
             if(player.blocked) return false;
@@ -116,10 +140,17 @@ namespace LabSorting.Sorting
             if(!rack) return Fail("Aim at a rack");
             if(!rack.CanAccept(Active.definition)) return Fail(rack.Type&&rack.Type!=Active.definition?"This rack holds "+rack.Type.displayName:rack.Count>0?"Rack full":"Too big for this rack");
             var item=Active; int index=rack.Add(item); RemoveActive(); item.transform.SetParent(null,true);
-            var pose=rack.SlotPose(index); item.Travel(pose.position,pose.rotation);
+            if(launch.HasValue)item.transform.SetPositionAndRotation(launch.Value.position,launch.Value.rotation);
+            if(launchScale.HasValue)item.transform.localScale=launchScale.Value;
+            var pose=rack.SlotPose(index); item.PlaceOnRack(pose,hand,delay,()=>
+            {
+                if(!this||!isActiveAndEnabled||settlingPresentation||player.blocked||item.location!=ItemLocation.Rack)return;
+                ItemPlacementArrived?.Invoke(item);
+                Feedback?.Invoke(SortingCue.Place);
+            });
             bool firstPlacement=rewardedItems.Add(item.id);
             ItemPlaced?.Invoke(item);CheckSmallGoals(rack,firstPlacement);
-            EndTossStreak();CheckMilestones();Commit("Placed "+item.definition.displayName); Feedback?.Invoke(SortingCue.Place);return true;
+            EndTossStreak();CheckMilestones();Commit("Placed "+item.definition.displayName);return true;
         }
         public void ThrowActive()
         {
@@ -215,7 +246,9 @@ namespace LabSorting.Sorting
         {
             CancelPendingDrop();CancelHold();ClearTarget();
             // Rare lifecycle boundary: settle in-flight work before the durable snapshot, regardless of callback order.
-            foreach(var item in items)if(item&&(item.Moving||item.Presenting))item.CompleteMotion();
+            settlingPresentation=true;
+            try{foreach(var item in items)if(item&&(item.Moving||item.Presenting))item.CompleteMotion();}
+            finally{settlingPresentation=false;}
             foreach(var item in carried){item.Snap(hand.position,hand.rotation,hand);item.gameObject.SetActive(item==Active);}
             Backgrounded?.Invoke();Save();
         }

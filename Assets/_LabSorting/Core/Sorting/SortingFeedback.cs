@@ -24,23 +24,23 @@ namespace LabSorting.Sorting
             InitializeLandingAudio();
             SoundEnabled=PlayerPrefs.GetInt(SoundKey,1)!=0;HapticsEnabled=PlayerPrefs.GetInt(HapticsKey,1)!=0;
         }
-        void OnEnable() {DropLandingPool.Impact+=ImpactSound;if(session){session.Backgrounded+=BackgroundFeedback;session.Feedback+=Play;session.ItemLanded+=Landed;session.ItemPlaced+=Placed;session.RackCompleted+=Celebrate;session.VisualsReset+=StopCelebration;}}
-        void OnDisable() {DropLandingPool.Impact-=ImpactSound;if(session){session.Backgrounded-=BackgroundFeedback;session.Feedback-=Play;session.ItemLanded-=Landed;session.ItemPlaced-=Placed;session.RackCompleted-=Celebrate;session.VisualsReset-=StopCelebration;}if(source) source.Stop();StopCelebration();StopLandingAudio();}
+        void OnEnable() {DropLandingPool.Impact+=ImpactSound;if(session){session.Backgrounded+=BackgroundFeedback;session.Feedback+=Play;session.ItemLanded+=Landed;session.ItemPlaced+=Placed;session.ItemPlacementArrived+=PlacementArrival;session.ItemPicked+=PickupSparkle;session.RackCompleted+=QueueCelebration;session.VisualsReset+=ResetPresentation;}}
+        void OnDisable() {DropLandingPool.Impact-=ImpactSound;if(session){session.Backgrounded-=BackgroundFeedback;session.Feedback-=Play;session.ItemLanded-=Landed;session.ItemPlaced-=Placed;session.ItemPlacementArrived-=PlacementArrival;session.ItemPicked-=PickupSparkle;session.RackCompleted-=QueueCelebration;session.VisualsReset-=ResetPresentation;}if(source) source.Stop();ResetPresentation();StopLandingAudio();}
         public void SetSound(bool value,bool persist=true) {SoundEnabled=value;if(!value){if(source)source.Stop();if(chimeSource)chimeSource.Stop();StopLandingAudio();}if(persist){PlayerPrefs.SetInt(SoundKey,value?1:0);PlayerPrefs.Save();}}
         public void SetHaptics(bool value,bool persist=true) {HapticsEnabled=value;if(persist){PlayerPrefs.SetInt(HapticsKey,value?1:0);PlayerPrefs.Save();}}
         public void ToggleSound() {SetSound(!SoundEnabled);}
-        void BackgroundFeedback(){StopCelebration();StopLandingAudio();if(source)source.Stop();}
+        void BackgroundFeedback(){ResetPresentation();StopLandingAudio();if(source)source.Stop();}
         public void ToggleHaptics() {SetHaptics(!HapticsEnabled);}
         public void Play(SortingCue cue)
         {
             // A magnet batch or repeated invalid tap produces one soft response, not a burst.
             if(!isActiveAndEnabled||Time.unscaledTime<nextFeedback) return;
             nextFeedback=Time.unscaledTime+(cue==SortingCue.Reject ? .18f : .075f);AcceptedCues++;
-            // A dropped item makes its sound when it lands (see Landed), not when it leaves the hand.
-            var clip=cue==SortingCue.Pick?pick:cue==SortingCue.Place?PlacementClip(lastPlaced):(cue==SortingCue.RackComplete||cue==SortingCue.Toss)?place:cue==SortingCue.Reject?reject:null;
+            // Quiet release cue; the material-specific impact remains timed to physical contact.
+            var clip=cue==SortingCue.Pick||cue==SortingCue.Throw?pick:cue==SortingCue.Place?PlacementClip(lastPlaced):(cue==SortingCue.RackComplete||cue==SortingCue.Toss)?place:cue==SortingCue.Reject?reject:null;
             // Each toss in a streak sounds a little higher.
-            float pitch=cue==SortingCue.RackComplete?1.2f:cue==SortingCue.Toss?1.05f+.07f*Mathf.Min(session?session.TossStreak-1:0,6):1;
-            if(SoundEnabled&&clip&&source) {source.pitch=pitch;source.PlayOneShot(clip,volume);PlayedSounds++;}
+            float pitch=cue==SortingCue.Throw?.75f:cue==SortingCue.RackComplete?1.2f:cue==SortingCue.Toss?1.05f+.07f*Mathf.Min(session?session.TossStreak-1:0,6):1;
+            if(SoundEnabled&&clip&&source) {source.pitch=pitch;source.PlayOneShot(clip,volume*(cue==SortingCue.Throw?.3f:1));PlayedSounds++;}
             #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             if(HapticsEnabled) HapticPatterns.PlayPreset((cue==SortingCue.Place||cue==SortingCue.RackComplete||cue==SortingCue.Toss)?HapticPatterns.PresetType.LightImpact:cue==SortingCue.Reject?HapticPatterns.PresetType.Warning:HapticPatterns.PresetType.Selection);
             #endif

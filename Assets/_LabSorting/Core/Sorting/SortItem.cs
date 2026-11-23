@@ -16,6 +16,17 @@ namespace LabSorting.Sorting
         public Vector3 originalScale;
         Tween motion;
         Tween selectionPresentation;
+        Tween placementShine;
+        float shineAmount;
+        public bool IsShining => shineAmount > 0;
+        public void ShineAtPlacement()
+        {
+            placementShine?.Kill();
+            shineAmount=.01f;ApplyHighlight();VisualChanged?.Invoke();
+            placementShine=DOTween.To(()=>0f,t=>{shineAmount=Mathf.Sin(t*Mathf.PI);ApplyHighlight();},1f,.3f)
+                .SetEase(Ease.Linear).OnComplete(()=>{shineAmount=0;ApplyHighlight();VisualChanged?.Invoke();});
+        }
+        void ClearShine(){placementShine?.Kill();shineAmount=0;ApplyHighlight();}
         public bool Presenting=>selectionPresentation!=null&&selectionPresentation.IsActive()&&selectionPresentation.IsPlaying();
         public void PresentHeld()
         {
@@ -44,15 +55,29 @@ namespace LabSorting.Sorting
         public bool ImpactFeedbackPlayed {get;set;}
         public bool Moving => physicsLanding||(motion!=null && motion.IsActive() && motion.IsPlaying());
         public void CompleteMotion() { selectionPresentation?.Complete(true);motion?.Complete(true);DropLandingPool.Stop(this,true); }
-        public void FinishPhysicsLanding(Vector3 position,Quaternion rotation,System.Action done){DropLandingPool.Unreserve(this);physicsLanding=false;transform.SetPositionAndRotation(position,rotation);hitbox.enabled=location!=ItemLocation.Hand;done?.Invoke();PoseChanged();}
+        public void FinishPhysicsLanding(Vector3 position,Quaternion rotation,System.Action done){DropLandingPool.Unreserve(this);physicsLanding=false;transform.SetPositionAndRotation(position,rotation);transform.localScale=originalScale;hitbox.enabled=location!=ItemLocation.Hand;done?.Invoke();PoseChanged();}
+        Vector3 releaseScale;
+        Quaternion releaseRotation;
+        float releaseTime;
+        // The full-size collision proxy stays authoritative; only its visible presentation blends out of the hand.
+        public void ApplyDropPose(Vector3 center,Vector3 offset,Quaternion rotation,bool flight)
+        {
+            float t=flight?Mathf.Clamp01((Time.time-releaseTime)/.18f):1;
+            float blend=t*t*(3-2*t);
+            transform.localScale=Vector3.Lerp(releaseScale,originalScale,blend);
+            var shown=Quaternion.Slerp(releaseRotation,rotation,blend);
+            var ratio=new Vector3(originalScale.x!=0?transform.localScale.x/originalScale.x:1,originalScale.y!=0?transform.localScale.y/originalScale.y:1,originalScale.z!=0?transform.localScale.z/originalScale.z:1);
+            transform.SetPositionAndRotation(center-shown*Vector3.Scale(offset,ratio),shown);
+        }
         public void ThrowWithPhysics(Vector3 destination,System.Action done)
         {
             selectionPresentation?.Kill();
+            ClearShine();releaseScale=transform.localScale;releaseRotation=transform.rotation;releaseTime=Time.time;
             ImpactFeedbackPlayed=false;
             motion?.Kill();motionDestination=destination;motionRotation=Quaternion.identity;hitbox.enabled=false;Highlight(false);
             transform.rotation=Quaternion.identity;transform.localScale=originalScale;physicsLanding=true;
             DropLandingPool.Reserve(this,destination);
-            if(!DropLandingPool.TryFlight(this,destination,done)){physicsLanding=false;Travel(destination,Quaternion.identity,done,true);}
+            if(!DropLandingPool.TryFlight(this,destination,done)){physicsLanding=false;transform.localScale=releaseScale;transform.rotation=releaseRotation;Travel(destination,Quaternion.identity,done,true);}
             PoseChanged();
         }
         void Awake() { if(originalScale==Vector3.zero) originalScale=transform.localScale; if(visual){float radius=visual.bounds.extents.magnitude+Vector3.Distance(visual.bounds.center,transform.position);carryLimit=Mathf.Min(1,.16f/Mathf.Max(.001f,radius));} DisableShadows(); ApplyItemLayer(); }
@@ -70,12 +95,36 @@ namespace LabSorting.Sorting
         {
             if(!outline)return;
             // Magenta rim identifies the single aim target (the pale cyan floor hid a cyan rim); gold belongs to paid search results.
-            outline.OutlineColor=heldPresentation?new Color(.45f,1f,.85f):hovered?HoverColor:new Color(1f,.74f,.12f);
-            outline.OutlineWidth=heldPresentation?2.5f:5f;
-            outline.enabled=heldPresentation||hovered||searched;
+            outline.OutlineColor=heldPresentation?new Color(.45f,1f,.85f):hovered?HoverColor:searched?new Color(1f,.74f,.12f):new Color(.55f,1f,.85f);
+            outline.OutlineWidth=heldPresentation?2.5f:(hovered||searched)?5f:shineAmount*2.5f;
+            outline.enabled=heldPresentation||hovered||searched||IsShining;
         }
         public void Snap(Vector3 position, Quaternion rotation, Transform parent=null)
-        { selectionPresentation?.Kill();DropLandingPool.Stop(this,false);physicsLanding=false;motion?.Kill(); transform.SetParent(parent,true); transform.SetPositionAndRotation(position,rotation); transform.localScale=originalScale*(parent?CarryScale:1f); hitbox.enabled=location!=ItemLocation.Hand;PoseChanged(); }
+        { ClearShine();selectionPresentation?.Kill();DropLandingPool.Stop(this,false);physicsLanding=false;motion?.Kill(); transform.SetParent(parent,true); transform.SetPositionAndRotation(position,rotation); transform.localScale=originalScale*(parent?CarryScale:1f); hitbox.enabled=location!=ItemLocation.Hand;PoseChanged(); }
+        public void PlaceOnRack(Pose pose,Transform socket,float delay,System.Action arrived)
+        {
+            ClearShine();selectionPresentation?.Kill();motion?.Kill();Highlight(false);hitbox.enabled=false;
+            motionDestination=pose.position;motionRotation=pose.rotation;
+            Vector3 from=transform.position,scale=transform.localScale;Quaternion rotation=transform.rotation;
+            Vector3 localFrom=socket?socket.InverseTransformPoint(from):from;
+            Quaternion localRotation=socket?Quaternion.Inverse(socket.rotation)*rotation:rotation;
+            if(delay>0)transform.localScale=Vector3.zero;
+            var sequence=DOTween.Sequence().AppendInterval(delay).AppendCallback(()=>
+            {
+                if(delay>0&&socket){from=socket.TransformPoint(localFrom);rotation=socket.rotation*localRotation;}
+                transform.SetPositionAndRotation(from,rotation);transform.localScale=scale;
+            });
+            sequence.Append(DOTween.To(()=>0f,t=>
+            {
+                float u=t*t*(3-2*t);
+                transform.position=Vector3.Lerp(from,pose.position,u)+Vector3.up*(4*.18f*t*(1-t));
+                transform.rotation=Quaternion.Slerp(rotation,pose.rotation,u)*Quaternion.Euler(new Vector3(6,25,-8)*Mathf.Sin(t*Mathf.PI));
+                // No oversize pulse: dense real rack slots only have the measured model footprint.
+                transform.localScale=Vector3.Lerp(scale,originalScale,u);
+            },1f,.38f).SetEase(Ease.Linear));
+            motion=sequence.OnComplete(()=>{transform.SetPositionAndRotation(pose.position,pose.rotation);transform.localScale=originalScale;hitbox.enabled=location!=ItemLocation.Hand;arrived?.Invoke();PoseChanged();});
+            PoseChanged();
+        }
         // Placement glide or a calm floor drop without tumbling or bounce.
         // For a drop, done is called once at touchdown with the collider restored.
         public void Travel(Vector3 position, Quaternion rotation, System.Action done=null, bool drop=false)
@@ -140,8 +189,23 @@ namespace LabSorting.Sorting
         static float Flat(Vector3 v)=>new Vector2(v.x,v.z).magnitude;
         public void DockAt(Transform socket,bool magnet=false,float delay=0,System.Action arrived=null)
         {
+            ClearShine();
             selectionPresentation?.Kill();
             motion?.Kill(); hitbox.enabled=false; Highlight(false);transform.SetParent(socket,true);
+            if(!magnet)
+            {
+                Vector3 from=transform.position,scale=transform.localScale;Quaternion rotation=transform.rotation;
+                motion=DOTween.Sequence().AppendInterval(delay).Append(DOTween.To(()=>0f,t=>
+                {
+                    float u=Mathf.Clamp01((t-.2f)/.8f),smooth=u*u*(3-2*u);
+                    var raised=from+Vector3.up*.12f;var middle=(raised+socket.position)*.5f+Vector3.up*.16f;
+                    transform.position=t<.2f?Vector3.Lerp(from,raised,1-Mathf.Pow(1-t/.2f,2)):
+                        (1-smooth)*(1-smooth)*raised+2*(1-smooth)*smooth*middle+smooth*smooth*socket.position;
+                    transform.rotation=Quaternion.Slerp(rotation,socket.rotation,smooth)*Quaternion.Euler(new Vector3(8,35,-12)*Mathf.Sin(t*Mathf.PI));
+                    transform.localScale=Vector3.Lerp(scale,originalScale*CarryScale,smooth)*(1+.045f*Mathf.Sin(t*Mathf.PI));
+                },1f,.3f).SetEase(Ease.Linear)).OnComplete(()=>{transform.localPosition=Vector3.zero;transform.localRotation=Quaternion.identity;transform.localScale=originalScale*CarryScale;arrived?.Invoke();PoseChanged();});
+                PoseChanged();return;
+            }
             float duration=magnet?.38f:.18f;
               // Unlimited-range collection is represented by a short, clearance-checked arrival.
               // Never fly full-size models through the room's walls or the camera near plane.
@@ -154,7 +218,7 @@ namespace LabSorting.Sorting
         }
         void OnEnable(){PoseChanged();}
         void OnDisable(){PoseChanged();}
-        void OnDestroy() { DropLandingPool.Stop(this,false);motion?.Kill();selectionPresentation?.Kill(); }
+        void OnDestroy() { DropLandingPool.Stop(this,false);motion?.Kill();selectionPresentation?.Kill();placementShine?.Kill(); }
     }
 }
 

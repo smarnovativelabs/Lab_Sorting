@@ -72,6 +72,7 @@ namespace LabSorting.UI
         int pageCount=1;
         ItemDefinition lastSelectedType;
         InventoryAutoScroll autoScroll;
+        SortedProgressFeedback sortedProgress;
         void SetupAutoScroll()
         {
             if(inventoryButtons.Length==0)return;var scroll=inventoryButtons[0].GetComponentInParent<ScrollRect>();if(!scroll)return;
@@ -79,7 +80,17 @@ namespace LabSorting.UI
             if(scroll.verticalScrollbar){var guard=scroll.verticalScrollbar.GetComponent<InventoryAutoScroll>();if(!guard)guard=scroll.verticalScrollbar.gameObject.AddComponent<InventoryAutoScroll>();guard.owner=autoScroll;}
         }
         public void ChangePage(int delta) {if(session.player.blocked)return;page=Mathf.Clamp(page+delta,0,pageCount-1);revision=-1;}
-        void Start() { ResolveSelectedCard();if(selectedCard)selectedCard.alpha=session.Active?1:.75f; if(previousPage)previousPage.onClick.AddListener(()=>ChangePage(-1));if(nextPage)nextPage.onClick.AddListener(()=>ChangePage(1)); for(int i=0;i<inventoryButtons.Length;i++){int index=i;inventoryButtons[i].onClick.AddListener(()=>SelectType(buttonTypes[index]));} }
+        void Start() { sortedProgress=GetComponent<SortedProgressFeedback>()??gameObject.AddComponent<SortedProgressFeedback>();sortedProgress.Bind(this);ResolveSelectedCard();if(selectedCard)selectedCard.alpha=session.Active?1:.75f; if(previousPage)previousPage.onClick.AddListener(()=>ChangePage(-1));if(nextPage)nextPage.onClick.AddListener(()=>ChangePage(1)); for(int i=0;i<inventoryButtons.Length;i++){int index=i;inventoryButtons[i].onClick.AddListener(()=>SelectType(buttonTypes[index]));} }
+        public void RenderSortedProgress(int count)
+        {
+            progress.text="LAB SORTING\nSorted "+count+" / "+session.items.Length+"    Remaining "+(session.items.Length-count);
+            if(compact)
+            {
+                float fraction=session.items.Length>0?(float)count/session.items.Length:0;
+                progress.text="SORTED  "+UIFormat.Count(count)+" / "+UIFormat.Count(session.items.Length);
+                if(progressFill)progress.text+="   "+(fraction<.1f?(fraction*100).ToString("0.0"):Mathf.FloorToInt(fraction*100).ToString())+"%";
+            }
+        }
         string TossText()
         {
             var rack=session.TossRack;float distance=Vector3.Distance(session.player.view.transform.position,rack.transform.position);
@@ -102,13 +113,11 @@ namespace LabSorting.UI
                 target.color=accepts?new Color(.35f,1,.55f):new Color(1,.45f,.4f);
             }
             if(revision==session.Revision&&wasBlocked==session.player.blocked) return; revision=session.Revision;wasBlocked=session.player.blocked;
-            progress.text="LAB SORTING\nSorted "+session.SortedCount+" / "+session.items.Length+"    Remaining "+(session.items.Length-session.SortedCount);
-            if(compact)
+            if(!sortedProgress||!sortedProgress.isActiveAndEnabled)
             {
-                // Thousands of items read as "no progress"; a percentage and a fill make every rack count.
+                RenderSortedProgress(session.SortedCount);
                 float fraction=session.items.Length>0?(float)session.SortedCount/session.items.Length:0;
-                progress.text="SORTED  "+UIFormat.Count(session.SortedCount)+" / "+UIFormat.Count(session.items.Length);
-                if(progressFill){progress.text+="   "+(fraction<.1f?(fraction*100).ToString("0.0"):Mathf.FloorToInt(fraction*100).ToString())+"%";progressFill.anchorMax=new Vector2(fraction,progressFill.anchorMax.y);progressFill.gameObject.SetActive(fraction>0);}
+                if(progressFill){progressFill.anchorMax=new Vector2(fraction,progressFill.anchorMax.y);progressFill.gameObject.SetActive(fraction>0);}
             }
             // Keep the held state explicit even when the floor is covered in similar items.
             if(activeIcon){activeIcon.sprite=session.Active?session.Active.definition.icon:null;activeIcon.enabled=activeIcon.sprite;}

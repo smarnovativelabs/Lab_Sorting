@@ -17,6 +17,8 @@ namespace LabSorting.Prototype
         static void Move(SortingSession s,Vector3 pos){s.player.Clear();s.player.character.Motor.BaseVelocity=Vector3.zero;s.player.character.Motor.SetPositionAndRotation(pos,Quaternion.identity);s.player.look.SetYawPitch(Vector2.zero);Physics.SyncTransforms();}
         public static IEnumerator Run(SortingSession s,Action<bool,string> check)
         {
+            // Cover the supported single-item/hold mode; GameplayFeelChecks covers default batch mode.
+            bool originalBatch=s.batchPlacement;s.batchPlacement=false;
             var initial=s.Capture();var floor=GameObject.CreatePrimitive(PrimitiveType.Cube);floor.name="Temporary interaction test floor";floor.transform.position=new Vector3(40,-.15f,0);floor.transform.localScale=new Vector3(10,.3f,10);
             var a=s.items[0];var b=s.items[5];var c=s.items[10];
             InputSettings originalInputSettings=null;InputSettings testInputSettings=null;Keyboard testKeyboard=null;var originalBType=b.definition;var originalSlots=s.racks[2].slots;
@@ -69,7 +71,7 @@ namespace LabSorting.Prototype
                 placeSetup();yield return Wait(.3f);InputSystem.QueueStateEvent(testKeyboard,new KeyboardState(Key.F));yield return Until(()=>rack.Count==3);InputSystem.QueueStateEvent(testKeyboard,new KeyboardState());yield return Wait(.1f);check(rack.Count==3&&!s.Holding,"Keyboard F hold places and releases");
                 placeSetup();yield return Wait(.3f);InputSystem.QueueStateEvent(testKeyboard,new KeyboardState(Key.Q));yield return Wait(.9f);InputSystem.QueueStateEvent(testKeyboard,new KeyboardState());yield return Wait(.1f);check(s.carried.Count==2,"Holding keyboard Q still throws only once");
             }
-            finally{if(testKeyboard!=null)InputSystem.RemoveDevice(testKeyboard);if(originalInputSettings)InputSystem.settings=originalInputSettings;if(testInputSettings)UnityEngine.Object.Destroy(testInputSettings);b.definition=originalBType;s.racks[2].slots=originalSlots;s.player.SetBlocked(false);s.CancelHold();s.Restore(initial);floor.SetActive(false);UnityEngine.Object.Destroy(floor);}
+            finally{s.batchPlacement=originalBatch;if(testKeyboard!=null)InputSystem.RemoveDevice(testKeyboard);if(originalInputSettings)InputSystem.settings=originalInputSettings;if(testInputSettings)UnityEngine.Object.Destroy(testInputSettings);b.definition=originalBType;s.racks[2].slots=originalSlots;s.player.SetBlocked(false);s.CancelHold();s.Restore(initial);floor.SetActive(false);UnityEngine.Object.Destroy(floor);}
         }
     }
 }

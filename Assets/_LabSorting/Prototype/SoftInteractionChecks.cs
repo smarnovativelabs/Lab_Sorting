@@ -35,7 +35,8 @@ namespace LabSorting.Prototype
                 foreach(float x in new[]{-.7f,0,.7f})foreach(float y in new[]{.25f,.5f,.9f,1.15f,1.6f})
                 {
                     var target=rack.transform.TransformPoint(x,y,0);s.player.look.SnapToDirection(target-s.player.view.transform.position);yield return Wait(.08f);s.RefreshTarget();ui.Refresh();
-                    Check(s.TargetRack==rack&&ui.place.alpha==1,"Rack silhouette stays targetable at "+x+", "+y);
+                    bool direct=Physics.Raycast(s.player.view.transform.position,s.player.view.transform.forward,out var hit,s.reach,~(1<<2),QueryTriggerInteraction.Ignore);
+                    Check(s.TargetRack==rack&&ui.place.alpha==1,"Rack silhouette stays targetable at "+x+", "+y+" [eye="+s.player.view.transform.position+" aim="+s.player.view.transform.forward+" target="+target+" hit="+(direct?hit.collider.name:"none")+" rack="+(s.TargetRack?s.TargetRack.name:"none")+" place="+ui.place.alpha+" blocked="+s.player.blocked+"]");
                 }
                 var behind=Box(root.transform,"Second rack behind a gap",new Vector3(0,1,3.4f),new Vector3(1.8f,2,.05f));
                 var backRack=behind.AddComponent<SortRack>();backRack.slots=new[]{slot};backRack.Initialize();s.racks=new[]{rack,backRack};Physics.SyncTransforms();

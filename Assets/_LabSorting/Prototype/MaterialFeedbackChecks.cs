@@ -25,8 +25,10 @@ namespace LabSorting.Prototype
                 var item=s.items[0];Check(s.TryPick(item),"Pick actual item");DOTween.CompleteAll();yield return new WaitForSeconds(.1f);
                 int celebrations=f.Celebrations,sounds=f.PlayedSounds;var color=label.color;var scale=label.transform.localScale;
                 Check(s.TryPlace(rack),"Place final rack item");Check(f.LastPlacedDefinition==item.definition,"Sound uses placed item, not next inventory selection");
-                Check(f.Celebrations==celebrations+1&&f.PlayedSounds>=sounds+1,"Completion event plays feedback");
-                yield return new WaitForSeconds(.3f);Check(label.color!=color,"Label glow animates");
+                Check(f.Celebrations==celebrations&&f.PlayedSounds==sounds,"Placement and completion feedback wait for arrival");
+                yield return new WaitForSeconds(.5f);
+                Check(f.Celebrations==celebrations+1&&f.PlayedSounds>=sounds+1,"Arrival plays placement and completion feedback");
+                Check(label.color!=color,"Label glow animates after arrival");
                 f.SetSound(false,false);foreach(var audio in f.GetComponents<AudioSource>())Check(!audio.isPlaying,"Mute stops all feedback sources");
                 float deadline=Time.realtimeSinceStartup+5;while(f.IsCelebrating&&Time.realtimeSinceStartup<deadline)yield return null;
                 Check(!f.IsCelebrating&&label.color==color&&label.transform.localScale==scale,"Glow restores label exactly (color="+label.color+", scale="+label.transform.localScale+")");

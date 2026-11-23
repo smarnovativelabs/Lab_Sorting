@@ -15,7 +15,8 @@ namespace LabSorting.Sorting
         [Range(0,.15f)] public float targetSwitchDelay=.075f;
         public bool TryTouchPick(Vector2 screen)
         {
-            if(!Ready())return false;
+            // A deliberate screen tap can start the next pickup while the previous item is flying.
+            if(player.blocked)return false;
             // An item under the crosshair (outlined, PICK showing) wins a tap anywhere on the camera area.
             // Resolve the aim at the tap, not the target cached by the last frame.
             RefreshTarget();
@@ -130,8 +131,8 @@ namespace LabSorting.Sorting
                 return;
             }
             holdPlace=place;holdType=place?(Active?Active.definition:null):(TargetItem?TargetItem.definition:null);holdRack=TargetRack;
-            bool success=place?TryPlace(TargetRack):TryPick(TargetItem);
-            holding=success;repeatAt=Time.unscaledTime+Mathf.Max(.3f,holdDelay);
+            bool success=place?PlaceMatching(TargetRack):TryPick(TargetItem);
+            holding=success&&(!place||!batchPlacement);repeatAt=Time.unscaledTime+Mathf.Max(.3f,holdDelay);
         }
         public void EndHold(bool place){if(bufferedTap&&bufferedPlace==place)bufferedRepeat=false;if(holding&&holdPlace==place)CancelHold();}
         public int HoldGeneration {get;private set;}
@@ -143,9 +144,9 @@ namespace LabSorting.Sorting
             if(!valid){bool expired=Time.unscaledTime>bufferedUntil;CancelHold();BufferedTapState=expired?TapBufferState.Expired:TapBufferState.TargetChanged;return;}
             if(!Ready()||(bufferedPlace&&Active.Moving))return;
             bool place=bufferedPlace,repeat=bufferedRepeat;var type=bufferedType;var rack=bufferedRack;bufferedTap=false;
-            bool success=place?TryPlace(rack):TryPick(bufferedItem);
+            bool success=place?PlaceMatching(rack):TryPick(bufferedItem);
             BufferedTapState=success?TapBufferState.Completed:TapBufferState.Rejected;
-            holding=success&&repeat;holdPlace=place;holdType=type;holdRack=rack;repeatAt=Time.unscaledTime+Mathf.Max(.3f,holdDelay);
+            holding=success&&repeat&&(!place||!batchPlacement);holdPlace=place;holdType=type;holdRack=rack;repeatAt=Time.unscaledTime+Mathf.Max(.3f,holdDelay);
             bufferedItem=null;bufferedRack=null;bufferedType=null;
         }
         void TickHold()

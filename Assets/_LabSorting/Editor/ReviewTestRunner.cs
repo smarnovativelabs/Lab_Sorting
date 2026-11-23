@@ -10,6 +10,11 @@ namespace LabSorting.Editor
     {
         static TestRunnerApi api;
         static string reportPath="Logs/ReviewTests.xml";
+        public static void RunTourProfile(){RunSelected(new[]{"DesignerTourFrameProfile"},"Logs/TourProfileTests.xml");}
+        public static void RunPerformanceAudit()
+        {
+            RunSelected(new[]{"DesignerTourFrameProfile","DesignerFirstLaunchTour","DesignerDevicePerformance","StressCatalogPerformance","CoreSortingAndController","DesignerFrontOnlyDrop","DesignerFullFlight","DesignerFloatingItems","DesignerMaterialFeedback","DesignerAssetsAndGameplay","DesignerGuidedTutorial","DesignerGuidedTutorialLowFrameRate","MainMenuAutomaticallyLoadsDesignerScene","CompleteFirstLaunchFlow","ItemShadowsDisabledInScenesAndPrefabs","PlayerPrefabHasNoPrototypeDependencies"},"Logs/PerformanceAuditTests.xml");
+        }
         public static void RunTutorial(){RunSelected(new[]{"DesignerGuidedTutorial","DesignerGuidedTutorialLowFrameRate"},"Logs/FullTutorialTests.xml");}
         public static void RunReadability(){RunSelected(new[]{"DesignerReadabilityTutorial","HeldItemSizing"},"Logs/ReadabilityTests.xml");}
         public static void RunAppleCommerce(){RunSelected(new[]{"AppleCashPurchasesAndRestore"},"Logs/AppleCommerceTests.xml");}

@@ -50,7 +50,7 @@ namespace LabSorting.Player
             {
                 if(!child.gameObject.activeInHierarchy)continue;
                 var item=child.GetComponent<LabSorting.Sorting.SortItem>();
-                if(item&&item.location==LabSorting.Sorting.ItemLocation.Hand){active=item;break;}
+                if(item&&item.location==LabSorting.Sorting.ItemLocation.Hand)active=item;
             }
             if(active!=displayedItem)
             {

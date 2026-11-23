@@ -16,14 +16,15 @@ namespace LabSorting.UI
         bool cleanupMode;
         int cleanupRevision=-1;
         SortItem focusItem;float focusStarted,focusYaw,focusPitch;
-        void OnEnable(){if(session)session.SearchStarted+=FocusSearch;}
-        void OnDisable(){if(session)session.SearchStarted-=FocusSearch;focusItem=null;}
+        void OnEnable(){if(session){session.SearchStarted+=FocusSearch;session.VisualsReset+=CancelFocus;session.Backgrounded+=CancelFocus;}}
+        void OnDisable(){if(session){session.SearchStarted-=FocusSearch;session.VisualsReset-=CancelFocus;session.Backgrounded-=CancelFocus;}CancelFocus();}
+        void CancelFocus(){focusItem=null;nextScan=0;cleanupRevision=-1;}
         void FocusSearch(ItemDefinition type,int count){focusItem=session.NearestSearchResult();focusStarted=Time.unscaledTime;focusYaw=session.player.look.Yaw;focusPitch=session.player.look.Pitch;nextScan=0;}
         void Update()
         {
             if(!focusItem)return;
             var player=session.player;
-            if(player.blocked||player.LastLookInputTime>=focusStarted||player.Move.sqrMagnitude>.01f||focusItem.location!=ItemLocation.Loose){focusItem=null;return;}
+            if(player.blocked||session.SearchType!=focusItem.definition||player.LastLookInputTime>=focusStarted||player.Move.sqrMagnitude>.01f||focusItem.location!=ItemLocation.Loose){focusItem=null;return;}
             var delta=focusItem.visual.bounds.center-player.view.transform.position;
             float yaw=Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg,pitch=-Mathf.Atan2(delta.y,new Vector2(delta.x,delta.z).magnitude)*Mathf.Rad2Deg;
             float duration=Mathf.Max(.65f,Mathf.Abs(Mathf.DeltaAngle(focusYaw,yaw))/100f);

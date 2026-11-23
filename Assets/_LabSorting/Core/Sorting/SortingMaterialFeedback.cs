@@ -6,6 +6,7 @@ namespace LabSorting.Sorting
     {
         public AudioClip glassPlace,plasticPlace,metalPlace,rackChime;
         public int Celebrations {get;private set;}
+        public event System.Action<SortRack> RackCelebrated;
         public bool IsCelebrating=>shine!=null&&shine.IsActive()&&shine.IsPlaying();
         public ItemDefinition LastPlacedDefinition=>lastPlaced;
         ItemDefinition lastPlaced;
@@ -27,6 +28,7 @@ namespace LabSorting.Sorting
         {
             if(!isActiveAndEnabled||!rack)return;
             StopCelebration();Celebrations++;
+            RackCelebrated?.Invoke(rack);
             completedRackFeedback=rack.GetComponent<RackTargetFeedback>()??rack.gameObject.AddComponent<RackTargetFeedback>();completedRackFeedback.CompletionPulse(rack);
             if(rack.label)
             {
