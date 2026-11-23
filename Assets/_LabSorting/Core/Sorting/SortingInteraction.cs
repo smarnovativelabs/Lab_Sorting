@@ -16,7 +16,7 @@ namespace LabSorting.Sorting
         public bool TryTouchPick(Vector2 screen)
         {
             // A deliberate screen tap can start the next pickup while the previous item is flying.
-            if(player.blocked)return false;
+            if(player.blocked||player.PickTutorialLocked)return false;
             // An item under the crosshair (outlined, PICK showing) wins a tap anywhere on the camera area.
             // Resolve the aim at the tap, not the target cached by the last frame.
             RefreshTarget();

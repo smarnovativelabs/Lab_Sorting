@@ -7,7 +7,7 @@ namespace LabSorting.UI
     // First-run tutorial. Each step waits for the player to really do it. An animated hand shows which on-screen
     // control to use: it drags on the joystick or look area, taps a button, or points at the aim cross in the middle.
     // The hand only ever sits on fixed screen controls, so it never slides around when the camera turns, and it gets
-    // out of the way while the player is using the control it demonstrates. Never blocks input.
+    // out of the way while the player is using the control it demonstrates. The Pick step temporarily allows only the PICK button.
     public sealed partial class GuidedTutorial : MonoBehaviour
     {
         public enum Step { Move, Look, Pick, Place, Throw, Tools, Done }
@@ -41,7 +41,7 @@ namespace LabSorting.UI
 
         void Awake(){if(area&&area.parent)aimCrosshair=area.parent.Find("Crosshair") as RectTransform;Hide();}
         void OnEnable(){Canvas.willRenderCanvases+=RefreshPointerLayout;if(IsRunning){Subscribe();SetToolModal(Current==Step.Tools);}}
-        void OnDisable(){Canvas.willRenderCanvases-=RefreshPointerLayout;Unsubscribe();HideRackGuide();SetToolModal(false);}
+        void OnDisable(){Canvas.willRenderCanvases-=RefreshPointerLayout;Unsubscribe();HidePickGuide();HideRackGuide();SetToolModal(false);}
         // Safe-area/canvas geometry may change after Update (resize, camera handoff).
         // Resolve the fingertip against the final control geometry just before rendering.
         void RefreshPointerLayout(){if(toolModal)UpdateToolHighlight();if(IsRunning&&session&&!session.player.NetworkBlocked&&(!session.player.blocked||toolModal)){if(Mode==HandMode.Tap&&pointedControl)Tap(pointedControl);else if(Mode==HandMode.Aim)Aim();}}
@@ -65,7 +65,7 @@ namespace LabSorting.UI
         void Stop(){IsRunning=false;Unsubscribe();Hide();}
         void Enter(Step step)
         {
-            Current=step;fresh=true;lastActivity=-99;nextThrowCheck=0;canThrow=false;
+            HidePickGuide();Current=step;fresh=true;lastActivity=-99;nextThrowCheck=0;canThrow=false;
             if(step==Step.Look)lookGestureAt=Time.unscaledTime+.35f;
             if(step==Step.Done)
             {
@@ -114,6 +114,7 @@ namespace LabSorting.UI
             if(actions&&actions.PickVisible)lastPickTarget=Time.unscaledTime;
             if(RackReady())lastRackTarget=Time.unscaledTime;
             bool blocked=session.player.NetworkBlocked||(session.player.blocked&&!session.player.TutorialBlocked);
+            if(blocked)HidePickGuide();
             UpdateRackGuide(blocked);
             group.alpha=blocked?0:1;group.blocksRaycasts=!blocked;
             if(Current==Step.Done){SetHand(HandMode.Hidden);SetText();FadeHand();if(Time.unscaledTime>=hideAt)Stop();return;}
@@ -151,7 +152,7 @@ namespace LabSorting.UI
         }
         // Aiming at an item shows PICK; otherwise the hand points at the aim cross. Short gaps (moving over a pile)
         // keep the hand where it is, so it does not flicker between the two.
-        void ShowPick(){if(Recent(lastPickTarget))Tap(pickButton);else Aim();}
+        void ShowPick(){if(Current==Step.Pick&&UpdatePickGuide())return;if(Recent(lastPickTarget))Tap(pickButton);else Aim();}
         bool Recent(float time)=>Time.unscaledTime-time<=TargetGrace;
         bool RackReady()=>session.TargetRack&&session.Active&&!session.Active.Moving&&session.TargetRack.CanAccept(session.Active.definition);
 
@@ -227,7 +228,7 @@ namespace LabSorting.UI
             {
                 case Step.Move: return "Use the joystick to walk around the lab."+(pc?"  (W A S D)":"");
                 case Step.Look: return "Drag on the right side of the screen to look around."+(pc?"  (drag with mouse or touchpad)":"");
-                case Step.Pick: return Mode==HandMode.Tap?"Tap PICK to grab the item you are aiming at."+(pc?"  (E)":""):"Aim the + at any item on the floor. PICK appears when you can grab it.";
+                case Step.Pick: if(pickGuideTarget)return pickGuideReady?"Tap PICK to grab this item.":"Looking at a nearby item..."; return Mode==HandMode.Tap?"Tap PICK to grab the item you are aiming at."+(pc?"  (E)":""):"Aim the + at any item on the floor. PICK appears when you can grab it.";
                 case Step.Place:
                     if(!carrying)return "Pick up an item first.";
                     return Mode==HandMode.Tap?"Tap PLACE. The first item on a rack decides what that rack holds."+(pc?"  (F)":""):GuidedRack?"Walk to the marked rack ("+Mathf.CeilToInt(Vector3.Distance(session.player.transform.position,GuidedRack.transform.position))+" m), then aim the + anywhere on it.":"Find an empty rack on this floor, or one holding the same item.";
@@ -239,7 +240,7 @@ namespace LabSorting.UI
                 default: return paid?"Well done! +$"+reward+"\nNow sort every item to finish the lab.":"Well done!\nNow sort every item to finish the lab.";
             }
         }
-        void Hide(){SetToolModal(false);HideRackGuide();Mode=HandMode.Hidden;handAlpha=0;if(hand)hand.gameObject.SetActive(false);if(group){group.alpha=0;group.blocksRaycasts=false;}}
+        void Hide(){HidePickGuide();SetToolModal(false);HideRackGuide();Mode=HandMode.Hidden;handAlpha=0;if(hand)hand.gameObject.SetActive(false);if(group){group.alpha=0;group.blocksRaycasts=false;}}
     }
 }
 

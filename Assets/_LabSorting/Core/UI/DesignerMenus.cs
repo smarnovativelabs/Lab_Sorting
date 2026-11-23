@@ -30,7 +30,7 @@ namespace LabSorting.UI
         public bool IsOpen=>pauseRoot.activeSelf||storeRoot.activeSelf;
         void Open(GameObject root)
         {
-            if(IsOpen||session.player.blocked)return;
+            if(IsOpen||session.player.blocked||session.player.PickTutorialLocked)return;
             previousBlocked=session.player.blocked;previousCursor=Cursor.lockState;previousCursorVisible=Cursor.visible;
             session.CancelHold();session.player.SetBlocked(true);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
             root.SetActive(true);root.transform.SetAsLastSibling();

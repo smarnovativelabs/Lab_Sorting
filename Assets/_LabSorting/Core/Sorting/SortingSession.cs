@@ -54,9 +54,10 @@ namespace LabSorting.Sorting
             UpdateRackHints();
             if(saveAt>=0 && Time.unscaledTime>=saveAt) { saveAt=-1; RequestSave(); }
             if(player.blocked) { CancelPendingDrop();CancelHold(); ClearTarget(); return; }
+            if(player.PickTutorialLocked){CancelHold();CancelPendingDrop();}
             RefreshTarget();RefreshToss();
             var key=Keyboard.current;
-            if(key!=null)
+            if(key!=null&&!player.PickTutorialLocked)
             {
                 if(key.eKey.wasPressedThisFrame) BeginHold(false);
                 if(key.fKey.wasPressedThisFrame) BeginHold(true);

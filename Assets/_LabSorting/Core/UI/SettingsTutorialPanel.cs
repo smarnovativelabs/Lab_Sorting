@@ -63,13 +63,13 @@ namespace LabSorting.UI
         }
         void Show()
         {
-            if(IsOpen||session.player.TutorialBlocked)return;
+            if(IsOpen||(session.player.TutorialBlocked||session.player.PickTutorialLocked))return;
             var progress=GetComponent<ItemsProgressPanel>();if(progress&&progress.IsOpen)progress.Close();
             previousBlocked=session.player.blocked;previousCursor=Cursor.lockState;previousVisible=Cursor.visible;
             session.CancelHold();session.player.SetBlocked(true);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
             IsOpen=true;root.SetActive(true);root.transform.SetAsLastSibling();
         }
-        public void OpenSettings(){if(session.player.TutorialBlocked)return;var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;Show();ShowingTutorial=false;title.text="SETTINGS";settingsContent.SetActive(true);tutorialContent.SetActive(false);RefreshSettings();}
+        public void OpenSettings(){if((session.player.TutorialBlocked||session.player.PickTutorialLocked))return;var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;Show();ShowingTutorial=false;title.text="SETTINGS";settingsContent.SetActive(true);tutorialContent.SetActive(false);RefreshSettings();}
         public void ReplayTutorial(){var guided=Guided;if(guided){Close();guided.Begin(true);}else OpenTutorial(true);}
         public void OpenHowToPlay(){OpenTutorial(true);}
         public void OpenTutorial(bool restart)

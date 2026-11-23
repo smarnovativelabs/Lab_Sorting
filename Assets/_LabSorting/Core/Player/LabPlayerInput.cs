@@ -18,8 +18,10 @@ namespace LabSorting.Player
         bool focused = true;
         bool requestedBlocked;
         public bool NetworkBlocked {get;private set;} public bool TutorialBlocked {get;private set;} public void SetTutorialBlocked(bool value){TutorialBlocked=value;blocked=requestedBlocked||NetworkBlocked||value;Clear();}
-        public void SetMove(Vector2 value) { Move = blocked ? Vector2.zero : Vector2.ClampMagnitude(value, 1); }
-        public void AddLook(Vector2 value) { if (!blocked && focused){drag += value * touchSensitivity;if(value.sqrMagnitude>.01f)LastLookInputTime=Time.unscaledTime;} }
+        public bool PickTutorialLocked { get; private set; }
+        public void SetPickTutorialLocked(bool value) { PickTutorialLocked=value; Clear(); }
+        public void SetMove(Vector2 value) { Move = blocked || PickTutorialLocked ? Vector2.zero : Vector2.ClampMagnitude(value, 1); }
+        public void AddLook(Vector2 value) { if (!blocked && !PickTutorialLocked && focused){drag += value * touchSensitivity;if(value.sqrMagnitude>.01f)LastLookInputTime=Time.unscaledTime;} }
         public void SetBlocked(bool value) { requestedBlocked=value;blocked = value||NetworkBlocked||TutorialBlocked; Clear(); }
         public void SetNetworkBlocked(bool value){if(value&&!NetworkBlocked)requestedBlocked=blocked&&!TutorialBlocked;NetworkBlocked=value;blocked=requestedBlocked||value||TutorialBlocked;Clear();}
         public void Clear() { Move = drag = Vector2.zero; if(character) character.CancelPendingJump(); }
@@ -32,7 +34,7 @@ namespace LabSorting.Player
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; Clear(); }
             Vector2 movement = Move;
-            if (focused && !blocked)
+            if (focused && !blocked && !PickTutorialLocked)
             {
                 if (keyboard != null)
                     movement += new Vector2((keyboard.dKey.isPressed?1:0)-(keyboard.aKey.isPressed?1:0), (keyboard.wKey.isPressed?1:0)-(keyboard.sKey.isPressed?1:0));

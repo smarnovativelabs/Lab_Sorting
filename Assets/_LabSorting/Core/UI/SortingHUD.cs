@@ -103,13 +103,13 @@ namespace LabSorting.UI
             if(!autoScroll&&designerSkin)SetupAutoScroll();
             if(autoScroll&&session.player.blocked)autoScroll.Cancel();
             var rack=session.TargetRack;
-            target.text=session.player.blocked?"":rack&&session.Active&&rack.Type==session.Active.definition&&rack.AvailabilityHint.Length>0?rack.AvailabilityHint:session.TargetItem?session.TargetItem.definition.displayName:rack?(rack.Type?rack.Type.displayName:"Empty rack — assign selected item"):session.TossRack?TossText():"";
+            target.text=session.player.blocked?"":rack&&session.Active&&rack.Type==session.Active.definition&&rack.AvailabilityHint.Length>0?rack.AvailabilityHint:session.TargetItem?session.TargetItem.definition.displayName:rack?(rack.Type?rack.Type.displayName:"Empty rack — place any item here"):session.TossRack?TossText():"";
             if(targetBackdrop)targetBackdrop.enabled=target.text.Length>0;
             target.color=session.TargetItem?SortItem.HoverLabelColor:Color.white;
             if(!session.player.blocked&&rack&&session.Active)
             {
                 bool accepts=rack.CanAccept(session.Active.definition);
-                target.text=accepts?"PLACE — "+session.Active.definition.displayName:rack.Type&&rack.Type!=session.Active.definition?"Wrong item — "+rack.Type.displayName:rack.CapacityFor(session.Active.definition)==0?"Too big for this rack":"Rack full";
+                target.text=accepts?"Place "+session.Active.definition.displayName+" here":rack.Type&&rack.Type!=session.Active.definition?"This rack only accepts "+rack.Type.displayName:rack.CapacityFor(session.Active.definition)==0?"Too big for this rack":"Rack full";
                 target.color=accepts?new Color(.35f,1,.55f):new Color(1,.45f,.4f);
             }
             if(revision==session.Revision&&wasBlocked==session.player.blocked) return; revision=session.Revision;wasBlocked=session.player.blocked;

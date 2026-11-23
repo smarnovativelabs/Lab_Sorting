@@ -35,7 +35,7 @@ namespace LabSorting.UI
         {
             var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;
             var settings=GetComponent<SettingsTutorialPanel>();if(settings&&settings.IsOpen)return;
-            if(session.player.TutorialBlocked||IsOpen) return;session.CancelHold();previousBlocked=session.player.blocked;session.player.SetBlocked(true);IsOpen=true;
+            if((session.player.TutorialBlocked||session.player.PickTutorialLocked)||IsOpen) return;session.CancelHold();previousBlocked=session.player.blocked;session.player.SetBlocked(true);IsOpen=true;
             previousCursor=Cursor.lockState;previousCursorVisible=Cursor.visible;Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
             root.SetActive(true);root.transform.SetAsLastSibling();page=0;Refresh();
             fade?.Kill();scale?.Kill();group.alpha=0;card.localScale=Vector3.one*.97f;
