@@ -43,6 +43,8 @@ namespace LabSorting.Sorting
             try
             {
                 output.Write("{\"version\":");Int(snapshot.version);
+                output.Write(",\"savedAreaId\":");String(snapshot.savedAreaId);
+                output.Write(",\"savedContentVersion\":");Int(snapshot.savedContentVersion);
                 output.Write(",\"completedArea\":");String(snapshot.completedArea);
                 output.Write(",\"completionCount\":");Int(snapshot.completionCount);
                 output.Write(",\"completedContentVersion\":");Int(snapshot.completedContentVersion);

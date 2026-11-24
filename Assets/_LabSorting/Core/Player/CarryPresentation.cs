@@ -11,6 +11,7 @@ namespace LabSorting.Player
         int mask;
         RectTransform selectedCard;
         LabSorting.UI.ContextActionHUD actions;
+        LabSorting.Sorting.SortingSession session;
         readonly Vector3[] uiCorners=new Vector3[4];
         public Rect HeldScreenRect {get;private set;}
         public Rect HeldSafeRect {get;private set;}
@@ -52,6 +53,7 @@ namespace LabSorting.Player
                 var item=child.GetComponent<LabSorting.Sorting.SortItem>();
                 if(item&&item.location==LabSorting.Sorting.ItemLocation.Hand)active=item;
             }
+            if(session&&session.Active&&session.Active.transform.parent==transform&&session.Active.gameObject.activeInHierarchy)active=session.Active;
             if(active!=displayedItem)
             {
                 RestoreHeldVisual();displayedItem=active;
@@ -85,6 +87,7 @@ namespace LabSorting.Player
         }
         void Start()
         {
+            session=FindFirstObjectByType<LabSorting.Sorting.SortingSession>();
             actions=FindFirstObjectByType<LabSorting.UI.ContextActionHUD>();
             foreach(var rect in FindObjectsByType<RectTransform>(FindObjectsInactive.Include,FindObjectsSortMode.None))
                 if(rect.name=="SelectedItemCard"){selectedCard=rect;break;}
@@ -97,15 +100,36 @@ namespace LabSorting.Player
             foreach(var corner in uiCorners){var p=RectTransformUtility.WorldToScreenPoint(camera,corner);min=Vector2.Min(min,p);max=Vector2.Max(max,p);}
             return Rect.MinMaxRect(min.x,min.y,max.x,max.y);
         }
-        Rect ProjectBounds(Bounds bounds)
+        Rect ProjectBounds(Renderer visual)
         {
+            var bounds=visual.localBounds;
             Vector2 min=Vector2.one*float.MaxValue,max=Vector2.one*float.MinValue;
-            for(int i=0;i<8;i++){var p=view.WorldToScreenPoint(bounds.center+Vector3.Scale(bounds.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1)));min=Vector2.Min(min,p);max=Vector2.Max(max,p);}
+            for(int i=0;i<8;i++){var p=view.WorldToScreenPoint(visual.transform.TransformPoint(bounds.center+Vector3.Scale(bounds.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1))));min=Vector2.Min(min,p);max=Vector2.Max(max,p);}
             return Rect.MinMaxRect(min.x,min.y,max.x,max.y);
+        }
+        public struct HeldPose
+        {
+            public Vector3 position,scale;
+            public Quaternion rotation;
+            public void Apply(Transform item){item.localPosition=position;item.localRotation=rotation;item.localScale=scale;}
+        }
+        // Resolve against the actual model and current camera/UI, without leaving the
+        // item at the trial pose. Flights and the settled display share this endpoint.
+        public HeldPose ResolveHeldPose(LabSorting.Sorting.SortItem item)
+        {
+            var t=item.transform;
+            var previous=new HeldPose{position=t.localPosition,rotation=t.localRotation,scale=t.localScale};
+            try
+            {
+                t.localPosition=Vector3.zero;t.localRotation=Quaternion.Euler(-20,-20,-5);
+                t.localScale=item.originalScale*item.CarryScale*ClearanceScale;
+                if(view&&item.visual)FitHeldItem(item);
+                return new HeldPose{position=t.localPosition,rotation=t.localRotation,scale=t.localScale};
+            }
+            finally{previous.Apply(t);}
         }
         void FitHeldItem(LabSorting.Sorting.SortItem item)
         {
-            if(!item.visual||item.Moving)return;
             float padding=Screen.height*.018f;
             float left=Screen.width*.52f,right=Screen.width*.82f;
             if(selectedCard)left=Mathf.Max(left,ScreenRect(selectedCard).xMax+padding);
@@ -118,11 +142,14 @@ namespace LabSorting.Player
             // Use the open space above controls on unusually narrow layouts.
             float bottom=Screen.height*.13f,top=Screen.height*.46f;
             if(right-left<Screen.height*.12f){left=Screen.width*.52f;right=Screen.width*.80f;bottom=Screen.height*.48f;top=Screen.height*.72f;}
+            var safe=Screen.safeArea;
+            left=Mathf.Max(left,safe.xMin+padding);right=Mathf.Max(left+1,Mathf.Min(right,safe.xMax-padding));
+            bottom=Mathf.Max(bottom,safe.yMin+padding);top=Mathf.Max(bottom+1,Mathf.Min(top,safe.yMax-padding));
             HeldSafeRect=Rect.MinMaxRect(left,bottom,right,top);
-            var projected=ProjectBounds(item.visual.bounds);
+            var projected=ProjectBounds(item.visual);
             float multiplier=item.definition?Mathf.Max(1,item.definition.heldSizeMultiplier):1;
-            float height=Screen.height*.23f*multiplier,fill=Mathf.Min(.95f,.86f*multiplier);
-            float size=Mathf.Min(HeldSafeRect.width*fill,height);
+            float height=Screen.height*.26f*multiplier,fill=Mathf.Min(.95f,.9f*multiplier);
+            float size=HeldSafeRect.width*fill;
             float factor=Mathf.Min(size/Mathf.Max(1,projected.width),Mathf.Min(height,HeldSafeRect.height*fill)/Mathf.Max(1,projected.height));
             item.transform.localScale*=Mathf.Clamp(factor,.1f,3f);
             // Center visible geometry, not the imported model's arbitrary pivot.
@@ -131,16 +158,24 @@ namespace LabSorting.Player
             item.transform.position+=view.ScreenToWorldPoint(destination)-view.ScreenToWorldPoint(center);
             // Scaling and moving an offset model changes its perspective bounds. Refit
             // the projected rectangle, so wide microscopes cannot spill into the HUD.
-            for(int pass=0;multiplier>1&&pass<4;pass++)
+            for(int pass=0;pass<4;pass++)
             {
-                var fitted=ProjectBounds(item.visual.bounds);
+                var fitted=ProjectBounds(item.visual);
                 float refit=Mathf.Min(size/Mathf.Max(1,fitted.width),Mathf.Min(height,HeldSafeRect.height*fill)/Mathf.Max(1,fitted.height));
                 item.transform.localScale*=Mathf.Clamp(refit,.1f,3f);
-                fitted=ProjectBounds(item.visual.bounds);
+                fitted=ProjectBounds(item.visual);
                 float depth=view.WorldToScreenPoint(item.visual.bounds.center).z;
                 item.transform.position+=view.ScreenToWorldPoint(new Vector3(HeldSafeRect.center.x,HeldSafeRect.center.y,depth))-view.ScreenToWorldPoint(new Vector3(fitted.center.x,fitted.center.y,depth));
             }
-            HeldScreenRect=ProjectBounds(item.visual.bounds);
+            // Keep the complete geometry inside the same clearance envelope as the
+            // wall probe. Shrink about its visible center, not an arbitrary pivot.
+            var bounds=item.visual.localBounds;var centerWorld=item.visual.transform.TransformPoint(bounds.center);
+            float radius=0;
+            for(int i=0;i<8;i++)radius=Mathf.Max(radius,Vector3.Distance(centerWorld,item.visual.transform.TransformPoint(bounds.center+Vector3.Scale(bounds.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1)))));
+            float centerDepth=view.WorldToScreenPoint(centerWorld).z;
+            float limit=Mathf.Min(.18f*ClearanceScale,Mathf.Max(.001f,centerDepth-view.nearClipPlane-.015f));
+            if(radius>limit){item.transform.localScale*=limit/radius;item.transform.position+=centerWorld-item.visual.transform.TransformPoint(bounds.center);}
+            HeldScreenRect=ProjectBounds(item.visual);
         }
         public float ClearanceScale {get;private set;}=1;
         void Awake(){rest=transform.localPosition;mask=~((1<<2)|LayerMask.GetMask("SortingItem","HeldItem"));}
@@ -164,8 +199,7 @@ namespace LabSorting.Player
             {
                 if(!child.gameObject.activeSelf)continue;
                 var item=child.GetComponent<LabSorting.Sorting.SortItem>();if(!item||item.location!=LabSorting.Sorting.ItemLocation.Hand)continue;
-                if((!item.Moving&&!item.Presenting)||ClearanceScale<1)child.localScale=item.originalScale*item.CarryScale*ClearanceScale;
-                if(!item.Moving&&!item.Presenting){child.localPosition=Vector3.zero;child.localRotation=Quaternion.Euler(-20,-20,-5);FitHeldItem(item);}
+                item.RefreshHeldPresentation(this);
             }
         }
         public Vector3 MagnetEntry(float delay)

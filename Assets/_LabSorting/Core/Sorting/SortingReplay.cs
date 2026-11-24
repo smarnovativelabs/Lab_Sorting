@@ -11,8 +11,9 @@ namespace LabSorting.Sorting
         public bool HasCompletedArea=>CompletionCount>0;
         bool runCompletionRecorded;
         Snapshot replayLayout;
-        void RecordAreaCompletion(bool telemetry=true){if(runCompletionRecorded)return;runCompletionRecorded=true;CompletedArea=areaId;CompletionCount++;CompletedContentVersion=contentVersion;if(telemetry)LabSorting.Services.LabTelemetry.Event("area_completed",areaId,CompletionCount);}
-        void CaptureCompletionHistory(Snapshot data){data.completedArea=CompletedArea;data.completionCount=CompletionCount;data.completedContentVersion=CompletedContentVersion;data.runCompletionRecorded=runCompletionRecorded;}
+        void RecordAreaCompletion(bool telemetry=true){if(runCompletionRecorded){CompletedContentVersion=System.Math.Max(CompletedContentVersion,contentVersion);return;}runCompletionRecorded=true;CompletedArea=areaId;CompletionCount++;CompletedContentVersion=contentVersion;if(telemetry)LabSorting.Services.LabTelemetry.Event("area_completed",areaId,CompletionCount);}
+        void CaptureCompletionHistory(Snapshot data){data.savedAreaId=areaId;data.savedContentVersion=contentVersion;data.completedArea=CompletedArea;data.completionCount=CompletionCount;data.completedContentVersion=CompletedContentVersion;data.runCompletionRecorded=runCompletionRecorded;}
+        public bool CanReplayCompletedArea=>replayLayout!=null&&items.Length>0&&SortedCount==items.Length&&HasMilestone("complete");
         void RestoreCompletionHistory(Snapshot data)
         {
             CompletedArea=data.completedArea;CompletionCount=data.completionCount;CompletedContentVersion=data.completedContentVersion;runCompletionRecorded=data.runCompletionRecorded;
@@ -21,7 +22,7 @@ namespace LabSorting.Sorting
         }
         public bool ReplayCompletedArea()
         {
-            if(replayLayout==null||items.Length==0||SortedCount!=items.Length||!HasMilestone("complete"))return false;
+            if(!CanReplayCompletedArea)return false;
             if(persistence&&(!RequestSave(true)||!FlushSaves()))return false;
             var previous=Capture();var next=new Snapshot{layoutRevision=layoutRevision,items=replayLayout.items,playerPosition=replayLayout.playerPosition,look=replayLayout.look,capacity=capacity,cash=cash,tutorialRewarded=TutorialRewarded,completedRacks=new List<string>()};
             CaptureSupplies(next);next.runCompletionRecorded=false;

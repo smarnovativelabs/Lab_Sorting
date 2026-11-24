@@ -12,7 +12,7 @@ namespace LabSorting.Sorting
         static readonly RaycastHit[] casts=new RaycastHit[64];
         public static bool Eligible(SortItem item)
         {
-            if(!item||item.location!=ItemLocation.Loose||item.Moving||!item.gameObject.activeInHierarchy||!item.hitbox||!item.hitbox.enabled)return false;
+            if(!item||item.location!=ItemLocation.Loose||item.Moving||item.Searched||!item.gameObject.activeInHierarchy||!item.hitbox||!item.hitbox.enabled)return false;
             // Rats walk on their own; physics-driven items fall on their own.
             if(item.definition&&item.definition.isRat)return false;
             var body=item.hitbox.attachedRigidbody;return !body||body.isKinematic;
@@ -22,7 +22,7 @@ namespace LabSorting.Sorting
         public static bool Floating(SortItem item)
         {
             if(!Eligible(item))return false;
-            var b=item.hitbox.bounds;float reach=b.extents.y+Gap;
+            var b=item.naturalSettling?item.naturalSettling.WorldBounds:item.hitbox.bounds;float reach=b.extents.y+Gap;
             for(int i=0;i<5;i++)
             {
                 var origin=b.center;
@@ -39,7 +39,7 @@ namespace LabSorting.Sorting
         public static bool TrySettlePoint(SortItem item,Transform player,out Vector3 position)
         {
             position=default;if(!Eligible(item))return false;
-            var b=item.hitbox.bounds;var half=new Vector3(b.extents.x*.9f,Mathf.Max(.005f,b.extents.y-.002f),b.extents.z*.9f);
+            var b=item.naturalSettling?item.naturalSettling.WorldBounds:item.hitbox.bounds;var half=new Vector3(b.extents.x*.9f,Mathf.Max(.005f,b.extents.y-.002f),b.extents.z*.9f);
             int count=Physics.BoxCastNonAlloc(b.center,half,Vector3.down,casts,Quaternion.identity,8,~0,QueryTriggerInteraction.Ignore);
             if(count>=casts.Length)return false;
             float nearest=float.PositiveInfinity;Collider surface=null;

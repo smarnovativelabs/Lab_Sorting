@@ -61,6 +61,17 @@ namespace LabSorting.Prototype
                 Check(s.Restore(complete),(s.items.Length-1)+" sorted fixture validates");p.autoShow=true;Check(s.TryPick(last),"Pick final item");DOTween.CompleteAll();Check(s.TryPlace(lastRack),"Final actual placement completes area");DOTween.CompleteAll();
                 float until=Time.realtimeSinceStartup+5;while(!p.IsOpen&&Time.realtimeSinceStartup<until)yield return null;Check(p.confetti.Any(piece=>piece.gameObject.activeInHierarchy),"Completion starts visible confetti particles");Check(p.IsOpen&&s.player.blocked&&s.CompletionCount==1&&s.CompletedArea==s.areaId,"Completion opens panel and records persistent history once");SortingSmokeChecks.Capture(s,"Logs/NewCompletion.png");
                 s.Save();var finished=s.Capture();Check(s.Load()&&s.CompletionCount==1,"Reload does not duplicate completion count");yield return new WaitForSecondsRealtime(.6f);
+                ContentUpdateChecks(s,finished);yield return new WaitForSecondsRealtime(.6f);
+                p.ContinueExploring();Check(!p.IsOpen&&s.CompletionAcknowledged,"Explore acknowledges completed lab");
+                var settings=hud.GetComponent<SettingsTutorialPanel>();settings.OpenSettings();
+                var help=settings.settingsContent.GetComponent<SettingsHelpRow>();Check(help.playAgain&&help.playAgain.gameObject.activeInHierarchy,"Settings exposes replay after exploring");
+                yield return new WaitForSecondsRealtime(.3f);SortingSmokeChecks.Capture(s,"Logs/SettingsPlayAgain.png");
+                help.playAgain.onClick.Invoke();Check(p.IsOpen&&p.ConfirmingReplay&&!settings.IsOpen,"Settings reopens confirmation after acknowledgment");
+                p.ContinueExploring();p.ContinueExploring();s.Save();Check(s.Load(),"Acknowledged completion reloads");
+                yield return new WaitForSecondsRealtime(.6f);Check(!p.IsOpen&&s.CompletionAcknowledged,"Explore choice stays acknowledged after reopening game");
+                settings.OpenSettings();help.playAgain.onClick.Invoke();p.ContinueExploring();
+                ReplayWriteFailureChecks.BeforeReplay(s,p);
+                s.Restore(finished);yield return new WaitForSecondsRealtime(.6f);
                 int cash=s.Cash,search=s.SearchCredits,magnet=s.MagnetCredits,capacity=s.capacity;p.continueButton.onClick.Invoke();
                 Check(p.ConfirmingReplay&&s.SortedCount==s.items.Length&&s.Cash==cash,"First replay tap only shows confirmation; save and economy untouched");
                 p.ContinueExploring();Check(p.IsOpen&&!p.ConfirmingReplay&&s.SortedCount==s.items.Length,"Back cancels replay safely");
@@ -70,6 +81,10 @@ namespace LabSorting.Prototype
                 Check(!p.IsOpen&&!s.player.blocked&&s.SortedCount==0&&s.carried.Count==0,"Replay clears run and restores control");
                 Check(s.Cash==cash&&s.SearchCredits==search&&s.MagnetCredits==magnet&&s.capacity==capacity&&s.HasCompletedArea&&s.CompletionCount==1,"Replay preserves economy and historical completion");
                 Check(s.Load()&&s.SortedCount==0&&s.HasCompletedArea,"Replayed run and history survive disk reload");
+                var freshReplay=s.Capture();var heldItem=s.items.First(i=>!i.definition.isRat);
+                Check(s.TryPick(heldItem),"Replay can start making progress");DOTween.CompleteAll();s.Save();
+                var partialReplay=s.Capture();Check(s.Load()&&s.Active==heldItem&&s.carried.Count==1&&s.CompletionCount==1&&!s.Capture().runCompletionRecorded,"Partial replay resumes held item and history without restoring completed run");
+                Check(s.player.transform.position==partialReplay.playerPosition,"Partial replay resumes saved player position");s.Restore(freshReplay);
                 ReplayWriteFailureChecks.AfterReplay(s);
                 yield return ReplayRecoveryChecks.Run(s,p,false);
                 Check(s.GrantSupply(SupplyKind.Cash,150,"test-cash")&&s.Cash==cash,"Replay preserves receipt deduplication");
@@ -78,6 +93,39 @@ namespace LabSorting.Prototype
                 SaveStreamChecks.Run(s,Check);
             }
             finally{if(supply.IsOpen)supply.Close();if(menus.IsOpen)menus.Close();s.FlushSaves();s.persistence=false;s.Restore(initial);p.autoShow=auto;s.saveName=oldName;s.persistence=persist;foreach(var suffix in new[]{"",".bak",".tmp"}){if(File.Exists(path+suffix))File.Delete(path+suffix);if(File.Exists(CommerceEntitlements.PathName+suffix))File.Delete(CommerceEntitlements.PathName+suffix);}CommerceEntitlements.StorageFile=entitlementFile;CommerceEntitlements.ResetCacheForTests();}
+        }
+        static void ContentUpdateChecks(SortingSession s,SortingSession.Snapshot completed)
+        {
+            int version=s.contentVersion;var manifest=s.contentAdditions;bool persistence=s.persistence;
+            try
+            {
+                s.persistence=false;s.contentVersion=version+1;
+                var added=s.items.First(i=>!i.definition.isRat);
+                s.contentAdditions=new[]{new SortingSession.ContentAddition{id=added.id,introducedInVersion=s.contentVersion}};
+                var previous=JsonUtility.FromJson<SortingSession.Snapshot>(JsonUtility.ToJson(completed));
+                previous.items.RemoveAll(e=>e.id==added.id);previous.rewarded.Remove(added.id);
+                previous.savedContentVersion=version;
+                Check(s.RestoreLoadedLayout(previous),"Versioned addition merges into old completed save");
+                Check(s.SortedCount==s.items.Length-1&&added.location==ItemLocation.Loose&&s.CompletionCount==completed.completionCount&&!s.HasMilestone("complete"),"New content preserves sorted work and history while reopening completion");
+                Check(s.Cash==completed.cash&&s.capacity==completed.capacity&&s.player.transform.position==completed.playerPosition,"Content update preserves economy and player location");
+                var modern=s.Capture();modern.items.RemoveAll(e=>e.id==added.id);
+                Check(!s.RestoreLoadedLayout(modern),"Missing item in same-version save remains invalid");
+                var partial=JsonUtility.FromJson<SortingSession.Snapshot>(JsonUtility.ToJson(previous));
+                partial.milestones.Clear();partial.completedRacks.Clear();partial.runCompletionRecorded=false;partial.completionAcknowledged=false;
+                foreach(var e in partial.items){e.location=ItemLocation.Loose;e.rack=null;e.slot=-1;}
+                var held=partial.items[0];held.location=ItemLocation.Hand;partial.hand=new List<string>{held.id};partial.active=held.id;
+                Check(s.RestoreLoadedLayout(partial)&&s.SortedCount==0&&s.Active.id==held.id&&!s.Capture().runCompletionRecorded&&s.CompletionCount==completed.completionCount,"Content update preserves in-progress replay instead of restoring old completion");
+                var wrongArea=JsonUtility.FromJson<SortingSession.Snapshot>(JsonUtility.ToJson(partial));wrongArea.savedAreaId="different-area";
+                Check(!s.RestoreLoadedLayout(wrongArea),"Another area's save cannot overwrite current run");
+                var legacy=JsonUtility.FromJson<SortingSession.Snapshot>(JsonUtility.ToJson(completed));legacy.savedContentVersion=0;
+                var ratIds=new HashSet<string>(s.items.Where(i=>i.definition.isRat).Select(i=>i.id));
+                legacy.items.RemoveAll(e=>ratIds.Contains(e.id));legacy.rewarded.RemoveAll(id=>ratIds.Contains(id));
+                Check(s.RestoreLoadedLayout(legacy)&&s.items.Where(i=>i.definition.isRat).All(i=>i.location==ItemLocation.Loose),"Legacy pre-rat saves still gain the rat catalog");
+                var missingRats=s.Capture();missingRats.items.RemoveAll(e=>ratIds.Contains(e.id));
+                Check(!s.RestoreLoadedLayout(missingRats),"Modern save missing the entire rat catalog is rejected");
+                SaveStreamChecks.Run(s,Check);
+            }
+            finally{s.contentVersion=version;s.contentAdditions=manifest;s.Restore(completed);s.persistence=persistence;}
         }
     }
 }

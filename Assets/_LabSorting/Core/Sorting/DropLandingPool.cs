@@ -12,6 +12,7 @@ namespace LabSorting.Sorting
         static readonly System.Collections.Generic.Dictionary<SortItem,Bounds> reservations=new System.Collections.Generic.Dictionary<SortItem,Bounds>();
         public static bool Reserved(Bounds bounds,SortItem except){foreach(var pair in reservations)if(pair.Key!=except&&pair.Value.Intersects(bounds))return true;return false;}
         public static void Reserve(SortItem item,Vector3 target){var b=item.visual.bounds;b.center+=target-item.transform.position;b.Expand(.03f);reservations[item]=b;}
+        public static void Reserve(SortItem item,Bounds bounds){bounds.Expand(.016f);reservations[item]=bounds;}
         public static void Unreserve(SortItem item){reservations.Remove(item);}
         readonly Slot[] slots=new Slot[3];
         PhysicsMaterial material;

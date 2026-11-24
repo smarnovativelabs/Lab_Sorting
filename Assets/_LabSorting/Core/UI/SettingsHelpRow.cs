@@ -9,6 +9,8 @@ namespace LabSorting.UI
     {
         public RectTransform howToPlay;
         public GameObject privacyChoices;
+        public UnityEngine.UI.Button playAgain;
+        public SettingsTutorialPanel panel;
         public float spacing=170;
         public static bool PrivacyRequired
         {
@@ -23,8 +25,19 @@ namespace LabSorting.UI
         public void Refresh()
         {
             bool show=PrivacyRequired;
+            bool replay=panel&&panel.session&&panel.session.CanReplayCompletedArea;
+            if(playAgain)playAgain.gameObject.SetActive(replay);
+            if(replay&&playAgain)
+            {
+                Place(howToPlay,show?-228:-spacing,show?210:300);
+                Place((RectTransform)playAgain.transform,show?0:spacing,show?210:300);
+                if(privacyChoices){privacyChoices.SetActive(show);Place((RectTransform)privacyChoices.transform,228,210);}
+                return;
+            }
             if(privacyChoices){privacyChoices.SetActive(show);var r=(RectTransform)privacyChoices.transform;r.anchoredPosition=new Vector2(spacing,r.anchoredPosition.y);}
-            if(howToPlay)howToPlay.anchoredPosition=new Vector2(show?-spacing:0,howToPlay.anchoredPosition.y);
+            Place(howToPlay,show?-spacing:0,300);
+            if(privacyChoices)Place((RectTransform)privacyChoices.transform,spacing,300);
         }
+        static void Place(RectTransform rect,float x,float width){if(!rect)return;rect.anchoredPosition=new Vector2(x,rect.anchoredPosition.y);rect.sizeDelta=new Vector2(width,rect.sizeDelta.y);}
     }
 }

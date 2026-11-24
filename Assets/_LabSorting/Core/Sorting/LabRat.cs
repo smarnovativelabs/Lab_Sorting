@@ -36,7 +36,7 @@ namespace LabSorting.Sorting
         {
             Running=false;
             if(!colony||!colony.session.Initialized){if(animator&&animator.speed!=0)FreezePose();return;}
-            if(Item.location==ItemLocation.Loose&&!Item.Moving&&!colony.session.player.blocked&&Time.deltaTime>0)
+            if(Item.location==ItemLocation.Loose&&!Item.Moving&&!Item.Searched&&!colony.session.player.blocked&&Time.deltaTime>0)
             {
                 if(Time.time>=decisionAt)
                 {

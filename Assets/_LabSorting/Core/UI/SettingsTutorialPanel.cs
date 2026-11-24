@@ -71,6 +71,12 @@ namespace LabSorting.UI
         }
         public void OpenSettings(){if((session.player.TutorialBlocked||session.player.PickTutorialLocked))return;var completion=GetComponent<LabCompletionPanel>();if(completion&&completion.IsOpen)return;Show();ShowingTutorial=false;title.text="SETTINGS";settingsContent.SetActive(true);tutorialContent.SetActive(false);RefreshSettings();}
         public void ReplayTutorial(){var guided=Guided;if(guided){Close();guided.Begin(true);}else OpenTutorial(true);}
+        public void PlayAgain()
+        {
+            if(!IsOpen||ShowingTutorial||session.player.NetworkBlocked||!session.CanReplayCompletedArea)return;
+            var completion=GetComponent<LabCompletionPanel>();if(!completion)return;
+            Close();completion.OpenReplayConfirmation();
+        }
         public void OpenHowToPlay(){OpenTutorial(true);}
         public void OpenTutorial(bool restart)
         {

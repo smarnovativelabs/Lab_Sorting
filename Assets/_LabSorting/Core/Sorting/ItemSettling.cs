@@ -29,7 +29,8 @@ namespace LabSorting.Sorting
         {
             if(!ItemSupport.TrySettlePoint(item,player?player.transform:null,out var position))return false;
             var vacated=item.hitbox.bounds;SettledItems++;
-            if(animate)item.Travel(position,item.transform.rotation,()=>QueueSupportCheck(vacated));
+            if(animate&&NaturalItemSettling.Fit(item) is NaturalItemSettling natural)natural.Begin(()=>QueueSupportCheck(vacated));
+            else if(animate)item.Travel(position,item.transform.rotation,()=>QueueSupportCheck(vacated));
             else{item.Snap(position,item.transform.rotation);Physics.SyncTransforms();QueueSupportCheck(vacated);}
             if(saveAt<0)saveAt=Time.unscaledTime+.6f;
             return true;

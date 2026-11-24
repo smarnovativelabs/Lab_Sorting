@@ -36,6 +36,8 @@ namespace IAmJanitor.Rendering.Highlighting
         private Mesh[] prepared;
         private Material material;
         private Material maskMaterial;
+        private Material borderMaterial;
+        private bool contrastBorder;
         private bool initialized;
         private bool requireSourceVisible;
         private bool throughWalls;
@@ -47,9 +49,9 @@ namespace IAmJanitor.Rendering.Highlighting
 
         private sealed class Proxy
         {
-            public Renderer Source, Effect, Mask;
+            public Renderer Source, Effect, Mask, Border;
             public Mesh CachedSource;
-            public SkinnedMeshRenderer SkinSource, SkinEffect, SkinMask;
+            public SkinnedMeshRenderer SkinSource, SkinEffect, SkinMask, SkinBorder;
             public int BlendShapes;
             public Material[] VisibleMaterials, XRayMaterials;
             public Mesh OutlineMesh;
@@ -127,10 +129,16 @@ namespace IAmJanitor.Rendering.Highlighting
             }
         }
 
-        public void Show(HighlightStyle style, bool onlyVisibleSources)
+        public void Show(HighlightStyle style, bool onlyVisibleSources, bool border = false)
         {
             Initialize();
             requireSourceVisible = onlyVisibleSources;
+            contrastBorder = border && !style.throughWalls;
+            if (contrastBorder && material != null)
+            {
+                EnsureBorderResources();
+                borderMaterial.SetFloat(WidthId, Mathf.Clamp(style.widthPixels + 2.5f, 0f, 13f));
+            }
             IsVisible = material != null && style.widthPixels > 0f;
             bool wantsXRay = IsVisible && style.throughWalls && material.HasProperty(DepthTestId);
             if (wantsXRay && TryAcquireStencil()) EnsureMaskResources();
@@ -178,6 +186,31 @@ namespace IAmJanitor.Rendering.Highlighting
                 maskMaterial.SetFloat(StencilWriteMaskId, stencilBit);
             }
             SyncVisibility();
+        }
+
+        // Wider dark hull behind the colored rim. Resources are reused, with no mesh copies.
+        private void EnsureBorderResources()
+        {
+            if (borderMaterial != null) return;
+            borderMaterial = new Material(material) { name = owner.name + " Outline Contrast", hideFlags = HideFlags.DontSave };
+            borderMaterial.renderQueue = material.renderQueue - 1;
+            borderMaterial.SetColor(ColorId, new Color(.025f, .018f, .055f, 1f));
+            borderMaterial.SetFloat(PulseAmountId, 0f);
+            borderMaterial.SetFloat(DepthTestId, (float)CompareFunction.LessEqual);
+            borderMaterial.SetFloat(StencilCompareId, (float)CompareFunction.Always);
+            borderMaterial.SetFloat(StencilWriteMaskId, 0);
+            foreach (var proxy in proxies)
+            {
+                var holder = Object.Instantiate(proxy.Effect.gameObject, proxy.Effect.transform.parent, false);
+                holder.name = "__QuickOutlineContrast";
+                holder.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
+                proxy.Border = holder.GetComponent<Renderer>();
+                proxy.SkinBorder = proxy.Border as SkinnedMeshRenderer;
+                var materials = new Material[proxy.OutlineMesh.subMeshCount];
+                for (int i = 0; i < materials.Length; i++) materials[i] = borderMaterial;
+                proxy.Border.sharedMaterials = materials;
+                proxy.Border.enabled = false;
+            }
         }
 
         private bool TryAcquireStencil()
@@ -272,11 +305,13 @@ namespace IAmJanitor.Rendering.Highlighting
                     && proxy.Source != null && proxy.Source.enabled && !proxy.Source.forceRenderingOff
                     && proxy.Source.gameObject.activeInHierarchy && (throughWalls || !requireSourceVisible || proxy.Source.isVisible);
                 if (proxy.Effect.enabled != active) proxy.Effect.enabled = active;
+                if (proxy.Border != null) proxy.Border.enabled = active && contrastBorder;
                 if (proxy.Mask != null && proxy.Mask.enabled != (active && throughWalls)) proxy.Mask.enabled = active && throughWalls;
                 if (active && proxy.SkinSource != null && proxy.SkinEffect != null)
                     for (int i = 0; i < proxy.BlendShapes; i++)
                     {
                         proxy.SkinEffect.SetBlendShapeWeight(i, proxy.SkinSource.GetBlendShapeWeight(i));
+                        if (proxy.SkinBorder != null && contrastBorder) proxy.SkinBorder.SetBlendShapeWeight(i, proxy.SkinSource.GetBlendShapeWeight(i));
                         if (proxy.SkinMask != null && throughWalls)
                             proxy.SkinMask.SetBlendShapeWeight(i, proxy.SkinSource.GetBlendShapeWeight(i));
                     }
@@ -303,10 +338,13 @@ namespace IAmJanitor.Rendering.Highlighting
                     Object.Destroy(proxy.Mask.gameObject);
                 }
                 OutlineMeshCache.Release(proxy.CachedSource);
+                if (proxy.Border != null) { proxy.Border.enabled = false; Object.Destroy(proxy.Border.gameObject); }
             }
             proxies.Clear();
             if (material != null) Object.Destroy(material);
             if (maskMaterial != null) Object.Destroy(maskMaterial);
+            if (borderMaterial != null) Object.Destroy(borderMaterial);
+            borderMaterial = null;
             material = null; maskMaterial = null; initialized = false; throughWalls = false;
         }
 

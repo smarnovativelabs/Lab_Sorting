@@ -72,7 +72,7 @@ namespace LabSorting.Sorting
                 s.Save();Check(!s.SavePending&&s.LastSaveError==null,"Durable save completes");
                 Check(s.TryPlace(glass),"Mutate state after save");rats[1].CompleteMotion();
                 Check(s.Load(),"Disk save loads");Check(glass.Count==8&&s.carried.Contains(rats[1])&&rats[0].location==ItemLocation.Loose,"Mixed floor/hand/container state preserved");
-                var legacy=s.Capture();legacy.items.RemoveAll(e=>e.id.StartsWith("lab-rat-"));legacy.hand.Clear();legacy.active=null;legacy.rewarded.RemoveAll(id=>id.StartsWith("lab-rat-"));legacy.completedRacks.Remove(glass.id);
+                var legacy=s.Capture();legacy.savedContentVersion=0;legacy.items.RemoveAll(e=>e.id.StartsWith("lab-rat-"));legacy.hand.Clear();legacy.active=null;legacy.rewarded.RemoveAll(id=>id.StartsWith("lab-rat-"));legacy.completedRacks.Remove(glass.id);
                 Check(s.RestoreLoadedLayout(legacy),"Existing saves gain ten rats");Check(rats.All(r=>r.location==ItemLocation.Loose),"Migrated rats start loose");
                 var partial=s.Capture();partial.items.RemoveAll(e=>e.id==rats[0].id);
                 Check(!s.RestoreLoadedLayout(partial)&&partial.items.Count==s.items.Length-1,"Missing rat in modern save is rejected without silent recreation");

@@ -9,6 +9,38 @@ using UnityEngine.TestTools;
 
 public class SortingIntegrationTests
 {
+    [UnityTest,Timeout(360000)] public IEnumerator RackGuidanceUpgrade()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.RackGuidanceChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(360000)] public IEnumerator IsolatedSettlingPrototype()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.SettlingPrototypeChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(360000)] public IEnumerator RealLabCrowdedDrops()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.CrowdedDropChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
+    [UnityTest,Timeout(240000)] public IEnumerator ReadableHoverAndSearch()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();
+        EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;
+        yield return EnterPreparedPlayMode();Application.runInBackground=true;
+        var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("LabSorting.Prototype.VisibilityFeedbackChecks")).First(t=>t!=null);
+        yield return (IEnumerator)type.GetMethod("Run").Invoke(null,null);yield return new ExitPlayMode();
+    }
     [UnityTest,Timeout(240000)] public IEnumerator DevelopmentPurchaseRecoveryControls()
     {
         EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");PrepareDesignerSession();

@@ -27,6 +27,12 @@ public class Outline : MonoBehaviour
 
     private QuickOutlineRenderer rendererBackend;
     private bool managed;
+    private bool contrastBorder, pulse;
+    public void SetReadableFeedback(bool border, bool breathe)
+    {
+        if (contrastBorder == border && pulse == breathe) return;
+        contrastBorder = border; pulse = breathe; ApplyVisibility();
+    }
     private bool requestedVisible;
     private bool warnedMode;
     private bool requireSourceVisible = true;
@@ -113,7 +119,8 @@ public class Outline : MonoBehaviour
         HighlightStyle style = managed ? managedStyle : HighlightStyle.Hover;
         style.color = outlineColor;
         style.widthPixels = Mathf.Clamp(outlineWidth, 0f, 10f);
-        rendererBackend.Show(style, requireSourceVisible);
+        if (!managed) { style.pulse = pulse; style.pulseFrequency = .65f; style.pulseAmount = .22f; }
+        rendererBackend.Show(style, requireSourceVisible, contrastBorder);
     }
 
     private void LateUpdate()

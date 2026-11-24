@@ -26,6 +26,13 @@ namespace LabSorting.Editor
             try
             {
                 if(request=="inspect-layout"){RatLayoutInspection.Capture();File.WriteAllText("Logs/RatVerificationState.txt","Rat layout inspected");return;}
+                if(request=="visibility"){SetReviewSize();Start(request);return;}
+                if(request=="visibility-preview"){SetReviewSize();Start(request);return;}
+                if(request=="crowded-drop"){SetReviewSize();Start(request);return;}
+                if(request=="settling-prototype"){SetReviewSize();Start(request);return;}
+                if(request=="approved-upgrade"){SetReviewSize();Start(request);return;}
+                if(request=="rack-guidance"){SetReviewSize();Start(request);return;}
+                if(request=="replay-content"){SetReviewSize();Start(request);return;}
                 if(request=="resize"){RatSizingUpgrade.Apply();File.WriteAllText("Logs/RatVerificationState.txt","Rat sizing applied");return;}
                 if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty)throw new InvalidOperationException("Save current scene before verification");
                 if(request=="restore"){EditorSceneManager.OpenScene("Assets/Scenes/Lab_Sorting.unity");File.WriteAllText("Logs/RatVerificationState.txt","Main scene restored");return;}
@@ -62,6 +69,13 @@ namespace LabSorting.Editor
             File.WriteAllText("Logs/RatVerificationState.txt","Running "+mode);
             if(mode.StartsWith("held-"))names=new[]{"SortingIntegrationTests.HeldItemSizing"};
             if(mode=="corrections")names=new[]{"SortingIntegrationTests.RatPoseAndPresentationCorrections"};
+            if(mode=="visibility")names=new[]{"SortingIntegrationTests.ReadableHoverAndSearch","SortingIntegrationTests.DesignerThumbControls"};
+            if(mode=="visibility-preview")names=new[]{"SortingIntegrationTests.ReadableHoverAndSearch"};
+            if(mode=="crowded-drop")names=new[]{"SortingIntegrationTests.RealLabCrowdedDrops"};
+            if(mode=="settling-prototype")names=new[]{"SortingIntegrationTests.IsolatedSettlingPrototype"};
+            if(mode=="approved-upgrade")names=new[]{"SortingIntegrationTests.RealLabCrowdedDrops","SortingIntegrationTests.RackGuidanceUpgrade"};
+            if(mode=="replay-content")names=new[]{"SortingIntegrationTests.DesignerOffersReplay"};
+            if(mode=="rack-guidance")names=new[]{"SortingIntegrationTests.RackGuidanceUpgrade"};
             if(mode=="polish16")names=new[]{"SortingIntegrationTests.RequestedGameplayPolish"};
             if(mode=="regression")names=new[]{"SortingIntegrationTests.RatsPickPlaceThrowSave","SortingIntegrationTests.DesignerGuidedTutorial","SortingIntegrationTests.DesignerFrontOnlyDrop","ConnectivityPanelTests.OfflineOnlinePanelRecovery"};
             api=ScriptableObject.CreateInstance<TestRunnerApi>();api.RegisterCallbacks(new RatVerificationRunner());

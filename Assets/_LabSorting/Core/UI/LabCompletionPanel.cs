@@ -39,10 +39,16 @@ namespace LabSorting.UI
             var feedback=session.GetComponent<SortingFeedback>();if(feedback&&feedback.isActiveAndEnabled&&feedback.CompletionPending)return;
             Show();
         }
-        void Show()
+        public void OpenReplayConfirmation()
+        {
+            if(IsOpen||paused||session.player.NetworkBlocked||!session.CanReplayCompletedArea)return;
+            ShowInternal(true);ConfirmingReplay=true;KillEffects();RefreshSummary();
+        }
+        void Show(){ShowInternal(false);}
+        void ShowInternal(bool manual)
         {
             LabSorting.Services.LabTelemetry.Event("lab_completion_viewed");
-            if(!Complete||session.CompletionAcknowledged)return;
+            if(!Complete||(!manual&&session.CompletionAcknowledged))return;
             pending=false;previousBlocked=session.player.blocked;previousCursor=Cursor.lockState;previousVisible=Cursor.visible;
             session.CancelHold();session.player.SetBlocked(true);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;IsOpen=true;root.SetActive(true);root.transform.SetAsLastSibling();
             ConfirmingReplay=false;RefreshSummary();
@@ -65,7 +71,7 @@ namespace LabSorting.UI
             if(exploreLabel)exploreLabel.text=ConfirmingReplay?"BACK":"KEEP EXPLORING";
         }
         public void ContinueExploring(){if(!IsOpen||paused||session.player.NetworkBlocked)return;if(ConfirmingReplay){ConfirmingReplay=false;RefreshSummary();return;}session.AcknowledgeCompletion();Close();}
-        public void PlayAgain(){if(!IsOpen||paused||session.player.NetworkBlocked)return;if(!ConfirmingReplay){ConfirmingReplay=true;KillEffects();RefreshSummary();return;}if(session.ReplayCompletedArea())Close();else{if(!IsOpen)Show();ConfirmingReplay=true;KillEffects();RefreshSummary();summary.text="Could not save the new run.\nYour completed lab is unchanged.\nPlease try again.";}}
+        public void PlayAgain(){if(!IsOpen||paused||session.player.NetworkBlocked)return;if(!ConfirmingReplay){ConfirmingReplay=true;KillEffects();RefreshSummary();return;}if(session.ReplayCompletedArea())Close();else{if(!IsOpen)ShowInternal(true);ConfirmingReplay=true;KillEffects();RefreshSummary();summary.text="Could not save the new run.\nYour completed lab is unchanged.\nPlease try again.";}}
         void Close(){if(!IsOpen)return;IsOpen=false;root.SetActive(false);session.player.SetBlocked(previousBlocked);Cursor.lockState=previousCursor;Cursor.visible=previousVisible;KillEffects();}
         void KillEffects(){if(card)card.DOKill();if(confetti!=null)foreach(var piece in confetti)if(piece){piece.DOKill();piece.gameObject.SetActive(false);}}
         void ResetPanel(){pending=false;Close();KillEffects();}

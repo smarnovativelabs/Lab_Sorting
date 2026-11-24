@@ -83,6 +83,7 @@ namespace LabSorting.Sorting
             if(item.PickLocked)return Fail("Rack complete! Items are locked");
             if(carried.Count>=capacity) return FullInventoryNotice();
             // Measured before docking disables the collider: whatever rested on this item must not stay in the air.
+            item.SetSearchHighlight(false);Physics.SyncTransforms();
             bool fromFloor=item.location==ItemLocation.Loose&&item.hitbox&&item.hitbox.enabled;var vacated=fromFloor?item.hitbox.bounds:default;
             if(item.rack) item.rack.Remove(item);
             item.SetSearchHighlight(false); item.location=ItemLocation.Hand; item.slot=-1; item.rack=null; item.Highlight(false);
@@ -164,18 +165,18 @@ namespace LabSorting.Sorting
             // Resolve the current aim at the click, not the target cached by the throttled preview.
             RefreshTarget();RefreshToss();
             var item=Active;
-            if(!TryThrowPosition(item,out var position)) position=FindCrowdedDrop(item);
+            var path=PlanSmoothDrop(item,out var position);
             CancelPendingDrop();
-            RemoveActive(); item.location=ItemLocation.Loose;item.rack=null;item.slot=-1;item.transform.SetParent(null,true);item.transform.position=throwLaunchPosition;
+            RemoveActive(); item.location=ItemLocation.Loose;item.rack=null;item.slot=-1;item.transform.SetParent(null,true);
             if(item.definition.isRat)item.GetComponent<LabRat>()?.colony.PlayInteraction(item,true);
-            EndTossStreak();item.ThrowWithPhysics(position,()=>NotifyLanded(item)); Commit("Dropped "+item.definition.displayName);Feedback?.Invoke(SortingCue.Throw);
+            EndTossStreak();item.FollowDropArc(path,position,()=>NotifyLanded(item)); Commit("Dropped "+item.definition.displayName);Feedback?.Invoke(SortingCue.Throw);
         }
         public bool MessageIsError {get;private set;}
         string lastFailure;float nextFailure;
         bool Fail(string reason) { if(reason==lastFailure&&Time.unscaledTime<nextFailure)return false;lastFailure=reason;nextFailure=Time.unscaledTime+.8f;Message=reason;MessageIsError=true; Notify(); Feedback?.Invoke(SortingCue.Reject);return false; }
         void Commit(string message) { lastFailure=null;nextAction=Time.unscaledTime+.24f; Message=message;MessageIsError=false; saveAt=Time.unscaledTime+.4f; Notify(); }
         void Notify() { Revision++; Changed?.Invoke(); }
-        [Serializable] public class Snapshot { public int version=3; public string completedArea; public int completionCount,completedContentVersion; public bool runCompletionRecorded; public int searchCredits,magnetCredits,slotCredits; public List<string> supplyReceipts; public int layoutRevision; public List<string> completedRacks; public string searchId; public float searchRemaining; public bool completionAcknowledged; public List<string> milestones=new List<string>(); public int cash; public List<string> rewarded=new List<string>(); public int capacity; public Vector3 playerPosition; public Vector2 look; public string active; public List<string> hand=new List<string>(); public List<Entry> items=new List<Entry>(); public bool tutorialRewarded; }
+        [Serializable] public class Snapshot { public int version=3; public string savedAreaId; public int savedContentVersion; public string completedArea; public int completionCount,completedContentVersion; public bool runCompletionRecorded; public int searchCredits,magnetCredits,slotCredits; public List<string> supplyReceipts; public int layoutRevision; public List<string> completedRacks; public string searchId; public float searchRemaining; public bool completionAcknowledged; public List<string> milestones=new List<string>(); public int cash; public List<string> rewarded=new List<string>(); public int capacity; public Vector3 playerPosition; public Vector2 look; public string active; public List<string> hand=new List<string>(); public List<Entry> items=new List<Entry>(); public bool tutorialRewarded; }
         [Serializable] public class Entry { public string id,rack; public int slot; public ItemLocation location; public Vector3 position; public Quaternion rotation; }
         public Snapshot Capture()
         {

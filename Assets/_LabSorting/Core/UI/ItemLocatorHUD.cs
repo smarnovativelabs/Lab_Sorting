@@ -11,7 +11,31 @@ namespace LabSorting.UI
         readonly Vector2[] markerPositions=new Vector2[6];
         float nextScan;
         Vector2[] beaconSizes;
-        void Awake(){var corners=focusFrame?focusFrame.GetComponent<UnityEngine.UI.Graphic>():null;if(corners){var c=SortItem.HoverColor;c.a=.9f;corners.color=c;}beaconSizes=new Vector2[beacons.Length];for(int i=0;i<beacons.Length;i++)beaconSizes[i]=beacons[i].rectTransform.sizeDelta;}
+        UnityEngine.UI.Graphic crosshair;
+        Vector3 crosshairScale;
+        Color crosshairColor;
+        void Awake()
+        {
+            var corners=focusFrame?focusFrame.GetComponent<UnityEngine.UI.Graphic>():null;
+            if(corners){corners.color=SortItem.HoverColor;Contrast(corners.gameObject);}
+            var aim=safeArea?safeArea.Find("Crosshair"):null;
+            if(aim){crosshair=aim.GetComponent<UnityEngine.UI.Graphic>();crosshairScale=aim.localScale;if(crosshair){crosshairColor=crosshair.color;Contrast(aim.gameObject);}}
+            beaconSizes=new Vector2[beacons.Length];
+            for(int i=0;i<beacons.Length;i++)
+            {
+                beaconSizes[i]=beacons[i].rectTransform.sizeDelta;
+                Contrast(beacons[i].gameObject);
+                var icon=new GameObject("SearchMarker",typeof(RectTransform),typeof(CanvasRenderer),typeof(ControlGlyph));
+                var rect=(RectTransform)icon.transform;rect.SetParent(beacons[i].transform,false);
+                rect.anchorMin=rect.anchorMax=new Vector2(0,.5f);rect.anchoredPosition=new Vector2(-16,0);rect.sizeDelta=Vector2.one*32;
+                var glyph=icon.GetComponent<ControlGlyph>();glyph.symbol=ControlGlyph.Symbol.Search;glyph.color=Color.white;glyph.accent=new Color(1,.82f,.12f);glyph.raycastTarget=false;
+            }
+        }
+        static void Contrast(GameObject target)
+        {
+            var edge=target.GetComponent<UnityEngine.UI.Outline>();if(!edge)edge=target.AddComponent<UnityEngine.UI.Outline>();
+            edge.effectColor=new Color(.02f,.015f,.04f,1);edge.effectDistance=new Vector2(2,-2);
+        }
         public int LooseSearchCount {get;private set;}
         bool cleanupMode;
         int cleanupRevision=-1;
@@ -38,6 +62,7 @@ namespace LabSorting.UI
         {
             var camera=session.player.view;var target=session.TargetItem;
             bool show=target&&!session.player.blocked&&!target.Moving;
+            if(crosshair){crosshair.color=show?SortItem.HoverColor:crosshairColor;crosshair.transform.localScale=crosshairScale*(show?1.35f:1f);}
             focusFrame.gameObject.SetActive(show);
             if(show)
             {
@@ -67,12 +92,12 @@ namespace LabSorting.UI
             {
                 var item=i<nearest.Length?nearest[i]:null;beacons[i].gameObject.SetActive(item);
                 if(!item)continue;beacons[i].text=(FinalItemsMode?"LAST "+LooseSearchCount+"  ▼  ":"▼  ")+Mathf.Sqrt(distances[i]).ToString("0.0")+"m"+(FinalItemsMode?"\n"+SearchDirection.Floor(item.hitbox?item.hitbox.bounds.min.y:item.transform.position.y,session.player.transform.position.y):"");
-                beacons[i].color=FinalItemsMode?new Color(.45f,1,1):new Color(1,.88f,.25f);
+                beacons[i].color=Color.white;
                 beacons[i].rectTransform.sizeDelta=FinalItemsMode?new Vector2(190,Mathf.Max(52,beaconSizes[i].y)):beaconSizes[i];
-                beacons[i].transform.localScale=Vector3.one*(1.08f+.06f*Mathf.Sin(Time.unscaledTime*4));
+                beacons[i].transform.localScale=Vector3.one*(1.08f+.04f*Mathf.Sin(Time.unscaledTime*4));
                 var position=Local(camera.WorldToScreenPoint(item.visual.bounds.center+Vector3.up*(item.visual.bounds.extents.y+.08f)));
                 bool overlaps=false;
-                for(int j=0;j<shown;j++)if(Mathf.Abs(position.x-markerPositions[j].x)<(FinalItemsMode?190:104)&&Mathf.Abs(position.y-markerPositions[j].y)<(FinalItemsMode?58:34))overlaps=true;
+                for(int j=0;j<shown;j++)if(Mathf.Abs(position.x-markerPositions[j].x)<(FinalItemsMode?240:154)&&Mathf.Abs(position.y-markerPositions[j].y)<(FinalItemsMode?64:44))overlaps=true;
                 // Suppress redundant labels instead of moving arrows onto the wrong item.
                 if(overlaps){beacons[i].gameObject.SetActive(false);continue;}
                 markerPositions[shown++]=position;beacons[i].rectTransform.anchoredPosition=position;
