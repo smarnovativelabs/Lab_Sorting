@@ -4,6 +4,7 @@ namespace LabSorting.UI
 {
     // Code-native UI vector: a round head, transparent circular hole and pointed tip.
     // The bottom center is the rack anchor. No bitmap scaling or imported icon required.
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class RackLocationPin:MaskableGraphic
     {
         protected override void OnPopulateMesh(VertexHelper mesh)

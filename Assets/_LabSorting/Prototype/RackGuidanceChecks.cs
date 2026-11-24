@@ -36,6 +36,9 @@ namespace LabSorting.Prototype
             Check(!rect.Overlaps(carry.HeldScreenRect),label+": held item unobstructed");
             if(guide.MarkerIsPin)
             {
+                var pin=UnityEngine.Object.FindFirstObjectByType<RackLocationPin>();var mesh=new Mesh();
+                if(pin&&pin.canvasRenderer)pin.canvasRenderer.GetMesh(mesh);
+                Check(mesh.vertexCount>0,label+": pin has rendered mesh");UnityEngine.Object.Destroy(mesh);
                 var screen=s.player.view.WorldToScreenPoint(guide.MarkerWorldPoint);
                 Check(Vector2.Distance(new Vector2(rect.center.x,rect.yMin),screen)<2,label+": pin tip anchored to rack world point");
             }
@@ -85,7 +88,7 @@ namespace LabSorting.Prototype
                 obstacle.transform.SetPositionAndRotation(eye.position+eye.forward*.6f,eye.rotation);obstacle.transform.localScale=new Vector3(8,8,.1f);Physics.SyncTransforms();yield return Wait();
                 Check(!guide.MarkerVisible&&guide.MarkerOccluded,"Wall does not show a pin through geometry");yield return Capture("05-occluded");UnityEngine.Object.Destroy(obstacle);obstacle=null;yield return Wait();
                 var upper=all.FirstOrDefault(r=>Mathf.Abs(r.transform.position.y-s.player.transform.position.y)>1.8f&&r.CanAccept(held.definition)&&routes.Route(s.player.transform.position,r,out _,out _));
-                Check(upper,"Reachable upstairs rack exists");s.racks=new[]{upper};yield return LookAway(s);yield return Wait();Check(guide.GuidedRack==upper&&!guide.MarkerIsPin,"Other floor keeps route arrow rather than false visible pin");yield return Capture("06-upstairs-route");s.racks=all;
+                Check(upper,"Reachable upstairs rack exists");s.racks=new[]{upper};guide.enabled=false;guide.enabled=true;yield return LookAway(s);yield return Wait();Check(guide.GuidedRack==upper&&guide.MarkerVisible&&!guide.MarkerIsPin,"Other floor keeps route arrow rather than false visible pin");yield return Capture("06-upstairs-route");s.racks=all;
                 foreach(int width in new[]{1280,1440,1560,1600,1680,1152,960})
                 {
                     yield return (IEnumerator)typeof(ThumbControlsChecks).GetMethod("Resize",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic).Invoke(null,new object[]{width,720});
