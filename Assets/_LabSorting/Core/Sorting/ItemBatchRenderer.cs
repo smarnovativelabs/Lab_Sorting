@@ -15,7 +15,16 @@ namespace LabSorting.Sorting
         public int SubmittedBatches {get;private set;}
         public int BatchedItems {get;private set;}
         public int FallbackItems {get;private set;}
+        [Tooltip("Instances whose projected radius is below this many pixels are not drawn. 0 disables size culling.")]
+        [Min(0)] public float minScreenRadiusPixels=2.5f;
         public int VisibleInstances {get;private set;}
+        // Instances actually submitted after per-instance frustum and size culling (VisibleInstances is the pre-cull group count).
+        public int DrawnInstances {get;private set;}
+        [Tooltip("Instances farther than this many meters use the cheaper mesh from Resources/ItemMeshLodMap. 0 disables it.")]
+        [Min(0)] public float farLodDistance=8f;
+        public int FarInstances {get;private set;}
+        Dictionary<Mesh,Mesh> farMeshes;
+        readonly Matrix4x4[] scratchFar=new Matrix4x4[Limit];
         public double PrepareMilliseconds {get;private set;}
         const int Limit=256;
         sealed class Source {public SortItem item;public Renderer renderer;public Mesh mesh;public Material normal,search;public bool forceOff;}
@@ -26,7 +35,13 @@ namespace LabSorting.Sorting
             public override bool Equals(object o)=>o is Key k&&Equals(k);
             public override int GetHashCode()=>HashCode.Combine(mesh,material,x,z,layer,shadows,receive,HashCode.Combine(probes,renderingLayer));
         }
-        sealed class Group {public readonly List<Matrix4x4[]> chunks=new List<Matrix4x4[]>();public int count;public Bounds bounds;public void Add(Matrix4x4 matrix,Bounds b){int chunk=count/Limit;if(chunk==chunks.Count)chunks.Add(new Matrix4x4[Limit]);chunks[chunk][count%Limit]=matrix;if(count++==0)bounds=b;else bounds.Encapsulate(b);}}
+        sealed class Group {public readonly List<Matrix4x4[]> chunks=new List<Matrix4x4[]>();public readonly List<Vector4> spheres=new List<Vector4>();public int count;public Bounds bounds;public void Add(Matrix4x4 matrix,Bounds b){int chunk=count/Limit;if(chunk==chunks.Count)chunks.Add(new Matrix4x4[Limit]);chunks[chunk][count%Limit]=matrix;var sphere=new Vector4(b.center.x,b.center.y,b.center.z,b.extents.magnitude);if(count<spheres.Count)spheres[count]=sphere;else spheres.Add(sphere);if(count++==0)bounds=b;else bounds.Encapsulate(b);}}
+        readonly Matrix4x4[] scratch=new Matrix4x4[Limit];
+        bool SphereVisible(Vector3 center,float radius)
+        {
+            for(int i=0;i<6;i++){var p=planes[i];if(p.normal.x*center.x+p.normal.y*center.y+p.normal.z*center.z+p.distance<-radius)return false;}
+            return true;
+        }
         readonly List<Source> sources=new List<Source>();
         readonly Dictionary<Key,Group> groups=new Dictionary<Key,Group>();
         readonly Dictionary<Material,Material[]> materials=new Dictionary<Material,Material[]>();
@@ -37,6 +52,7 @@ namespace LabSorting.Sorting
         public void Rebuild()
         {
             Release();if(!session||session.items==null)return;registered=session.items;
+            var lodMap=Resources.Load<ItemMeshLodMap>("ItemMeshLodMap");farMeshes=lodMap?lodMap.Build():null;
             if(!SystemInfo.supportsInstancing||registered.Length<minimumItems)return;
             foreach(var item in registered)
             {
@@ -62,7 +78,7 @@ namespace LabSorting.Sorting
         void LateUpdate(){if(session&&registered!=session.items)Rebuild();if(!targetCamera&&session)targetCamera=session.player.view;}
         public void RenderNow()
         {
-            long started=System.Diagnostics.Stopwatch.GetTimestamp();SubmittedBatches=VisibleInstances=0;
+            long started=System.Diagnostics.Stopwatch.GetTimestamp();SubmittedBatches=VisibleInstances=DrawnInstances=FarInstances=0;
             if(!targetCamera&&session)targetCamera=session.player.view;
             if(!targetCamera||!targetCamera.isActiveAndEnabled){RestoreSources();dirty=true;return;}
             if(session&&session.SearchType)
@@ -89,12 +105,41 @@ namespace LabSorting.Sorting
             dirty=false;
             }
             GeometryUtility.CalculateFrustumPlanes(targetCamera,planes);
+            var cameraPosition=targetCamera.transform.position;
+            bool sizeCull=minScreenRadiusPixels>0&&!targetCamera.orthographic;
+            float pixelsPerUnit=sizeCull?targetCamera.pixelHeight*.5f/Mathf.Max(.01f,Mathf.Tan(targetCamera.fieldOfView*.5f*Mathf.Deg2Rad)):0;
             foreach(var entry in groups)
             {
                 var key=entry.Key;var group=entry.Value;if(group.count==0||(key.shadows==ShadowCastingMode.Off&&!GeometryUtility.TestPlanesAABB(planes,group.bounds)))continue;
                 if((targetCamera.cullingMask&(1<<key.layer))==0)continue;
                 var rp=new RenderParams(key.material){camera=targetCamera,worldBounds=group.bounds,layer=key.layer,shadowCastingMode=key.shadows,receiveShadows=key.receive,lightProbeUsage=key.probes,renderingLayerMask=key.renderingLayer};
-                for(int start=0;start<group.count;start+=Limit){int count=Mathf.Min(Limit,group.count-start);Graphics.RenderMeshInstanced(rp,key.mesh,0,group.chunks[start/Limit],count);SubmittedBatches++;VisibleInstances+=count;}
+                VisibleInstances+=group.count;
+                if(key.shadows!=ShadowCastingMode.Off)
+                {
+                    // Off-screen shadow casters can still shadow visible geometry, so keep the whole group.
+                    for(int start=0;start<group.count;start+=Limit){int count=Mathf.Min(Limit,group.count-start);Graphics.RenderMeshInstanced(rp,key.mesh,0,group.chunks[start/Limit],count);SubmittedBatches++;DrawnInstances+=count;}
+                    continue;
+                }
+                Mesh far=null;bool useFar=farLodDistance>0&&farMeshes!=null&&farMeshes.TryGetValue(key.mesh,out far);
+                int pending=0,pendingFar=0;
+                for(int i=0;i<group.count;i++)
+                {
+                    var sphere=group.spheres[i];var center=new Vector3(sphere.x,sphere.y,sphere.z);
+                    if(!SphereVisible(center,sphere.w))continue;
+                    float distanceSqr=(center-cameraPosition).sqrMagnitude;
+                    float projected=sphere.w*pixelsPerUnit;
+                    if(sizeCull&&projected*projected<minScreenRadiusPixels*minScreenRadiusPixels*distanceSqr)continue;
+                    if(useFar&&distanceSqr>farLodDistance*farLodDistance)
+                    {
+                        scratchFar[pendingFar++]=group.chunks[i/Limit][i%Limit];
+                        if(pendingFar==Limit){Graphics.RenderMeshInstanced(rp,far,0,scratchFar,pendingFar);SubmittedBatches++;DrawnInstances+=pendingFar;FarInstances+=pendingFar;pendingFar=0;}
+                        continue;
+                    }
+                    scratch[pending++]=group.chunks[i/Limit][i%Limit];
+                    if(pending==Limit){Graphics.RenderMeshInstanced(rp,key.mesh,0,scratch,pending);SubmittedBatches++;DrawnInstances+=pending;pending=0;}
+                }
+                if(pending>0){Graphics.RenderMeshInstanced(rp,key.mesh,0,scratch,pending);SubmittedBatches++;DrawnInstances+=pending;}
+                if(pendingFar>0){Graphics.RenderMeshInstanced(rp,far,0,scratchFar,pendingFar);SubmittedBatches++;DrawnInstances+=pendingFar;FarInstances+=pendingFar;}
             }
             PrepareMilliseconds=(System.Diagnostics.Stopwatch.GetTimestamp()-started)*1000.0/System.Diagnostics.Stopwatch.Frequency;
         }
