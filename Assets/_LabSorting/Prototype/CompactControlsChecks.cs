@@ -74,8 +74,23 @@ namespace LabSorting.Prototype
                 }
                 finally{wall.SetActive(false);UnityEngine.Object.Destroy(wall);s.player.character.Motor.enabled=motorEnabled;}
                 yield return Wait(.35f);
+                var origins=s.items.Where(i=>i.location==ItemLocation.Loose&&i.definition==s.Active.definition&&!i.Moving).ToDictionary(i=>i,i=>i.transform.position);
                 int uses=s.MagnetCredits;Check(s.TryMagnet()&&s.MagnetCredits==uses-1&&s.Cash==cash,"Magnet consumes one owned use");
-                Check(s.carried.Count(i=>i.gameObject.activeSelf&&i.Moving)>1,"Multiple real models visibly travel into the hand");yield return Wait(.13f);SortingSmokeChecks.Capture(s,"Logs/CompactMagnetFlight.png");yield return Wait(1.3f);
+                var flying=s.carried.Where(i=>i.MagnetFlying).ToArray();
+                Check(flying.Length>1&&flying.All(i=>i.gameObject.activeSelf&&Vector3.Distance(i.transform.position,origins[i])<.001f),"Magnet starts every real model at its original world position");
+                var selected=s.Active;s.Select(0);s.ThrowActive();
+                Check(s.Active==selected&&flying.All(i=>i.MagnetFlying),"Selection and drop cannot teleport a pending magnet batch");
+                var carry=s.hand.GetComponent<LabSorting.Player.CarryPresentation>();
+                var handPosition=s.hand.position;var handRotation=s.hand.rotation;
+                s.hand.SetPositionAndRotation(handPosition+Vector3.right,Quaternion.Euler(0,35,0)*handRotation);
+                foreach(var item in flying)item.RefreshHeldPresentation(carry);
+                Check(flying.All(i=>Vector3.Distance(i.transform.position,origins[i])<.001f),"Camera movement leaves delayed magnet sources anchored in world space");
+                s.hand.SetPositionAndRotation(handPosition,handRotation);
+                foreach(var item in flying)item.RefreshHeldPresentation(carry);
+                yield return Wait(.13f);
+                Check(!carry.OverlayActive,"Flying magnet items stay in the world renderer until arrival");
+                Check(flying.Any(i=>Vector3.Distance(i.transform.position,origins[i])>.01f)&&flying.All(i=>i.MagnetFlying),"Items visibly travel before reaching the hand");
+                SortingSmokeChecks.Capture(s,"Logs/CompactMagnetFlight.png");yield return Wait(1.3f);
                 for(int frame=0;frame<120&&s.carried.Any(i=>i.Moving);frame++)yield return null;
                 Check(s.Active&&s.Active.gameObject.activeSelf&&s.Active.transform.parent==s.hand&&s.carried.Count(i=>i.gameObject.activeSelf)==1,"Magnet finishes with selected model in hand and no duplicate displays; visible="+s.carried.Count(i=>i.gameObject.activeSelf)+", moving="+s.carried.Count(i=>i.Moving));
                 cash=s.Cash;uses=s.MagnetCredits;Check(!s.TryMagnet()&&s.Cash==cash&&s.MagnetCredits==uses,"Full inventory consumes neither cash nor uses");

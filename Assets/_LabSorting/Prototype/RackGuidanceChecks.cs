@@ -36,9 +36,9 @@ namespace LabSorting.Prototype
             Check(!rect.Overlaps(carry.HeldScreenRect),label+": held item unobstructed");
             if(guide.MarkerIsPin)
             {
-                var pin=UnityEngine.Object.FindFirstObjectByType<RackLocationPin>();var mesh=new Mesh();
-                if(pin&&pin.canvasRenderer)pin.canvasRenderer.GetMesh(mesh);
-                Check(mesh.vertexCount>0,label+": pin has rendered mesh");UnityEngine.Object.Destroy(mesh);
+                var pin=UnityEngine.Object.FindFirstObjectByType<RackLocationPin>();
+                var mesh=pin&&pin.canvasRenderer?pin.canvasRenderer.GetMesh():null;
+                Check(mesh&&mesh.vertexCount>0,label+": pin has rendered mesh");
                 var screen=s.player.view.WorldToScreenPoint(guide.MarkerWorldPoint);
                 Check(Vector2.Distance(new Vector2(rect.center.x,rect.yMin),screen)<2,label+": pin tip anchored to rack world point");
             }

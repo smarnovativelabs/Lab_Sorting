@@ -49,6 +49,8 @@ namespace LabSorting.Sorting
         }
         float selectionProgress=1,pickupProgress;
         bool pickupFlight,pickupMagnet;
+        public bool MagnetFlying=>pickupFlight&&pickupMagnet;
+        public const float MagnetFlightDuration=.7f;
         Vector3 pickupFrom,pickupScale;
         Quaternion pickupRotation;
         public void RefreshHeldPresentation(LabSorting.Player.CarryPresentation presentation)
@@ -61,10 +63,10 @@ namespace LabSorting.Sorting
                 var destination=transform.parent.TransformPoint(pose.position);
                 var raised=pickupFrom+Vector3.up*.14f;
                 var middle=(raised+destination)*.5f+Vector3.up*.14f;
-                var position=pickupMagnet?Vector3.Lerp(transform.parent.TransformPoint(pickupFrom),destination,smooth):
+                var position=pickupMagnet?MagnetPosition(destination,t):
                     t<.22f?Vector3.Lerp(pickupFrom,raised,1-Mathf.Pow(1-t/.22f,2)):
                     (1-smooth)*(1-smooth)*raised+2*(1-smooth)*smooth*middle+smooth*smooth*destination;
-                transform.position=pickupMagnet?presentation.ConstrainFlight(position):position;
+                transform.position=position;
                 transform.rotation=Quaternion.Slerp(pickupRotation,transform.parent.rotation*pose.rotation,smooth)*Quaternion.Euler(new Vector3(10,48,-14)*Mathf.Sin(t*Mathf.PI));
                 transform.localScale=Vector3.Lerp(pickupScale,pose.scale,smooth)*(1+.06f*Mathf.Sin(t*Mathf.PI));
             }
@@ -77,6 +79,13 @@ namespace LabSorting.Sorting
                     transform.localRotation*=Quaternion.Euler(new Vector3(0,6,-4)*(1-selectionProgress));
                 }
             }
+        }
+        Vector3 MagnetPosition(Vector3 destination,float progress)
+        {
+            // Keep the source in world space, including while staggered and while
+            // the player turns. Only the destination follows the moving hand.
+            float t=progress*progress*(3-2*progress);
+            return Vector3.Lerp(pickupFrom,destination,t)+Vector3.up*(.3f*4*t*(1-t));
         }
         Vector3 motionDestination;Quaternion motionRotation;
         internal NaturalItemSettling naturalSettling;
@@ -262,13 +271,15 @@ namespace LabSorting.Sorting
             motion?.Kill(); hitbox.enabled=false; Highlight(false);transform.SetParent(socket,true);
             var presentation=socket.GetComponent<LabSorting.Player.CarryPresentation>();
             pickupFlight=true;pickupMagnet=magnet;pickupProgress=0;selectionProgress=1;
-            if(magnet){transform.position=presentation?presentation.MagnetEntry(delay):socket.TransformPoint(new Vector3(0,.2f,.7f));transform.localScale=presentation?presentation.ResolveHeldPose(this).scale:originalScale*CarryScale;}
-            pickupFrom=magnet?transform.localPosition:transform.position;pickupScale=transform.localScale;pickupRotation=transform.rotation;
+            pickupFrom=transform.position;pickupScale=transform.localScale;pickupRotation=transform.rotation;
             motion=DOTween.Sequence().AppendInterval(delay).Append(DOTween.To(()=>0f,t=>
             {
                 pickupProgress=t;
-                if(!presentation){transform.localPosition=Vector3.Lerp(magnet?pickupFrom:socket.InverseTransformPoint(pickupFrom),Vector3.zero,t);transform.localRotation=Quaternion.Slerp(Quaternion.Inverse(socket.rotation)*pickupRotation,Quaternion.identity,t);transform.localScale=Vector3.Lerp(pickupScale,originalScale*CarryScale,t);}
-            },1f,magnet?.38f:.34f).SetEase(Ease.Linear)).OnComplete(()=>
+                if(!presentation){transform.position=magnet?MagnetPosition(socket.position,t):Vector3.Lerp(pickupFrom,socket.position,t);transform.rotation=Quaternion.Slerp(pickupRotation,socket.rotation,t);transform.localScale=Vector3.Lerp(pickupScale,originalScale*CarryScale,t);}
+            },1f,magnet?MagnetFlightDuration:.34f).SetEase(Ease.Linear)).OnUpdate(()=>
+            {
+                if(magnet&&!presentation&&pickupProgress==0)transform.SetPositionAndRotation(pickupFrom,pickupRotation);
+            }).OnComplete(()=>
             {
                 if(presentation)presentation.ResolveHeldPose(this).Apply(transform);
                 pickupFlight=false;arrived?.Invoke();PoseChanged();

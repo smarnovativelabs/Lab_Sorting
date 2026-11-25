@@ -79,6 +79,7 @@ namespace LabSorting.Sorting
         {
             CancelPendingDrop();
             if(player.blocked) return false;
+            if(!magnet)foreach(var held in carried)if(held.MagnetFlying)return Fail("Wait for magnet collection to finish");
             if(!item || item.location==ItemLocation.Hand || item.Moving) return Fail("No available item in reach");
             if(item.PickLocked)return Fail("Rack complete! Items are locked");
             if(carried.Count>=capacity) return FullInventoryNotice();
@@ -101,6 +102,8 @@ namespace LabSorting.Sorting
         {
             CancelPendingDrop();
             if(player.blocked || index<0 || index>=carried.Count) return;
+            // Selecting used to complete every flight, teleporting the magnet batch.
+            foreach(var held in carried)if(held.MagnetFlying)return;
             CancelHold();
             if(Active==carried[index])return;
             foreach(var held in carried){held.CompleteMotion();held.gameObject.SetActive(false);}
@@ -160,6 +163,7 @@ namespace LabSorting.Sorting
             CancelHold();
             if(player.blocked)return;
             if(!Active) {Fail("Pick an item first");return;}
+            foreach(var held in carried)if(held.MagnetFlying)return;
             // DROP is an immediate release, including during the pickup animation/cooldown.
             Active.CompleteMotion();
             // Resolve the current aim at the click, not the target cached by the throttled preview.

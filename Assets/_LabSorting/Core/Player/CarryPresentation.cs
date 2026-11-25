@@ -51,9 +51,9 @@ namespace LabSorting.Player
             {
                 if(!child.gameObject.activeInHierarchy)continue;
                 var item=child.GetComponent<LabSorting.Sorting.SortItem>();
-                if(item&&item.location==LabSorting.Sorting.ItemLocation.Hand)active=item;
+                if(item&&item.location==LabSorting.Sorting.ItemLocation.Hand&&!item.MagnetFlying)active=item;
             }
-            if(session&&session.Active&&session.Active.transform.parent==transform&&session.Active.gameObject.activeInHierarchy)active=session.Active;
+            if(session&&session.Active&&session.Active.transform.parent==transform&&session.Active.gameObject.activeInHierarchy&&!session.Active.MagnetFlying)active=session.Active;
             if(active!=displayedItem)
             {
                 RestoreHeldVisual();displayedItem=active;

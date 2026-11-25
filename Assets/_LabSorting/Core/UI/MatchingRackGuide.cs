@@ -73,7 +73,7 @@ namespace LabSorting.UI
             if(!session||!session.Initialized||session.player.blocked||!session.Active||(tutorial&&tutorial.IsRunning)||!GuidedRack||!routeValid)
             {if(marker)marker.gameObject.SetActive(false);MarkerRack=null;return;}
             if(!GuidedRack.gameObject.activeInHierarchy||!GuidedRack.CanAccept(session.Active.definition)){Hide();return;}
-            EnsureMarker();MarkerRack=GuidedRack;marker.gameObject.SetActive(false);
+            EnsureMarker();MarkerRack=GuidedRack;
             bool otherFloor=Mathf.Abs(GuidedRack.transform.position.y-session.player.transform.position.y)>1.8f;
             bool onScreen=false;
             if(!otherFloor)
@@ -92,7 +92,7 @@ namespace LabSorting.UI
                     anchorIndex=index;MarkerWorldPoint=world;MarkerIsPin=true;MarkerOccluded=false;marker.gameObject.SetActive(true);return;
                 }
                 // Occluded or UI-covered visible racks don't get a misleading displaced pin.
-                if(onScreen)return;
+                if(onScreen){marker.gameObject.SetActive(false);return;}
             }
             MarkerWorldPoint=otherFloor?waypoint+Vector3.up*.8f:Anchor(GuidedRack,0);
             var projected=OffScreenIndicatorCore.GetScreenPosition(session.player.view,MarkerWorldPoint);
@@ -108,6 +108,7 @@ namespace LabSorting.UI
                 if(!ClearOfUI(MarkerScreenRect))continue;
                 marker.gameObject.SetActive(true);return;
             }
+            marker.gameObject.SetActive(false);
         }
         Vector3 Anchor(SortRack rack,int index)
         {

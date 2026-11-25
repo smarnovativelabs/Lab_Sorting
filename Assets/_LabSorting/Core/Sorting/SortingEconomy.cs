@@ -57,7 +57,7 @@ namespace LabSorting.Sorting
                 if(item.location==ItemLocation.Loose && item.definition==type && !item.Moving){var origin=item.transform.position;if(TryPick(item,true,collected*.055f)){collected++;origins.Add(origin);}}
             }
             if(collected==0) return Fail("Nothing collected — no charge");
-            if(MagnetCredits>0)MagnetCredits--;else cash-=cost;magnetContext=type;MagnetStatus="COLLECTED "+collected;magnetUntil=Time.unscaledTime+Mathf.Max(.8f,.4f+collected*.055f);Commit("Magnet collected "+collected+" "+type.displayName);Feedback?.Invoke(SortingCue.Pick);MagnetCollected?.Invoke(type,origins.ToArray());SaveTransaction();return true;
+            if(MagnetCredits>0)MagnetCredits--;else cash-=cost;magnetContext=type;MagnetStatus="COLLECTED "+collected;magnetUntil=Time.unscaledTime+Mathf.Max(.8f,SortItem.MagnetFlightDuration+collected*.055f);Commit("Magnet collected "+collected+" "+type.displayName);Feedback?.Invoke(SortingCue.Pick);MagnetCollected?.Invoke(type,origins.ToArray());SaveTransaction();return true;
         }
         public bool TryUpgradeCapacity()
         {
