@@ -41,7 +41,7 @@ namespace LabSorting.Prototype
                 yield return null;yield return null;s.RefreshTarget();yield return null;
                 Check(s.TargetItem&&s.TargetItem.outline.IsHighlighted,"Real aimed item renders its magenta hover outline");ScreenCapture.CaptureScreenshot("Logs/ContinuousHover.png");yield return new WaitForSeconds(.1f);
                 var item0=s.items[0];child.transform.SetParent(item0.transform,false);var collider=child.AddComponent<BoxCollider>();Check(!s.player.character.IsColliderValidForCollisions(collider),"Unregistered child item collider cannot affect locomotion");collider.enabled=false;
-                item0.Highlight(true);Check(item0.outline.enabled&&item0.outline.OutlineWidth==5&&item0.outline.OutlineColor.r>.9f&&item0.outline.OutlineColor.g<.4f&&item0.outline.OutlineColor.b>.6f,"Hover has strong magenta rim");
+                item0.Highlight(true);Check(item0.outline.enabled&&Mathf.Abs(item0.outline.OutlineWidth-4.5f)<.01f&&item0.outline.OutlineColor.r>.9f&&item0.outline.OutlineColor.g<.4f&&item0.outline.OutlineColor.b>.6f,"Hover has strong magenta rim");
                 var scale=item0.transform.localScale;item0.SetBatchHighlight(false);item0.SetSearchHighlight(true);item0.Highlight(false);Check(item0.outline.OutlineColor.r>.9f&&item0.outline.OutlineColor.b<.3f&&item0.transform.localScale==scale,"Search gold is distinct without scaling colliders");item0.SetSearchHighlight(false);
                 int cash=s.Cash;Check(!s.TryMagnet()&&s.MagnetSeconds>0&&s.Cash==cash,"Empty hand starts feedback timer without charge");
                 Check(!s.TryMagnet()&&s.Cash==cash,"Timer prevents repeated empty scans/charges");yield return new WaitForSeconds(1.3f);

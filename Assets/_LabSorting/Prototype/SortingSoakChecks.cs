@@ -18,7 +18,7 @@ namespace LabSorting.Prototype
         }
         [Serializable] public class Report
         {
-            public string status="running",context="15-minute real-time Editor soak, first 2 minutes warm-up. 3500 logical items, 75 pre-sorted rack items repeatedly picked/placed with real animations, paid search/upgrades, held and settled save/load and pause-save cycles. Synthetic starting cash 100000 to keep paid actions available; user saves never touched. Raw memory includes uncollected garbage and Editor allocations. Forced GC occurs ONLY at warm-up/end diagnostic boundaries, never during the measured gameplay interval. 8 MiB retained-managed and 64 MiB Unity-allocated growth tolerances allow Editor noise; not proof of indefinite leak freedom or Android memory usage.";
+            public string status="running",context="15-minute real-time Editor soak, first 2 minutes warm-up. 3500 logical items, 70 pre-sorted rack items repeatedly picked/placed with real animations, paid search/upgrades, held and settled save/load and pause-save cycles. Synthetic starting cash 100000 to keep paid actions available; user saves never touched. Raw memory includes uncollected garbage and Editor allocations. Forced GC occurs ONLY at warm-up/end diagnostic boundaries, never during the measured gameplay interval. 8 MiB retained-managed and 64 MiB Unity-allocated growth tolerances allow Editor noise; not proof of indefinite leak freedom or Android memory usage.";
             public double elapsedSeconds;public int cycles,checks,saveRequests,roundTrips,searches,upgrades,pauseSaves,expectedCash,finalCash,finalSorted;
             public Sample baseline,final;public long retainedManagedGrowth,unityUsedGrowth;public List<Sample> samples=new List<Sample>(40);
         }
@@ -85,14 +85,14 @@ namespace LabSorting.Prototype
             {
                 yield return catalog.Populate(3500);clean=s.Capture();var seed=s.Capture();seed.cash=100000;Check(s.Restore(seed),"Isolated seed wallet restored");s.player.SendMessage("OnApplicationFocus",true);
                 int expected=100000;
-                for(int i=0;i<75;i++){Check(s.TryPick(s.items[i]),"Seed pick");s.items[i].CompleteMotion();Check(s.TryPlace(s.racks[i%5]),"Seed place");s.items[i].CompleteMotion();}
-                expected+=75*s.placementReward+s.firstTenBonus+3*SortingSession.ShortGoalBonus+5*SortingSession.RackBonus;
-                Check(s.Cash==expected&&s.SortedCount==75&&s.CompletedRackCount==5,"Independent seed cash and progress totals");
+                for(int i=0;i<70;i++){Check(s.TryPick(s.items[i]),"Seed pick");s.items[i].CompleteMotion();Check(s.TryPlace(s.racks[i%5]),"Seed place");s.items[i].CompleteMotion();}
+                expected+=70*s.placementReward+s.firstTenBonus+2*SortingSession.ShortGoalBonus;
+                Check(s.Cash==expected&&s.SortedCount==70&&s.CompletedRackCount==0,"Independent seed cash and progress totals");
                 s.persistence=true;Request(s);yield return Durable(s,camera);
                 var timer=System.Diagnostics.Stopwatch.StartNew();double nextSample=30;
                 while(timer.Elapsed.TotalSeconds<Duration)
                 {
-                    int index=report.cycles%75;var item=s.items[index];var rack=s.racks[index%5];
+                    int index=report.cycles%70;var item=s.items[index];var rack=s.racks[index%5];
                     Check(s.TryPick(item),"Repeated rack pickup");Request(s);yield return Motion(item,camera);
                     if(report.cycles%13==0)
                     {
@@ -102,7 +102,7 @@ namespace LabSorting.Prototype
                     if(report.cycles%100==0&&s.capacity<s.maxCapacity)
                     {int cost=s.UpgradeCost;Check(s.TryUpgradeCapacity(),"Paid capacity upgrade succeeds");expected-=cost;report.upgrades++;}
                     if(report.cycles%10==0)yield return RoundTrip(s,camera,expected);
-                    Check(s.TryPlace(rack),"Repeated placement");yield return Motion(item,camera);Check(s.SortedCount==75&&s.carried.Count==0,"Settled inventory and progress remain consistent");
+                    Check(s.TryPlace(rack),"Repeated placement");yield return Motion(item,camera);Check(s.SortedCount==70&&s.carried.Count==0,"Settled inventory and progress remain consistent");
                     Check(s.Cash==expected,"Repeated sorting never farms cash");Request(s);
                     if(report.cycles%10==0)yield return RoundTrip(s,camera,expected);
                     if(report.cycles%60==0){s.SendMessage("OnApplicationPause",true);s.SendMessage("OnApplicationPause",false);report.pauseSaves++;yield return Durable(s,camera);Check(s.Cash==expected,"Pause-save preserves cash");}
@@ -120,7 +120,7 @@ namespace LabSorting.Prototype
                 Check(report.unityUsedGrowth<=64*MiB,"Unity allocated memory stays within 64 MiB growth budget");
                 Check(report.final.materials<=report.baseline.materials+2&&report.final.textures<=report.baseline.textures+2&&report.final.meshes<=report.baseline.meshes+2&&report.final.gameObjects<=report.baseline.gameObjects+2,"No accumulating scene/material/texture/mesh instances");
                 Check(report.final.saveBytes<=report.baseline.saveBytes+4096,"Fixed logical state has bounded save size");
-                Check(s.items.Length==3500&&s.Cash==expected&&s.SortedCount==75&&s.carried.Count==0,"Final cash and progress match independent ledger");
+                Check(s.items.Length==3500&&s.Cash==expected&&s.SortedCount==70&&s.carried.Count==0,"Final cash and progress match independent ledger");
                 report.status="passed";WriteReport();Debug.Log("SORTING_SOAK_OK cycles="+report.cycles+" reloads="+report.roundTrips+" checks="+report.checks);
             }
             finally

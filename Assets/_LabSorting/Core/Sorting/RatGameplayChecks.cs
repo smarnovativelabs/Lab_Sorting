@@ -54,10 +54,10 @@ namespace LabSorting.Sorting
                 var enclosure=glass.GetComponent<Renderer>().bounds;
                 s.player.character.Motor.SetPosition(new Vector3(enclosure.center.x-1.4f,enclosure.min.y+.03f,enclosure.center.z));
                 yield return Wait(.1f);s.player.look.SnapToDirection(enclosure.center-s.player.view.transform.position);Physics.SyncTransforms();s.RefreshTarget();
-                Check(s.TargetRack==glass&&s.TargetItem&&s.TargetItem.rack==glass,"Glass aim targets captured rat for retrieval");
+                Check(s.TargetRack==glass&&(!s.TargetItem||s.TargetItem.rack!=glass),"Glass is targetable without offering captured rats for pickup");
                 var full=s.Capture();Check(s.Restore(full)&&glass.Count==10,"Full container snapshot restores");
-                Check(s.TryPick(rats[0]),"Re-pick captured rat");rats[0].CompleteMotion();
-                Check(glass.Count==9,"Re-pick releases container slot");
+                Check(!s.TryPick(rats[0])&&glass.Count==10&&s.carried.Count==0,"Captured rat remains permanently in glass");Check(s.Restore(initial),"Restore independent loose-rat drop fixture");Check(s.TryPick(rats[0]),"Pick loose rat for drop test");rats[0].CompleteMotion();
+                Check(glass.Count==0,"Independent drop fixture starts with empty glass");
                 s.player.character.Motor.SetPosition(new Vector3(0,.03f,-8.1f));s.player.look.SetYawPitch(Vector2.zero);
                 yield return Wait(.3f);
                 Check(s.TryThrowPosition(rats[0],out var destination),"Safe throw landing is available");
@@ -67,7 +67,7 @@ namespace LabSorting.Sorting
                 var landedPosition=rats[0].transform.position;yield return Wait(4);
                 Check(Vector3.Distance(landedPosition,rats[0].transform.position)>.05f,"Thrown rat resumes roaming");
                 Check(!colony.TryStep(colony.rats[0],new Vector3(100,0,100),out _),"Rats cannot leave room bounds");
-                Check(s.TryPick(rats[1]),"Hold another rat for save test");rats[1].CompleteMotion();
+                foreach(var captured in rats.Skip(2)){Check(s.TryPick(captured),"Pick save fixture rat");captured.CompleteMotion();Check(s.TryPlace(glass),"Capture save fixture rat");captured.CompleteMotion();}Check(s.TryPick(rats[1]),"Hold another rat for save test");rats[1].CompleteMotion();
                 s.saveName="rat-system-test-"+Guid.NewGuid().ToString("N")+".json";s.persistence=true;
                 s.Save();Check(!s.SavePending&&s.LastSaveError==null,"Durable save completes");
                 Check(s.TryPlace(glass),"Mutate state after save");rats[1].CompleteMotion();

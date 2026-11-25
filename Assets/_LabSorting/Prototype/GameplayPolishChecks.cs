@@ -64,8 +64,8 @@ namespace LabSorting.Prototype
                 try
                 {
                     s.player.view.transform.position=markerPoint+suggested.transform.forward*.7f;
-                    s.player.view.transform.LookAt(markerPoint);typeof(MatchingRackGuide).GetField("nextVisibilityCheck",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(rackGuide,0f);markerTick.Invoke(rackGuide,null);
-                    Check(rackGuide.MarkerVisible,"Visible guided rack has a non-interactive diamond marker");
+                    s.player.view.transform.LookAt(markerPoint);markerTick.Invoke(rackGuide,null);
+                    Check(rackGuide.MarkerVisible,"Visible guided rack has a non-interactive location pin");
                     SortingSmokeChecks.Capture(s,"Logs/GuidedRackDiamond.png");
                 }
                 finally{s.player.view.transform.SetPositionAndRotation(eyePosition,eyeRotation);}

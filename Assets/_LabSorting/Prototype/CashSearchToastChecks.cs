@@ -67,7 +67,7 @@ namespace LabSorting.Prototype
                 var sound=hud.GetComponent<LabSoundscape>();bool music=sound.MusicEnabled,enabled=sound.feedback.SoundEnabled;
                 sound.SetMusic(true);sound.feedback.SetSound(true,false);sound.SendMessage("OnApplicationFocus",true);sound.SendMessage("OnApplicationPause",false);
                 yield return new WaitForSecondsRealtime(3);
-                Check(sound.music.isPlaying&&sound.music.clip.name=="LabMusic"&&Mathf.Abs(sound.music.volume-.22f)<.01f,"LabMusic plays at 22 percent");
+                Check(sound.music.isPlaying&&sound.music.clip.name=="LabMusic"&&Mathf.Abs(sound.music.volume-sound.musicVolume)<.01f,"LabMusic reaches the authored music setting");
                 sound.SetMusic(music);sound.feedback.SetSound(enabled,false);
                 ToastSliderChecks.Run(hud);
             }

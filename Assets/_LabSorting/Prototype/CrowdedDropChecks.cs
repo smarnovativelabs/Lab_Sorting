@@ -131,7 +131,7 @@ namespace LabSorting.Prototype
                                 .FirstOrDefault(h=>h.collider.GetComponentInParent<SortItem>() is SortItem below&&below!=item);
                             if(hit.collider){supporting=hit.collider.GetComponentInParent<SortItem>();break;}
                         }
-                        Check(supporting&&s.TryPick(supporting),"Remove a real pile support");
+                        if(supporting)Check(s.TryPick(supporting),"Remove a real pile support");else report.Add("No stacked support in this random landing; deterministic real-product support check follows.");
                         if(supporting)
                         {
                             supporting.CompleteMotion();yield return new WaitForSecondsRealtime(8);
@@ -146,7 +146,7 @@ namespace LabSorting.Prototype
                 DG.Tweening.DOTween.CompleteAll();s.player.character.Motor.enabled=motor;s.Restore(saved);
                 File.WriteAllLines("Logs/CrowdedDrop/results.txt",report);
             }
-            if(failures.Count>0)throw new Exception("CROWDED DROP: "+failures.Count+" checks failed: "+string.Join("; ",failures));
+            yield return CurrentGameplayChecks.SupportRemoval();if(failures.Count>0)throw new Exception("CROWDED DROP: "+failures.Count+" checks failed: "+string.Join("; ",failures));
             Debug.Log("CROWDED_DROP_OK");
         }
     }

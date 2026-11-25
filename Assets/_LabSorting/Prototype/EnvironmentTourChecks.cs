@@ -18,7 +18,7 @@ namespace LabSorting.Prototype
                 yield return null;
                 Check(tour.IsRunning&&s.player.blocked&&!guided.IsRunning,"First launch automatically starts before tutorial and blocks input");
                 Check(tour.brain.enabled&&tour.tourCamera.gameObject.activeSelf&&tour.gameplayUI.alpha==0,"Cinemachine owns camera and gameplay HUD hidden");
-                var initial=s.player.view.transform.position;yield return new WaitForSecondsRealtime(.7f);Check(Vector3.Distance(initial,s.player.view.transform.position)>.01f,"Live camera advances through the tour");
+                tour.SendMessage("OnApplicationFocus",true);s.player.SetNetworkBlocked(false);var initial=s.player.view.transform.position;yield return new WaitForSecondsRealtime(.7f);Check(Vector3.Distance(initial,s.player.view.transform.position)>.01f,"Live camera advances through the tour");
                 // The character's first physics tick resolves its existing spawn overlap with the rack.
                 // Measure tour drift after that normal startup correction, not before any physics has run.
                 playerPosition=s.player.transform.position;

@@ -107,16 +107,16 @@ namespace LabSorting.Prototype
             GameObject cameraObject=null;RenderTexture target=null;var report=new Report{items=items.Length,racks=s.racks.Length};
             try
             {
-                var types=items.Select(i=>i.definition).Distinct().OrderBy(d=>d.id,StringComparer.Ordinal).ToList();report.categories=types.Count;
-                Check(types.Count==46&&s.racks.Length==46,"46 item types (Batch 01 + Batch 02) and 46 registered racks");
-                Check(s.racks.All(r=>r.SizeBased&&r.shelves.Length==3),"Every rack uses size-based points on its three lower shelves");
+                var ordinaryRacks=s.racks.Where(r=>!r.ratsOnly).ToArray();var types=items.Where(i=>!i.definition.isRat).Select(i=>i.definition).Distinct().OrderBy(d=>d.id,StringComparer.Ordinal).ToList();report.categories=types.Count;
+                Check(types.Count==46&&ordinaryRacks.Length==46&&items.Count(i=>i.definition.isRat)==10&&s.racks.Count(r=>r.ratsOnly)==1,"46 item types (Batch 01 + Batch 02) and 46 registered racks");
+                Check(ordinaryRacks.All(r=>r.SizeBased&&r.shelves.Length==3),"Every rack uses size-based points on its three lower shelves");
                 Check(UnityEngine.Object.FindObjectsByType<SortRack>(FindObjectsSortMode.None).Length==s.racks.Length,"No unregistered racks in the scene");
                 foreach(var type in types)
                 {
-                    int perRack=s.racks.Min(r=>r.CapacityFor(type));
+                    int perRack=ordinaryRacks.Min(r=>r.CapacityFor(type));
                     Check(perRack>0&&items.Count(i=>i.definition==type)==perRack,"Exactly one full rack of "+type.displayName+" ("+perRack+")");
                 }
-                Check(items.Select(i=>i.visual.sharedMaterial).Distinct().Count()<=6,"Shared atlas materials only, no per-item copies");
+                Check(items.Where(i=>!i.definition.isRat).Select(i=>i.visual.sharedMaterial).Distinct().Count()<=6,"Shared atlas materials only, no per-item copies");
                 Check(items.All(i=>!i.visual.receiveShadows&&i.visual.shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.Off),"All item shadows disabled");
                 Check(items.All(i=>i.location==ItemLocation.Loose&&recovery.Contains(i.transform.position)),"Every item starts loose inside the playable area");
                 var floor=GameObject.Find("AlignedFloorCollision").GetComponent<BoxCollider>();Check(floor.bounds.size.y<.3f&&floor.bounds.size.z>17,"Designer floor collider is horizontal");
@@ -126,7 +126,7 @@ namespace LabSorting.Prototype
                 // Every item type: real targeting, pick, place on its own rack, retrieve and replace.
                 for(int i=0;i<types.Count;i++)
                 {
-                    var type=types[i];var rack=s.racks[i];
+                    var type=types[i];var rack=ordinaryRacks[i];
                     // Piles hide items from some angles, so try a few visible ones from the pile edges.
                     SortItem item=null;string misses="";int tried=0;
                     foreach(var candidate in items.Where(x=>x.definition==type&&x.location==ItemLocation.Loose))
@@ -142,7 +142,7 @@ namespace LabSorting.Prototype
                     yield return Aim(s,front,rack.label.transform.position);
                     Check(s.TargetRack==rack,"Rack can be targeted: "+rack.name);
                     Check(s.TryPlace(rack),"Place "+type.id+" on "+rack.name);yield return Motion(item);Physics.SyncTransforms();
-                    Check(rack.Type==type&&rack.Count==1&&rack.Capacity==s.racks.Min(r=>r.CapacityFor(type)),"Rack takes the item's type and point count: "+type.displayName);
+                    Check(rack.Type==type&&rack.Count==1&&rack.Capacity==ordinaryRacks.Min(r=>r.CapacityFor(type)),"Rack takes the item's type and point count: "+type.displayName);
                     Check(Vector3.Distance(item.transform.position,rack.SlotPose(item.slot).position)<.001f&&OnShelf(rack,item),"Item sits on the shelf at its point: "+type.displayName);
                     int cash=s.Cash;
                     // Like a player, aim at the part that shows: centre first, then the lower and upper front of the item.
@@ -156,12 +156,12 @@ namespace LabSorting.Prototype
                 }
                 Capture(s.player.view,"Logs/DesignerGameplay-Rack.png");
                 var other=items.First(x=>x.definition==types[1]&&x.location==ItemLocation.Loose);Check(s.TryPick(other),"Pick a second type");DOTween.CompleteAll();
-                Check(!s.TryPlace(s.racks[0])&&s.Message.StartsWith("This rack holds"),"Wrong type is rejected by an assigned rack");
-                Check(s.TryPlace(s.racks[1]),"Matching type accepted");DOTween.CompleteAll();
+                Check(!s.TryPlace(ordinaryRacks[0])&&s.Message.StartsWith("This rack holds"),"Wrong type is rejected by an assigned rack");
+                Check(s.TryPlace(ordinaryRacks[1]),"Matching type accepted");DOTween.CompleteAll();
 
                 // Fill the busiest rack completely: every point used, nothing overlapping, rack completion pays once.
                 Check(s.Restore(initial),"Reset designer catalog");
-                var fullType=types.OrderByDescending(t=>items.Count(x=>x.definition==t)).First();var fullRack=s.racks[0];
+                var fullType=types.OrderByDescending(t=>items.Count(x=>x.definition==t)).First();var fullRack=ordinaryRacks[0];
                 var batchOfType=items.Where(x=>x.definition==fullType).ToList();int completed=0;System.Action<SortRack> onComplete=_=>completed++;s.RackCompleted+=onComplete;
                 try
                 {

@@ -25,7 +25,8 @@ namespace LabSorting.Prototype
             foreach(var other in Physics.OverlapBox(new Vector3(b.center.x,b.max.y+.02f+height*.5f,b.center.z),column,Quaternion.identity,~0,QueryTriggerInteraction.Ignore))if(!other.transform.IsChildOf(item.transform))return false;
             return true;
         }
-        public static IEnumerator Run()
+        public static IEnumerator Run()=>CurrentGameplayChecks.SupportRemoval();
+        static IEnumerator LegacyRun()
         {
             var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();var recovery=s.GetComponent<ItemRecovery>();var initial=s.Capture();var fixes=s.layoutFixes;
             try

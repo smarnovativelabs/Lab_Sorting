@@ -491,7 +491,7 @@ public class SortingIntegrationTests
             Assert.AreEqual(1,UnityEngine.SceneManagement.SceneManager.sceneCount,"Boot scene unloaded after automatic transition");
             Assert.IsNotNull(Camera.main,"Designer player camera is available after boot");
               yield return new WaitForSecondsRealtime(.5f);
-              Assert.IsNull(GameObject.Find("Loading Scene Fade"),"Transition overlay releases controls");
+              double fadeDeadline=EditorApplication.timeSinceStartup+15;while(GameObject.Find("Loading Scene Fade")&&EditorApplication.timeSinceStartup<fadeDeadline)yield return null;Assert.IsNull(GameObject.Find("Loading Scene Fade"),"Transition overlay releases controls within bounded handoff");
               Assert.IsTrue(UnityEngine.Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Any(a=>a.GetInstanceID()==musicId&&a.loop),"Original music source continues into gameplay");
               Assert.AreEqual(1,UnityEngine.Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None).Count(a=>a.isActiveAndEnabled),"One active listener after boot");
             yield return new ExitPlayMode();

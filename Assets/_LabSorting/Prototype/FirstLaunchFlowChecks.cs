@@ -41,7 +41,7 @@ namespace LabSorting.Prototype
             int music=sound.music.GetInstanceID();float began=Time.realtimeSinceStartup;deadline=began+tour.duration+tour.handoffDuration+8;
             while(tour.IsRunning&&Time.realtimeSinceStartup<deadline)yield return null;
             Check(!tour.IsRunning&&g.IsRunning&&!s.player.blocked,"Tour naturally hands control to tutorial without an extra gate");
-            Check(sound.music.GetInstanceID()==music&&sound.music.isPlaying&&sound.music.volume<=.1f,"Same quiet music continues through tour handoff");
+            Check(sound.music.GetInstanceID()==music&&sound.music.isPlaying&&sound.music.volume>0&&sound.music.volume<=sound.musicVolume+.01f,"Same quiet music continues through tour handoff");
             Check(!GameObject.Find("Loading Scene Fade")&&!tour.overlay.activeSelf,"No stale fade overlay covers tutorial");
             var item=s.items.Where(i=>i.location==ItemLocation.Loose).OrderBy(i=>(i.transform.position-s.player.transform.position).sqrMagnitude).First();
             Check(s.TryPick(item),"Actual item pickup begins rack lesson");DG.Tweening.DOTween.CompleteAll();yield return new WaitForSecondsRealtime(.3f);

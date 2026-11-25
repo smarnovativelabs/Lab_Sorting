@@ -175,24 +175,15 @@ namespace LabSorting.Prototype
                 lookTouch.OnPointerUp(swipe);yield return Wait(.2f);
                 Check(g.Current==GuidedTutorial.Step.Pick,"Turning 45 degrees through touch swipes completes Look");
 
-                // Not aiming at anything: the hand points at the aim cross and stays there when the camera turns.
-                s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,-75));yield return Wait(.6f);
-                Check(!g.actions.PickVisible&&g.Mode==GuidedTutorial.HandMode.Aim&&HandNearCenter(g,60)&&g.message.text.StartsWith("Aim the +"),"Nothing aimed at: hand points at the actual crosshair");
-                ScreenCapture.CaptureScreenshot("Logs/Tutorial03Pick.png");yield return Wait(.1f);
-                var before=Tip(g);s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw+40,-70));yield return Wait(.25f);
-                Check(g.Mode==GuidedTutorial.HandMode.Aim&&Vector2.Distance(before,Tip(g))<16,"Hand stays put on screen when the camera turns");
-                var item=NearestLoose(s);
-                for(int attempt=0;attempt<4&&!g.actions.PickVisible;attempt++)
-                {
-                    var me=s.player.transform.position;var to=item.transform.position-me;to.y=0;var step=to.magnitude>1.2f?to.normalized*(to.magnitude-1.0f):Vector3.zero;
-                    yield return Teleport(s,me+step,item.hitbox.bounds.center);
-                }
-                yield return Wait(.15f);
-                Check(g.actions.PickVisible&&g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,g.pickButton,70)&&g.message.text.StartsWith("Tap PICK"),"Aiming at an item moves the hand to PICK");
-                item=s.TargetItem;var pickTap=new PointerEventData(EventSystem.current){pointerId=93};
-                g.actions.pickHold.OnPointerDown(pickTap);g.actions.pickHold.OnPointerUp(pickTap);yield return Wait(.4f);
-                Check(s.Active==item,"PICK button picks the aimed item");
-
+                // Approved PICK tutorial rotates to a reachable item and exposes its own exclusive button.
+                UnityEngine.UI.Button guidedPick=null;
+                yield return CurrentGameplayChecks.Until(()=>{
+                    guidedPick=g.group.GetComponentsInChildren<UnityEngine.UI.Button>(false).FirstOrDefault(b=>b.name=="Tutorial PICK");
+                    return guidedPick&&guidedPick.interactable&&s.TargetItem;
+                },"Guided PICK automatically aims at reachable item",15);
+                Check(s.player.TutorialBlocked&&g.Mode==GuidedTutorial.HandMode.Tap,"Guided PICK locks other controls and points at PICK");
+                var item=s.TargetItem;guidedPick.onClick.Invoke();yield return Wait(.7f);
+                Check(s.Active==item&&!s.player.TutorialBlocked,"Guided PICK collects the aimed item and releases its input lock");
                 Check(g.Current==GuidedTutorial.Step.Place,"Picking completes the Pick step"); Check(g.GuidedRack&&g.RackGuideVisible,"Tutorial marks a compatible same-floor rack");
                 var carry=s.hand.GetComponent<LabSorting.Player.CarryPresentation>();var hud=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();
                 Check(carry.OverlayActive&&s.Active.gameObject.layer==LayerMask.NameToLayer("HeldItem"),"Held model renders separately from floor geometry");

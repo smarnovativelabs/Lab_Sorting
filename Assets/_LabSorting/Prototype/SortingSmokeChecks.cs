@@ -164,9 +164,9 @@ namespace LabSorting.Prototype
             {
                 feedback.SetSound(true,false);feedback.SetHaptics(false,false);yield return WaitGameSeconds(.2f);int sounds=feedback.PlayedSounds;
                 s.TryPick(s.items[0]);Check(s.Active.Moving&&!s.Active.hitbox.enabled,"Pickup animation locks collider until ownership is settled");
-                var socket=s.hand.localPosition;s.hand.localPosition+=Vector3.right*.04f;yield return WaitGameSeconds(.25f);
-                Check(Vector3.Distance(s.Active.transform.position,s.hand.position)<.005f,"Pickup follows moving hand socket");s.hand.localPosition=socket;
-                Check(Vector3.Distance(s.Active.transform.localScale,s.Active.originalScale*s.Active.CarryScale)<.001f,"Held model uses compact scale");
+                var socket=s.hand.localPosition;s.hand.localPosition+=Vector3.right*.04f;yield return WaitGameSeconds(.65f);
+                var carry=s.hand.GetComponent<LabSorting.Player.CarryPresentation>();var heldPose=carry.ResolveHeldPose(s.Active);Check(Vector3.Distance(s.Active.transform.localPosition,heldPose.position)<.005f,"Pickup finishes at shared held presentation pose");s.hand.localPosition=socket;
+                Check(Vector3.Distance(s.Active.transform.localScale,carry.ResolveHeldPose(s.Active).scale)<.001f,"Held model uses shared fitted scale");
                 Check(feedback.PlayedSounds==sounds+1&&cues.Contains(SortingCue.Pick),"Successful pickup emits sound and feedback event");
                 rows=s.GetItemProgress();var selected=rows.Find(r=>r.type==s.items[0].definition);Check(selected.held==1&&selected.sorted==0&&selected.Remaining==selected.total,"Held items remain unsorted in panel");
                 s.TryPlace(s.racks[0]);DOTween.CompleteAll();Check(cues.Contains(SortingCue.Place)&&s.items[0].transform.localScale==s.items[0].originalScale,"Placement feedback and world scale restored");
@@ -188,7 +188,7 @@ namespace LabSorting.Prototype
                 yield return WaitGameSeconds(.2f);feedback.SetSound(true,false);int accepted=feedback.AcceptedCues;s.TryMagnet();DOTween.CompleteAll();Check(feedback.AcceptedCues==accepted+1,"Magnet batch feedback is throttled to one response");
                 total=0;int sorted=0,held=0;foreach(var row in s.GetItemProgress()){total+=row.total;sorted+=row.sorted;held+=row.held;}
                 Check(total==50&&sorted==s.SortedCount&&held==s.carried.Count,"Progress remains consistent after bulk collection");
-                s.Restore(initial);s.TryPick(s.items[0]);s.saveName="sorting-automated-test.json";s.persistence=true;s.Save();s.Restore(initial);Check(s.Load()&&s.Active&&!s.Active.Moving&&s.Active.transform.localScale==s.Active.originalScale*s.Active.CarryScale,"Save during pickup restores completed compact hand pose");s.persistence=false;s.Restore(initial);
+                s.Restore(initial);s.TryPick(s.items[0]);s.saveName="sorting-automated-test.json";s.persistence=true;s.Save();s.Restore(initial);Check(s.Load()&&s.Active&&!s.Active.Moving&&Vector3.Distance(s.Active.transform.localScale,carry.ResolveHeldPose(s.Active).scale)<.001f,"Save during pickup restores completed compact hand pose");s.persistence=false;s.Restore(initial);
                 var originals=new ItemDefinition[7];var temporary=new ItemDefinition[7];
                 try
                 {

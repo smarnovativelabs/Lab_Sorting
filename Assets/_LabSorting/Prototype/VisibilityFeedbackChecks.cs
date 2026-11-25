@@ -92,7 +92,7 @@ namespace LabSorting.Prototype
                 Check(!ItemSupport.Floating(item),"Gameplay drop has support below it");
                 yield return Aim(s,item);
                 yield return Capture("05-drop-landed");
-                yield return SmoothDropChecks.Run(s);
+                yield return CurrentGameplayChecks.NaturalDrop();
                 Debug.Log("VISIBILITY_FEEDBACK_OK");
             }
             finally{DG.Tweening.DOTween.CompleteAll();sizes.Apply(sizes.JoystickScale,oldSize);s.Restore(saved);}

@@ -12,7 +12,8 @@ namespace LabSorting.Prototype
         static IEnumerator Wait(float seconds){float end=Time.time+seconds,deadline=Time.realtimeSinceStartup+15;while(Time.time<end){if(Time.realtimeSinceStartup>deadline)throw new Exception("Player loop stopped");yield return null;}}
         static GameObject Box(Transform parent,string name,Vector3 position,Vector3 scale)
         {var go=GameObject.CreatePrimitive(PrimitiveType.Cube);go.name=name;go.transform.SetParent(parent,false);go.transform.localPosition=position;go.transform.localScale=scale;return go;}
-        public static IEnumerator Run()
+        public static IEnumerator Run()=>CurrentGameplayChecks.NaturalDrop();
+        static IEnumerator LegacyRun()
         {
             var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();s.persistence=false;
             var ui=UnityEngine.Object.FindFirstObjectByType<ContextActionHUD>();var original=s.Capture();var racks=s.racks;

@@ -48,8 +48,8 @@ namespace LabSorting.Prototype
                         Check(!rect.Overlaps(bounds),"No overlap with "+obstacle.name+": "+item.definition.displayName);
                     }
                     ScreenCapture.CaptureScreenshot(folder+"/"+item.definition.id+".png");yield return new WaitForSecondsRealtime(.1f);
-                    s.ThrowActive();item.CompleteMotion();
-                    Check(Vector3.Distance(item.transform.localScale,item.originalScale)<.0001f,"World size restored "+item.definition.displayName);
+                    var placeRack=s.racks.First(r=>r.CanAccept(item.definition));Check(s.TryPlace(placeRack),"Place sizing fixture on compatible rack");item.CompleteMotion();
+                    Check(Vector3.Distance(item.transform.localScale,item.originalScale)<.0001f,"World size restored "+item.definition.displayName);Check(s.Restore(initial),"Reset sizing fixture without relying on floor-drop clearance");
                 }
                 Debug.Log("HELD_SIZE_CHECKS_OK unique="+unique.Length+" resolution="+Screen.width+"x"+Screen.height);
             }
@@ -79,7 +79,7 @@ namespace LabSorting.Prototype
                     yield return FrozenBones(rat,"Held "+rat.name);
                     Check(s.TryPlace(glass),"Place rat in glass");rat.Item.CompleteMotion();yield return FrozenBones(rat,"Glass "+rat.name);
                 }
-                var released=rats[0];Check(s.TryPick(released.Item),"Retrieve glass rat");released.Item.CompleteMotion();s.ThrowActive();
+                var released=rats[0];Check(!s.TryPick(released.Item)&&glass.Count==10,"Placed glass rats cannot be retrieved");Check(s.Restore(saved),"Restore separate loose-rat drop fixture");Check(s.TryPick(released.Item),"Pick a loose rat for drop animation");released.Item.CompleteMotion();s.ThrowActive();
                 float deadline=Time.realtimeSinceStartup+10;
                 while((released.Item.Moving||!released.Running)&&Time.realtimeSinceStartup<deadline)yield return null;
                 Check(released.Running&&released.animator.speed==1,"Dropped rat resumes animation while moving");
@@ -99,7 +99,7 @@ namespace LabSorting.Prototype
                     var rect=carry.HeldScreenRect;var safe=carry.HeldSafeRect;
                     Check(rect.xMin>=safe.xMin-2&&rect.xMax<=safe.xMax+2&&rect.yMin>=safe.yMin-2&&rect.yMax<=safe.yMax+2,"Larger microscope avoids selected card and controls: "+rect+" safe="+safe);
                     ScreenCapture.CaptureScreenshot("Logs/CorrectionReview/"+item.definition.id+".png");yield return new WaitForSecondsRealtime(.2f);
-                    s.ThrowActive();item.CompleteMotion();
+                    var placeRack=s.racks.First(r=>r.CanAccept(item.definition));Check(s.TryPlace(placeRack),"Place sizing fixture on compatible rack");item.CompleteMotion();
                 }
                 guide.preferencesPrefix="LabSorting.CorrectionReview.";PlayerPrefs.SetInt(guide.preferencesPrefix+"GuidedStep",(int)GuidedTutorial.Step.Tools);PlayerPrefs.SetInt(guide.preferencesPrefix+"GuidedToolPage",0);guide.Begin(false);
                 for(int page=0;page<2;page++)

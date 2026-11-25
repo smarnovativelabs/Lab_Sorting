@@ -58,12 +58,7 @@ namespace LabSorting.Prototype
                 s.SendMessage("OnApplicationPause",false);s.SendMessage("OnApplicationFocus",true);Check(s.Cash==expectedCash&&s.MagnetCredits==expectedCredits,"Resume cannot charge magnet a second time");
                 Check(beforeCredits>0?expectedCredits==beforeCredits-1:expectedCash==beforeCash-s.magnetCost,"Magnet consumed exactly one payment");
 
-                s.player.character.Motor.SetPosition(new Vector3(1000,.01f,1000));s.player.look.SetYawPitch(Vector2.zero);s.player.SendMessage("OnApplicationFocus",true);Physics.SyncTransforms();yield return new WaitForSecondsRealtime(.3f);
-                var dropped=s.Active;s.ThrowActive();yield return Wait(()=>dropped.location==ItemLocation.Loose);Check(dropped.location==ItemLocation.Loose&&dropped.Moving,"Pause exercise begins during real throw");
-                var safeTarget=dropped.SavedPosition;int handCount=s.carried.Count,cash=s.Cash;s.SendMessage("OnApplicationFocus",false);s.SendMessage("OnApplicationPause",true);
-                Check(DropLandingPool.ActiveCount==0&&!dropped.Moving&&dropped.hitbox.enabled,"Focus loss and pause settle thrown physics once");Check(Vector3.Distance(dropped.transform.position,safeTarget)<.001f,"Background throw settles at reserved safe landing");
-                string droppedId=dropped.id;s.Restore(initial);Check(s.Load(),"Load actual throw pause save");var loaded=s.items.First(i=>i.id==droppedId);Check(loaded.location==ItemLocation.Loose&&Vector3.Distance(loaded.transform.position,safeTarget)<.001f&&s.carried.Count==handCount&&s.Cash==cash,"Drop pose, hand count and cash survive reload");
-                s.SendMessage("OnApplicationPause",false);s.SendMessage("OnApplicationFocus",true);s.player.SendMessage("OnApplicationFocus",true);
+                yield return CurrentGameplayChecks.DropSave();
                 s.Select(0);Check(s.Active.Presenting||s.carried.IndexOf(s.Active)==0,"Selection remains usable after resume");s.SendMessage("OnApplicationPause",true);Check(s.carried.All(i=>!i.Moving&&!i.Presenting),"Background during selection leaves no stale tween");s.SendMessage("OnApplicationPause",false);
                 var settings=UnityEngine.Object.FindFirstObjectByType<SettingsTutorialPanel>();settings.OpenSettings();s.SendMessage("OnApplicationPause",true);Check(settings.IsOpen&&settings.root.activeSelf&&s.player.blocked,"Background preserves open settings/modal input block");s.SendMessage("OnApplicationPause",false);settings.Close();
 

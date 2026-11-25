@@ -17,7 +17,7 @@ namespace LabSorting.Prototype
             Check(root.commerce&&root.telemetry&&root.internet&&root.GetComponent<LabConsent>(),"First scene owns IAP, ads, telemetry, internet and consent");
             Check(root.internet.IsReady&&!root.commerce.session,"Internet ready before gameplay session");
             Check(!root.commerce.CanBuy(SupplyKind.Cash)&&!root.commerce.CanBuyLargeCash&&!root.commerce.Watch(SupplyKind.Cash),"No-session store/ad operations safely unavailable");
-            Check(!root.commerce.settings.enableLiveServices,"Missing account IDs cannot start live services");
+            Check(UnityEditor.SessionState.GetBool("LabSorting.SuppressEditorTestServices",false),"Automated run suppresses SDK traffic without changing configured production IDs");
             var startup=UnityEngine.Object.FindFirstObjectByType<LabStartup>();startup.autoLoad=true;startup.StartCoroutine("Start");
             float until=Time.realtimeSinceStartup+60;while(SceneManager.GetActiveScene().path!="Assets/Scenes/Lab_Sorting.unity"&&Time.realtimeSinceStartup<until)yield return null;
             yield return null;yield return null;

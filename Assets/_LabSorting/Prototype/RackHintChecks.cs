@@ -38,7 +38,7 @@ namespace LabSorting.Prototype
                 Check(!s.TryPick(item)&&rack.AvailabilityHint=="FULL"&&!rack.CompatibleHint,"Completed rack stays locked and full");
                 var other=s.items.First(i=>i.definition!=item.definition);Check(s.TryPick(other),"Select different item type");DOTween.CompleteAll();yield return WaitForHint(rack,false);
                 Check(!rack.CompatibleHint,"Wrong type removes highlight");
-                s.Select(s.carried.IndexOf(item));yield return WaitForHint(rack,true);Check(rack.CompatibleHint,"Inventory reselection refreshes highlight");
+                s.Select(s.carried.IndexOf(same[3]));yield return WaitForHint(rack,false);Check(!rack.CompatibleHint,"Reselecting matching item does not unlock a completed full rack");
                 s.player.SetBlocked(true);yield return WaitForHint(rack,false);Check(!rack.CompatibleHint,"Settings/modal block removes hint");s.player.SetBlocked(false);
                 Debug.Log("RACK_HINTS_OK");
             }

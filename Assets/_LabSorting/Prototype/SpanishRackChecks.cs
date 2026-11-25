@@ -61,7 +61,8 @@ namespace LabSorting.Prototype
             }
             finally{camera.targetTexture=target;canvas.renderMode=mode;canvas.worldCamera=world;canvas.planeDistance=plane;canvas.scaleFactor=scale;scaler.enabled=scalerEnabled;safe.enabled=safeEnabled;safe.Apply();}
         }
-        public static IEnumerator Run()
+        public static IEnumerator Run()=>CurrentGameplayChecks.EnglishLanguage();
+        static IEnumerator LegacyRun()
         {
             var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();var snapshot=s.Capture();
             var oldLocale=LocalizationSettings.SelectedLocale;string oldLanguage=PlayerPrefs.GetString("Lab.Language","en");

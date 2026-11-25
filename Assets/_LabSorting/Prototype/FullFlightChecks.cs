@@ -42,8 +42,8 @@ namespace LabSorting.Prototype
                 var dense=s.items.Where(i=>i.location==ItemLocation.Loose).OrderBy(i=>i.visual.bounds.size.sqrMagnitude).First();
                 Check(s.TryPick(dense),"Pick real scene item for dense environment release");DOTween.CompleteAll();yield return Wait(.3f);
                 bool found=false;for(int angle=0;angle<360;angle+=30){s.player.look.SetYawPitch(new Vector2(angle,0));yield return null;if(s.TryThrowPosition(dense,out _)){found=true;break;}}
-                Check(found,"Dense designer area has a validated front landing");int denseStarts=DropLandingPool.FullFlightStarts;s.ThrowActive();yield return Wait(2.1f);
-                Check(DropLandingPool.FullFlightStarts==denseStarts+1&&dense.location==ItemLocation.Loose&&!dense.Moving&&dense.hitbox.enabled&&DropLandingPool.ActiveCount==0,"Actual dense scene drop completes through full-flight physics");
+                Check(found,"Dense designer area has a validated front landing");s.ThrowActive();yield return CurrentGameplayChecks.Until(()=>!dense.Moving,"Dense natural drop settles",25);
+                Check(dense.GetComponent<NaturalItemSettling>()&&dense.location==ItemLocation.Loose&&!dense.Moving&&dense.hitbox.enabled&&DropLandingPool.ActiveCount==0,"Actual dense scene drop completes through full-flight physics");
                 Physics.SyncTransforms();var near=Physics.OverlapBox(dense.hitbox.bounds.center,dense.hitbox.bounds.extents,Quaternion.identity,~0,QueryTriggerInteraction.Ignore);
                 foreach(var other in near)if(other!=dense.hitbox&&!other.transform.IsChildOf(dense.transform))Check(!Physics.ComputePenetration(dense.hitbox,dense.hitbox.transform.position,dense.hitbox.transform.rotation,other,other.transform.position,other.transform.rotation,out _,out float depth)||depth<=.006f,"Dense landing avoids penetration beyond contact tolerance");
                 s.Restore(initial);
