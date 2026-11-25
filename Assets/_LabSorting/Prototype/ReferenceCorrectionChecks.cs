@@ -39,7 +39,7 @@ namespace LabSorting.Prototype
                     {s.player.look.SnapToDirection(delta);break;}
                 }
                 yield return null;yield return null;s.RefreshTarget();yield return null;
-                Check(s.TargetItem&&s.TargetItem.outline.IsHighlighted,"Real aimed item renders its magenta hover outline");ScreenCapture.CaptureScreenshot("Logs/ContinuousHover.png");yield return new WaitForSeconds(.1f);
+                Check(s.TargetItem&&s.TargetItem.outline.IsHighlighted,"Real aimed item renders its magenta hover outline");ShotGate.Capture("Logs/ContinuousHover.png");yield return new WaitForSeconds(.1f);
                 var item0=s.items[0];child.transform.SetParent(item0.transform,false);var collider=child.AddComponent<BoxCollider>();Check(!s.player.character.IsColliderValidForCollisions(collider),"Unregistered child item collider cannot affect locomotion");collider.enabled=false;
                 item0.Highlight(true);Check(item0.outline.enabled&&Mathf.Abs(item0.outline.OutlineWidth-4.5f)<.01f&&item0.outline.OutlineColor.r>.9f&&item0.outline.OutlineColor.g<.4f&&item0.outline.OutlineColor.b>.6f,"Hover has strong magenta rim");
                 var scale=item0.transform.localScale;item0.SetBatchHighlight(false);item0.SetSearchHighlight(true);item0.Highlight(false);Check(item0.outline.OutlineColor.r>.9f&&item0.outline.OutlineColor.b<.3f&&item0.transform.localScale==scale,"Search gold is distinct without scaling colliders");item0.SetSearchHighlight(false);
@@ -49,7 +49,7 @@ namespace LabSorting.Prototype
                 Check(!s.TryMagnet()&&s.MagnetStatus=="NO MATCH"&&s.MagnetSeconds>0&&s.Cash==cash,"No matching loose items gives timed no-charge feedback");item0.definition=definition;
                 yield return new WaitForSeconds(1.3f);Check(s.TrySearch(),"Search still works across full layout");Check(s.TryMagnet()&&s.MagnetSeconds>0,"Successful magnet has visible cooldown");DOTween.CompleteAll();yield return new WaitForSeconds(.1f);
                 var economy=UnityEngine.Object.FindFirstObjectByType<EconomyHUD>();Check((economy.compact?economy.magnetLabel.text.Contains("s"):economy.magnetLabel.text.Contains("COLLECTED")),"Magnet countdown/result reaches HUD");
-                ScreenCapture.CaptureScreenshot("Logs/ContinuousSpreadHUD.png");yield return new WaitForSeconds(.15f);
+                ShotGate.Capture("Logs/ContinuousSpreadHUD.png");yield return new WaitForSeconds(.15f);
                 Debug.Log("REFERENCE_CORRECTIONS_OK");
             }
             finally{DOTween.CompleteAll();s.items=originals;s.Restore(initial);s.InitializeSaveCache();UnityEngine.Object.Destroy(child);UnityEngine.Object.Destroy(unique);}

@@ -16,7 +16,7 @@ namespace LabSorting.UI
         {
             var delta=item.transform.position-session.player.transform.position;
             float bottom=item.hitbox?item.hitbox.bounds.min.y:item.transform.position.y;
-            return Bearing(session.player.view.transform.forward,delta)+"  |  "+Floor(bottom,session.player.transform.position.y)+"  |  "+delta.magnitude.ToString("0.0")+"m";
+            return Bearing(session.player.view.transform.forward,delta)+"  |  "+Floor(bottom,session.player.transform.position.y);
         }
     }
 }

@@ -10,6 +10,24 @@ namespace LabSorting.Sorting
         [Tooltip("Usable min/max along the rack width (local X).")] public Vector2 x;
         [Tooltip("Usable min/max along the rack depth (local Z). Front is -Z.")] public Vector2 z;
     }
+    // TextMesh's default font material (GUI/Text Shader) ignores depth, so labels show through walls.
+    // Swap that shared material to a depth-tested twin; the font atlas and color properties are kept.
+    public static class RackLabelDepth
+    {
+        static Shader depthTested;static bool loaded;
+        public static bool IsDepthTested(TextMesh label)
+        {
+            var renderer=label?label.GetComponent<MeshRenderer>():null;var material=renderer?renderer.sharedMaterial:null;
+            return material&&material.shader&&material.shader.name=="LabSorting/RackLabelText";
+        }
+        public static void Apply(TextMesh label)
+        {
+            if(!loaded){depthTested=Resources.Load<Shader>("LabRackLabelText");loaded=true;}
+            if(!depthTested||!label)return;
+            var renderer=label.GetComponent<MeshRenderer>();var material=renderer?renderer.sharedMaterial:null;
+            if(material&&material.shader!=depthTested)material.shader=depthTested;
+        }
+    }
     public sealed class SortRack : MonoBehaviour
     {
         public string id;
@@ -152,6 +170,7 @@ namespace LabSorting.Sorting
             }
             AvailabilityHint=Type?(RemainingSlots==0?"FULL":AlmostFull?RemainingSlots+ (RemainingSlots==1?" SLOT LEFT":" SLOTS LEFT"):""):"";
             if(!label) return;
+            RackLabelDepth.Apply(label);
             label.text=ratsOnly?"RATS\n"+Count+" / "+Capacity:Type?Type.displayName+"\n"+Count+" / "+Capacity:SizeBased?"EMPTY / ANY ITEM":"EMPTY / ANY ITEM\n0 / "+Capacity;
             if(AvailabilityHint.Length>0)label.text+="  |  "+AvailabilityHint;
             label.text=LabSorting.Services.LabLocalization.Text(label.text);

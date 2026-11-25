@@ -18,8 +18,15 @@ namespace LabSorting.Prototype
         static void Log(string text){File.AppendAllText(Folder+"/checks.txt",text+"\n");Debug.Log("CARRY "+text);}
         static void Check(bool ok,string text){Log((ok?"PASS ":"FAIL ")+text);if(!ok)throw new Exception(text);}
         static void Unblock(SortingSession s){s.player.SetNetworkBlocked(false);s.player.SetTutorialBlocked(false);s.player.SetBlocked(false);s.player.SetPickTutorialLocked(false);}
-        static IEnumerator Capture(string name){yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Folder+"/"+name+".png");yield return new WaitForSecondsRealtime(.2f);}
+        static IEnumerator Capture(string name){yield return new WaitForEndOfFrame();if(UnityEditor.SessionState.GetBool("LabSorting.CaptureShots",false))ScreenCapture.CaptureScreenshot(Folder+"/"+name+".png");yield return new WaitForSecondsRealtime(.2f);}
         static IEnumerator Settle(SortItem item){float end=Time.realtimeSinceStartup+8;while(item.Moving&&Time.realtimeSinceStartup<end)yield return null;Check(!item.Moving,"Motion completed: "+item.definition.displayName);yield return new WaitForEndOfFrame();}
+        // Selection animates scale and tilt; compare against the final pose only once it is over.
+        static IEnumerator Presented(SortingSession s)
+        {
+            float end=Time.realtimeSinceStartup+3;yield return new WaitForSeconds(.25f);
+            while(s.Active&&(s.Active.Presenting||s.Active.Moving)&&Time.realtimeSinceStartup<end)yield return null;
+            yield return new WaitForEndOfFrame();
+        }
         static void PoseCheck(SortItem item,CarryPresentation carry,string label)
         {
             var t=item.transform;var pose=carry.ResolveHeldPose(item);
@@ -62,12 +69,12 @@ namespace LabSorting.Prototype
                     Check(Vector3.Distance(p,item.transform.localPosition)<.0001f&&Quaternion.Angle(r,item.transform.localRotation)<.05f&&Vector3.Distance(scale,item.transform.localScale)<.0001f,"Stable arrival "+name);
                     yield return Capture("after-"+name.Replace(" ","-"));
                 }
-                Unblock(s);s.Select(0);yield return new WaitForSeconds(.25f);yield return new WaitForEndOfFrame();PoseCheck(s.Active,carry,"Selection");
-                s.Cycle();yield return new WaitForSeconds(.25f);yield return new WaitForEndOfFrame();PoseCheck(s.Active,carry,"Cycle");
+                Unblock(s);s.Select(0);yield return Presented(s);PoseCheck(s.Active,carry,"Selection");
+                s.Cycle();yield return Presented(s);PoseCheck(s.Active,carry,"Cycle");
                 var first=s.items.First(i=>i.location==ItemLocation.Loose&&!i.Moving&&!i.definition.isRat);
                 var second=s.items.First(i=>i!=first&&i.location==ItemLocation.Loose&&!i.Moving&&!i.definition.isRat);
                 Check(s.TryPick(first)&&s.TryPick(second),"Rapid successive pickups");
-                s.Select(0);yield return new WaitForSeconds(.25f);yield return new WaitForEndOfFrame();
+                s.Select(0);yield return Presented(s);
                 Check(!first.Moving&&!second.Moving&&!first.gameObject.activeSelf&&!second.gameObject.activeSelf,"Selection during flight settles and hides other items");PoseCheck(s.Active,carry,"Mid-flight selection");
                 var magnet=s.items.First(i=>i.location==ItemLocation.Loose&&!i.Moving&&!i.definition.isRat);
                 Check(s.TryPick(magnet,true,.1f),"Staggered magnet arrival");

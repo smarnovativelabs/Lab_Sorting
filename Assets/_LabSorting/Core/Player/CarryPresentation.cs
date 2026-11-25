@@ -131,16 +131,20 @@ namespace LabSorting.Player
         void FitHeldItem(LabSorting.Sorting.SortItem item)
         {
             float padding=Screen.height*.018f;
-            float left=Screen.width*.52f,right=Screen.width*.82f;
+            float left=Screen.width*.52f,right=Screen.width*.88f;
             if(selectedCard)left=Mathf.Max(left,ScreenRect(selectedCard).xMax+padding);
             if(actions)
             {
-                if(actions.pick)right=Mathf.Min(right,ScreenRect(actions.pick.transform as RectTransform).xMin-padding);
-                if(actions.drop)right=Mathf.Min(right,ScreenRect(actions.drop.transform as RectTransform).xMin-padding);
-                if(actions.place)right=Mathf.Min(right,ScreenRect(actions.place.transform as RectTransform).xMin-padding);
+                // The item may slide under the edge of the action buttons, like a held object in front of the HUD.
+                foreach(var button in new[]{actions.pick,actions.drop,actions.place})
+                {
+                    if(!button)continue;
+                    var rect=ScreenRect(button.transform as RectTransform);
+                    right=Mathf.Min(right,rect.xMin+rect.width*ButtonOverlap);
+                }
             }
             // Use the open space above controls on unusually narrow layouts.
-            float bottom=Screen.height*.13f,top=Screen.height*.46f;
+            float bottom=Screen.height*.11f,top=Screen.height*.52f;
             if(right-left<Screen.height*.12f){left=Screen.width*.52f;right=Screen.width*.80f;bottom=Screen.height*.48f;top=Screen.height*.72f;}
             var safe=Screen.safeArea;
             left=Mathf.Max(left,safe.xMin+padding);right=Mathf.Max(left+1,Mathf.Min(right,safe.xMax-padding));
@@ -148,10 +152,10 @@ namespace LabSorting.Player
             HeldSafeRect=Rect.MinMaxRect(left,bottom,right,top);
             var projected=ProjectBounds(item.visual);
             float multiplier=item.definition?Mathf.Max(1,item.definition.heldSizeMultiplier):1;
-            float height=Screen.height*.26f*multiplier,fill=Mathf.Min(.95f,.9f*multiplier);
+            float height=Screen.height*.33f*multiplier,fill=Mathf.Min(1f,.86f*multiplier);
             float size=HeldSafeRect.width*fill;
             float factor=Mathf.Min(size/Mathf.Max(1,projected.width),Mathf.Min(height,HeldSafeRect.height*fill)/Mathf.Max(1,projected.height));
-            item.transform.localScale*=Mathf.Clamp(factor,.1f,3f);
+            item.transform.localScale*=Mathf.Clamp(factor,.1f,4f);
             // Center visible geometry, not the imported model's arbitrary pivot.
             var center=view.WorldToScreenPoint(item.visual.bounds.center);
             var destination=new Vector3(HeldSafeRect.center.x,HeldSafeRect.center.y,center.z);
@@ -162,7 +166,7 @@ namespace LabSorting.Player
             {
                 var fitted=ProjectBounds(item.visual);
                 float refit=Mathf.Min(size/Mathf.Max(1,fitted.width),Mathf.Min(height,HeldSafeRect.height*fill)/Mathf.Max(1,fitted.height));
-                item.transform.localScale*=Mathf.Clamp(refit,.1f,3f);
+                item.transform.localScale*=Mathf.Clamp(refit,.1f,4f);
                 fitted=ProjectBounds(item.visual);
                 float depth=view.WorldToScreenPoint(item.visual.bounds.center).z;
                 item.transform.position+=view.ScreenToWorldPoint(new Vector3(HeldSafeRect.center.x,HeldSafeRect.center.y,depth))-view.ScreenToWorldPoint(new Vector3(fitted.center.x,fitted.center.y,depth));
@@ -173,10 +177,12 @@ namespace LabSorting.Player
             float radius=0;
             for(int i=0;i<8;i++)radius=Mathf.Max(radius,Vector3.Distance(centerWorld,item.visual.transform.TransformPoint(bounds.center+Vector3.Scale(bounds.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1)))));
             float centerDepth=view.WorldToScreenPoint(centerWorld).z;
-            float limit=Mathf.Min(.18f*ClearanceScale,Mathf.Max(.001f,centerDepth-view.nearClipPlane-.015f));
+            float limit=Mathf.Min(Envelope*ClearanceScale,Mathf.Max(.001f,centerDepth-view.nearClipPlane-.015f));
             if(radius>limit){item.transform.localScale*=limit/radius;item.transform.position+=centerWorld-item.visual.transform.TransformPoint(bounds.center);}
             HeldScreenRect=ProjectBounds(item.visual);
         }
+        // Radius of the carried model, and how far (fraction of button width) it may slide under an action button.
+        const float Envelope=.23f,ButtonOverlap=.35f;
         public float ClearanceScale {get;private set;}=1;
         void Awake(){rest=transform.localPosition;mask=~((1<<2)|LayerMask.GetMask("SortingItem","HeldItem"));}
         void LateUpdate()
@@ -185,11 +191,11 @@ namespace LabSorting.Player
             UpdateHeldVisual();
             Vector3 desired=transform.parent.TransformPoint(rest),origin=view.transform.position;
             var delta=desired-origin;float distance=delta.magnitude;
-            bool blocked=Physics.SphereCast(origin,.20f,delta.normalized,out var hit,distance,mask,QueryTriggerInteraction.Ignore);
+            bool blocked=Physics.SphereCast(origin,Envelope+.02f,delta.normalized,out var hit,distance,mask,QueryTriggerInteraction.Ignore);
             float restDepth=Vector3.Dot(delta,view.transform.forward);
             // Every carried model fits the .18m envelope. Keep its rear edge ahead of
             // the near plane rather than enforcing a fixed minimum distance from walls.
-            float minimum=Mathf.Clamp01((view.nearClipPlane+.015f)/Mathf.Max(.001f,restDepth-.18f));
+            float minimum=Mathf.Clamp01((view.nearClipPlane+.015f)/Mathf.Max(.001f,restDepth-Envelope));
             float target=blocked?Mathf.Clamp((hit.distance-.025f)/Mathf.Max(.001f,distance),minimum,1):1;
             // Smooth a camera-relative distance, never a world position left behind by a turn.
             // Size and camera depth change together, preserving the projected size near walls.
@@ -212,7 +218,7 @@ namespace LabSorting.Player
             var delta=position-transform.position;
             float distance=delta.magnitude;
             if(distance<.001f)return transform.position;
-            if(Physics.SphereCast(transform.position,.19f*ClearanceScale,delta.normalized,out var hit,distance,mask,QueryTriggerInteraction.Ignore))distance=Mathf.Max(0,hit.distance-.03f);
+            if(Physics.SphereCast(transform.position,(Envelope+.01f)*ClearanceScale,delta.normalized,out var hit,distance,mask,QueryTriggerInteraction.Ignore))distance=Mathf.Max(0,hit.distance-.03f);
             return transform.position+delta.normalized*distance;
         }
     }

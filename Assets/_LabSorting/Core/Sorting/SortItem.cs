@@ -68,7 +68,7 @@ namespace LabSorting.Sorting
                     (1-smooth)*(1-smooth)*raised+2*(1-smooth)*smooth*middle+smooth*smooth*destination;
                 transform.position=position;
                 transform.rotation=Quaternion.Slerp(pickupRotation,transform.parent.rotation*pose.rotation,smooth)*Quaternion.Euler(new Vector3(10,48,-14)*Mathf.Sin(t*Mathf.PI));
-                transform.localScale=Vector3.Lerp(pickupScale,pose.scale,smooth)*(1+.06f*Mathf.Sin(t*Mathf.PI));
+                transform.localScale=Vector3.Lerp(pickupScale,pose.scale,smooth)*(1+.1f*Mathf.Sin(t*Mathf.PI));
             }
             else
             {

@@ -11,7 +11,7 @@ namespace LabSorting.Prototype
     public static class VisibilityFeedbackChecks
     {
         static void Check(bool ok,string message){if(!ok)throw new Exception("VISIBILITY: "+message);Debug.Log("VISIBILITY PASS: "+message);}
-        static IEnumerator Capture(string name){ScreenCapture.CaptureScreenshot("Logs/VisibilityReview/"+name+".png");yield return new WaitForSecondsRealtime(.3f);}
+        static IEnumerator Capture(string name){ShotGate.Capture("Logs/VisibilityReview/"+name+".png");yield return new WaitForSecondsRealtime(.3f);}
         static IEnumerator Aim(SortingSession s,SortItem item)
         {
             // Re-aim after the camera rig follows the rotated target, using its updated eye position.

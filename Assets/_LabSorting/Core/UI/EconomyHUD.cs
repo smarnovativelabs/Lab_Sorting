@@ -114,7 +114,7 @@ namespace LabSorting.UI
                 marker.color=otherFloor?new Color(1,.87f,.4f):new Color(.5f,1,1);
                 marker.text=SearchDirection.Describe(session,item)+"\n"+(loose>0&&loose<=5?"LAST "+loose+" TO FIND  |  ":"")+SearchDirection.Route(bottom,feet)+"  |  "+remaining+" remaining";
             }
-            else marker.text=(offscreen?(point.x<.5f?"< ":"> "):"v ")+item.definition.displayName+"  "+Vector3.Distance(camera.transform.position,item.transform.position).ToString("0")+"m";
+            else marker.text=(offscreen?(point.x<.5f?"< ":"> "):"v ")+item.definition.displayName;
             if(markerBackdrop){var r=markerBackdrop.rectTransform;r.anchorMin=marker.rectTransform.anchorMin;r.anchorMax=marker.rectTransform.anchorMax;r.anchoredPosition=marker.rectTransform.anchoredPosition;r.sizeDelta=marker.rectTransform.sizeDelta+new Vector2(16,8);}
         }
     }

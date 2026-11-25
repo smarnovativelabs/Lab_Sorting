@@ -55,7 +55,7 @@ namespace LabSorting.Prototype
                 Check(!item.Moving&&item.hitbox.bounds.min.y>=baseItem.hitbox.bounds.max.y-.02f,"Real product lands on top of another product");
                 Check(!Physics.ComputePenetration(item.hitbox,item.transform.position,item.transform.rotation,baseItem.hitbox,baseItem.transform.position,baseItem.transform.rotation,out _,out var penetration)||penetration<.005f,"Stacked products do not intersect");
                 for(int pass=0;pass<3;pass++){s.player.look.SnapToDirection((item.hitbox.bounds.center+baseItem.hitbox.bounds.center)*.5f-s.player.view.transform.position);yield return new WaitForSecondsRealtime(.2f);}
-                ScreenCapture.CaptureScreenshot("Logs/VisibilityReview/06-product-stacking.png");yield return new WaitForSecondsRealtime(.3f);
+                ShotGate.Capture("Logs/VisibilityReview/06-product-stacking.png");yield return new WaitForSecondsRealtime(.3f);
                 var topBefore=item.transform.position;Check(s.TryPick(baseItem),"Pick the supporting product");baseItem.CompleteMotion();
                 yield return new WaitForSecondsRealtime(2);
                 Check(item.transform.position.y<topBefore.y-.02f,"Removing support lowers the item above");

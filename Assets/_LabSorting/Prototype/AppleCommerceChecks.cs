@@ -44,7 +44,7 @@ namespace LabSorting.Prototype
             var panel=commerce.GetComponent<LabSorting.UI.CommerceDebugPanel>();Check(panel&&panel.IsOpen,"Debug panel opens from Services button");
             Directory.CreateDirectory("Logs");
             yield return null;
-            ScreenCapture.CaptureScreenshot("Logs/PurchaseDebugPanel.png");
+            ShotGate.Capture("Logs/PurchaseDebugPanel.png");
             panel.Hide();services.Close();services.settingsPanel.Close();
             int cash=session.Cash;
             Check(debug.Arm(CommerceDebugControls.TestMode.ConfirmationStall),"Stall mode arms");

@@ -82,7 +82,7 @@ namespace LabSorting.Prototype
             Check(UnityEngine.Screen.width==width&&UnityEngine.Screen.height==height,"Game view resized to "+width+"x"+height);
             for(int i=0;i<3;i++)yield return null;Canvas.ForceUpdateCanvases();
         }
-        static IEnumerator Capture(string name){UnityEngine.ScreenCapture.CaptureScreenshot(Folder+"/"+name+".png");for(int i=0;i<3;i++)yield return null;yield return new WaitForSecondsRealtime(.15f);}
+        static IEnumerator Capture(string name){ShotGate.Capture(Folder+"/"+name+".png");for(int i=0;i<3;i++)yield return null;yield return new WaitForSecondsRealtime(.15f);}
 
         public static IEnumerator Run()
         {

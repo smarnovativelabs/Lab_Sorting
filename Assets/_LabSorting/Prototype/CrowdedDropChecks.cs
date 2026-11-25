@@ -13,7 +13,7 @@ namespace LabSorting.Prototype
         static readonly List<string> report=new List<string>();
         static readonly List<string> failures=new List<string>();
         static void Check(bool ok,string text){report.Add((ok?"PASS ":"FAIL ")+text);Debug.Log("CROWDED DROP: "+report.Last());if(!ok)failures.Add(text);}
-        static IEnumerator Capture(string name){ScreenCapture.CaptureScreenshot("Logs/CrowdedDrop/"+name+".png");yield return new WaitForSecondsRealtime(.35f);}
+        static IEnumerator Capture(string name){ShotGate.Capture("Logs/CrowdedDrop/"+name+".png");yield return new WaitForSecondsRealtime(.35f);}
         static bool Intersects(SortItem item,out string obstacle)
         {
             Physics.SyncTransforms();var b=item.hitbox.bounds;

@@ -44,7 +44,7 @@ namespace LabSorting.Prototype
                 var start=counter.IncrementRect.position;
                 yield return Wait(.16f);
                 Check(counter.IncrementRect.position.y>start.y,"Increment floats upward toward the badge");
-                ScreenCapture.CaptureScreenshot("Logs/SortedProgress/increment.png");
+                ShotGate.Capture("Logs/SortedProgress/increment.png");
                 yield return Wait(.45f);
                 Check(counter.DisplayedCount==baseline+1&&counter.PendingCount==0&&!counter.IsAnimating,"Merge increments exactly once");
                 Check(hud.progress.text.Contains("SORTED  "+UIFormat.Count(baseline+1)),"Sorted label displays the merged count");

@@ -85,14 +85,14 @@ namespace LabSorting.Prototype
                 float height=bodies.Max(b=>Bounds(b).max.y)-origin.y;report.Add("Pile maximum height="+height.ToString("F3")+"m; bodies="+bodies.Count);
                 s.player.character.Motor.SetPosition(origin+new Vector3(0,.01f,-3));s.player.character.Motor.enabled=false;
                 for(int i=0;i<3;i++){s.player.look.SnapToDirection(origin+new Vector3(0,.3f,1)-s.player.view.transform.position);yield return new WaitForSecondsRealtime(.2f);}
-                ScreenCapture.CaptureScreenshot("Logs/SettlingPrototype/01-settled-pile.png");yield return new WaitForSecondsRealtime(.4f);
+                ShotGate.Capture("Logs/SettlingPrototype/01-settled-pile.png");yield return new WaitForSecondsRealtime(.4f);
                 // Wake nearby settled bodies when a lower support is removed.
                 var lower=bodies.OrderBy(b=>Bounds(b).center.y).First();var removed=Bounds(lower);UnityEngine.Object.Destroy(lower.gameObject);bodies.Remove(lower);yield return null;
                 foreach(var body in bodies){body.isKinematic=false;body.WakeUp();}
                 yield return Simulate(physics,360);
                 int moving=bodies.Count(b=>b.linearVelocity.sqrMagnitude>.01f||b.angularVelocity.sqrMagnitude>.04f);
                 report.Add((moving==0?"PASS ":"FAIL ")+"Support removal recovery; moving bodies="+moving);if(moving>0)failures++;
-                ScreenCapture.CaptureScreenshot("Logs/SettlingPrototype/02-support-removed.png");yield return new WaitForSecondsRealtime(.4f);
+                ShotGate.Capture("Logs/SettlingPrototype/02-support-removed.png");yield return new WaitForSecondsRealtime(.4f);
             }
             finally
             {

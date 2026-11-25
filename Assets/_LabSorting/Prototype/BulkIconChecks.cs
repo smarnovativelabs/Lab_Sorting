@@ -21,8 +21,8 @@ namespace LabSorting.Prototype
                 foreach(var item in s.items.GroupBy(i=>i.definition).Take(7).Select(g=>g.First())){Check(s.TryPick(item),"Pick icon category");DOTween.CompleteAll();}
                 yield return new WaitForSeconds(.2f);
                 Check(h.inventoryIcons.Take(7).All(i=>i.enabled&&i.sprite),"Inventory category icons visible");Check(h.activeIcon.sprite==s.Active.definition.icon,"Selected card icon matches active type");
-                ScreenCapture.CaptureScreenshot("Logs/BulkInventoryHUD.png");yield return new WaitForSeconds(.2f);panel.Open();yield return new WaitForSeconds(.3f);
-                Check(panel.rowIcons.All(i=>i.enabled&&i.sprite),"Progress rows have icons");ScreenCapture.CaptureScreenshot("Logs/BulkProgressIcons.png");yield return new WaitForSeconds(.2f);panel.Close();
+                ShotGate.Capture("Logs/BulkInventoryHUD.png");yield return new WaitForSeconds(.2f);panel.Open();yield return new WaitForSeconds(.3f);
+                Check(panel.rowIcons.All(i=>i.enabled&&i.sprite),"Progress rows have icons");ShotGate.Capture("Logs/BulkProgressIcons.png");yield return new WaitForSeconds(.2f);panel.Close();
                 var data=s.Capture();int cash=s.Cash,held=s.carried.Count;var loose=data.items.First(e=>e.location==ItemLocation.Loose);var actual=s.items.First(i=>i.id==loose.id);var authored=actual.transform.position;
                 loose.position+=Vector3.up*10;data.layoutRevision=0;Check(s.RestoreLoadedLayout(data),"Legacy layout load accepted");Check(s.Cash==cash&&s.carried.Count==held&&actual.transform.position==authored,"Migration preserves cash/hand and restores loose scene pose");
                 var snapshot=s.Capture();var writer=new System.IO.StringWriter();new SaveJsonStream().Write(writer,snapshot);var saved=JsonUtility.FromJson<SortingSession.Snapshot>(writer.ToString());Check(saved.layoutRevision==s.layoutRevision,"Layout revision survives streaming JSON save");

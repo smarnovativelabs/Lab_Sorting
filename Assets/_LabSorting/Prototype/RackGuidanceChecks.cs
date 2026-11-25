@@ -14,7 +14,7 @@ namespace LabSorting.Prototype
         static void Check(bool ok,string text){File.AppendAllText(Folder+"/checks.txt",(ok?"PASS ":"FAIL ")+text+"\n");if(!ok)throw new Exception("RACK PIN: "+text);}
         static void Count(SortRack rack,int count)=>typeof(SortRack).GetField("<Count>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(rack,count);
         static IEnumerator Wait(){yield return new WaitForSecondsRealtime(.55f);yield return new WaitForEndOfFrame();}
-        static IEnumerator Capture(string name){yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Folder+"/"+name+".png");yield return new WaitForSecondsRealtime(.15f);}
+        static IEnumerator Capture(string name){yield return new WaitForEndOfFrame();ShotGate.Capture(Folder+"/"+name+".png");yield return new WaitForSecondsRealtime(.15f);}
         static IEnumerator LookAway(SortingSession s)
         {
             s.player.look.SnapToDirection(Vector3.up+Vector3.forward*.1f);yield return Wait();s.RefreshTarget();

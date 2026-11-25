@@ -91,13 +91,14 @@ namespace LabSorting.UI
             for(int i=0;i<beacons.Length;i++)
             {
                 var item=i<nearest.Length?nearest[i]:null;beacons[i].gameObject.SetActive(item);
-                if(!item)continue;beacons[i].text=(FinalItemsMode?"LAST "+LooseSearchCount+"  ▼  ":"▼  ")+Mathf.Sqrt(distances[i]).ToString("0.0")+"m"+(FinalItemsMode?"\n"+SearchDirection.Floor(item.hitbox?item.hitbox.bounds.min.y:item.transform.position.y,session.player.transform.position.y):"");
+                if(!item)continue;beacons[i].text=FinalItemsMode?"LAST "+LooseSearchCount+"  ▼\n"+SearchDirection.Floor(item.hitbox?item.hitbox.bounds.min.y:item.transform.position.y,session.player.transform.position.y):"▼";
                 beacons[i].color=Color.white;
-                beacons[i].rectTransform.sizeDelta=FinalItemsMode?new Vector2(190,Mathf.Max(52,beaconSizes[i].y)):beaconSizes[i];
+                // No distance in the label: its changing digits kept resizing it, and the markers crowded the view.
+                beacons[i].rectTransform.sizeDelta=FinalItemsMode?new Vector2(130,Mathf.Max(52,beaconSizes[i].y)):new Vector2(Mathf.Min(beaconSizes[i].x,56),beaconSizes[i].y);
                 beacons[i].transform.localScale=Vector3.one*(1.08f+.04f*Mathf.Sin(Time.unscaledTime*4));
                 var position=Local(camera.WorldToScreenPoint(item.visual.bounds.center+Vector3.up*(item.visual.bounds.extents.y+.08f)));
                 bool overlaps=false;
-                for(int j=0;j<shown;j++)if(Mathf.Abs(position.x-markerPositions[j].x)<(FinalItemsMode?240:154)&&Mathf.Abs(position.y-markerPositions[j].y)<(FinalItemsMode?64:44))overlaps=true;
+                for(int j=0;j<shown;j++)if(Mathf.Abs(position.x-markerPositions[j].x)<(FinalItemsMode?150:88)&&Mathf.Abs(position.y-markerPositions[j].y)<(FinalItemsMode?64:40))overlaps=true;
                 // Suppress redundant labels instead of moving arrows onto the wrong item.
                 if(overlaps){beacons[i].gameObject.SetActive(false);continue;}
                 markerPositions[shown++]=position;beacons[i].rectTransform.anchoredPosition=position;

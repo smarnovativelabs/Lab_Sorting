@@ -75,7 +75,7 @@ namespace LabSorting.Prototype
                 Check(!hud.GetComponent<DesignerToasts>().ShownText.StartsWith("Picked"),"Pickup does not produce repeated toast");
                 var rack=g.GuidedRack;s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,75));yield return Wait(.3f);
                 Check(g.GuidedRack==rack&&carry.OverlayActive,"Turning down preserves rack target and held rendering");
-                ScreenCapture.CaptureScreenshot("Logs/ReadabilityHeldDown.png");yield return Wait(.2f);
+                ShotGate.Capture("Logs/ReadabilityHeldDown.png");yield return Wait(.2f);
                 s.ThrowActive();yield return Wait(2);item.CompleteMotion();yield return null;
                 Check(g.Current==GuidedTutorial.Step.Pick&&!g.GuidedRack&&!g.RackGuideVisible,"Last-item drop returns to Pick and hides rack marker");
                 Check(!carry.OverlayActive&&item.gameObject.layer==LayerMask.NameToLayer("SortingItem")&&hud.active.text=="HANDS EMPTY","Drop restores world rendering and empty indicator");
@@ -85,7 +85,7 @@ namespace LabSorting.Prototype
                 s.ThrowActive();yield return Wait(.4f);
                 Check(s.Active&&g.Current==GuidedTutorial.Step.Place,"Drop with another held item keeps Place guidance");
                 s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,0));yield return Wait(.4f);
-                ScreenCapture.CaptureScreenshot("Logs/ReadabilityRack.png");yield return Wait(.2f);
+                ShotGate.Capture("Logs/ReadabilityRack.png");yield return Wait(.2f);
                 Check(s.TryPlace(g.GuidedRack),"Place carried item on guided rack");DOTween.CompleteAll();yield return Wait(.4f);
                 int search=s.SearchCredits,magnet=s.MagnetCredits,capacity=s.capacity;
                 for(int page=0;page<3;page++)
@@ -96,7 +96,7 @@ namespace LabSorting.Prototype
                     Check(!RectTransformUtility.RectangleContainsScreenPoint(g.bubble,control.position),"Bubble does not obscure tool "+page);
                     Check(Vector3.Distance(g.bubble.position,control.position)<g.bubble.rect.width*g.bubble.lossyScale.x,"Bubble stays beside tool "+page);
                     Check(g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,(RectTransform)g.gotItButton.transform,70),"Hand indicates NEXT inside callout "+page);
-                    ScreenCapture.CaptureScreenshot("Logs/ReadabilityTool"+page+".png");yield return Wait(.2f);
+                    ShotGate.Capture("Logs/ReadabilityTool"+page+".png");yield return Wait(.2f);
                     g.GotIt();yield return Wait(.4f);
                 }
                 Check(g.Current==GuidedTutorial.Step.Done&&s.SearchCredits==search&&s.MagnetCredits==magnet&&s.capacity==capacity,"Explanations finish without using tools");
@@ -134,7 +134,7 @@ namespace LabSorting.Prototype
                 // Loading a save moves the player in one frame: that must not count as walking.
                 motor.SetPosition(spawn+new Vector3(0,0,2.5f));yield return Wait(.4f);motor.SetPosition(spawn);yield return Wait(.4f);
                 Check(g.Current==GuidedTutorial.Step.Move,"A teleport (like loading a save) does not complete Move");
-                ScreenCapture.CaptureScreenshot("Logs/Tutorial01Move.png");yield return Wait(.1f);
+                ShotGate.Capture("Logs/Tutorial01Move.png");yield return Wait(.1f);
                 // Use the same pointer events as a thumb on the real joystick. SetPosition is a
                 // teleport, and two test-runner yields are not guaranteed to contain a game Update.
                 var stick=g.joystick.GetComponent<LabTouchArea>();
@@ -163,7 +163,7 @@ namespace LabSorting.Prototype
                 Check(g.Current==GuidedTutorial.Step.Look,"Walking 1.5 m through joystick input completes Move");
                 yield return Wait(g.idleDelay+.4f);
                 Check(g.Mode==GuidedTutorial.HandMode.Drag&&HandNear(g,g.lookArea,220),"Hand swipes on the look area");
-                ScreenCapture.CaptureScreenshot("Logs/Tutorial02Look.png");yield return Wait(.1f);
+                ShotGate.Capture("Logs/Tutorial02Look.png");yield return Wait(.1f);
                 var lookTouch=g.lookArea.GetComponent<LabTouchArea>();
                 var swipe=new PointerEventData(EventSystem.current){pointerId=92,position=g.lookArea.position};
                 lookTouch.OnPointerDown(swipe);deadline=Time.realtimeSinceStartup+15;
@@ -200,13 +200,13 @@ namespace LabSorting.Prototype
                 Check(g.Current==GuidedTutorial.Step.Place&&g.GuidedRack,"Picking again resumes rack guidance");
                 s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,75));yield return Wait(.3f);
                 Check(carry.OverlayActive&&Mathf.Max(carry.HeldScreenRect.width,carry.HeldScreenRect.height)>s.player.view.pixelHeight*.1f,"Held item stays readable while looking at the floor");
-                ScreenCapture.CaptureScreenshot("Logs/ReadabilityHeldDown.png");yield return Wait(.1f);
+                ShotGate.Capture("Logs/ReadabilityHeldDown.png");yield return Wait(.1f);
                 s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,-75));yield return Wait(.6f);
                 Check(g.Mode==GuidedTutorial.HandMode.Aim&&g.message.text.Contains("rack"),"Not at a rack: hand points at the aim cross and explains the green bar");
                 var rack=RackFor(s);var front=rack.transform.TransformPoint(new Vector3(0,0,-1.6f));front.y=rack.transform.position.y+.03f;
                 yield return Teleport(s,front,rack.label.transform.position);yield return Wait(.1f);
                 Check(s.TargetRack==rack&&g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,g.placeButton,70)&&g.message.text.Contains("decides"),"At the rack the hand taps PLACE and explains rack types");
-                ScreenCapture.CaptureScreenshot("Logs/SoftTutorialPlace.png");yield return Wait(.1f);
+                ShotGate.Capture("Logs/SoftTutorialPlace.png");yield return Wait(.1f);
                 var placeTap=new PointerEventData(EventSystem.current){pointerId=94};
                 g.actions.placeHold.OnPointerDown(placeTap);g.actions.placeHold.OnPointerUp(placeTap);yield return Wait(.4f);
                 Check(item.location==ItemLocation.Rack&&item.rack==rack,"PLACE button places item on the aimed rack");
@@ -216,7 +216,7 @@ namespace LabSorting.Prototype
                 var bubbleCorners=new Vector3[4];g.bubble.GetWorldCorners(bubbleCorners);
                 Check(!RectTransformUtility.RectangleContainsScreenPoint(g.bubble,g.searchButton.position),"Search callout does not cover highlighted control");
                 Check(Vector3.Distance(g.bubble.position,g.searchButton.position)<g.bubble.rect.width*g.bubble.lossyScale.x,"Search explanation sits beside its button");
-                ScreenCapture.CaptureScreenshot("Logs/ReadabilitySearch.png");yield return Wait(.1f);
+                ShotGate.Capture("Logs/ReadabilitySearch.png");yield return Wait(.1f);
                 int cash=s.Cash;g.gotItButton.onClick.Invoke();yield return Wait(.4f);
                 int search=s.SearchCredits,magnet=s.MagnetCredits,capacity=s.capacity;
                 Check(g.ToolPage==1&&g.ToolModalActive,"NEXT explains magnet without using it");
@@ -229,7 +229,7 @@ namespace LabSorting.Prototype
                 Check(g.Current==GuidedTutorial.Step.Done&&s.TutorialRewarded&&s.Cash==cash+g.reward,"Finishing pays the reward: +$"+g.reward);
                 yield return Wait(.4f);
                 Check(g.Completed&&g.message.text.StartsWith("Well done")&&!g.hand.gameObject.activeSelf&&!g.skipButton.gameObject.activeSelf,"Well done message, tutorial remembered as finished");
-                ScreenCapture.CaptureScreenshot("Logs/Tutorial07Complete.png");yield return Wait(.1f);
+                ShotGate.Capture("Logs/Tutorial07Complete.png");yield return Wait(.1f);
                 yield return Wait(5.4f);
                 Check(!g.IsRunning&&g.group.alpha==0,"Message hides after a few seconds");
 
