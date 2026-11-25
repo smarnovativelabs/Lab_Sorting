@@ -7,7 +7,7 @@ namespace LabSorting.Sorting
     public sealed class NaturalItemSettling : MonoBehaviour
     {
         SortItem item;Rigidbody body;readonly List<Collider> shapes=new List<Collider>();
-        Action arrived;float quiet;bool running;
+        Action arrived;float quiet,nextFit;bool running;
         public bool Running=>running;
         public Collider[] CollisionShapes=>shapes.ToArray();
         public Bounds WorldBounds
@@ -33,7 +33,7 @@ namespace LabSorting.Sorting
             }
             body=GetComponent<Rigidbody>();if(!body)body=gameObject.AddComponent<Rigidbody>();
             body.isKinematic=true;body.useGravity=true;body.mass=ThrowFeel.Mass(item.definition);
-            body.linearDamping=.35f;body.angularDamping=2.5f;body.solverIterations=10;body.solverVelocityIterations=3;
+            body.interpolation=RigidbodyInterpolation.Interpolate;body.maxDepenetrationVelocity=2f;body.linearDamping=.35f;body.angularDamping=2.5f;body.solverIterations=10;body.solverVelocityIterations=3;
             RefreshColliders();
         }
         void RefreshColliders()
@@ -49,13 +49,13 @@ namespace LabSorting.Sorting
             natural.Stop(false);foreach(var shape in natural.shapes)if(shape)shape.enabled=false;
             item.hitbox.isTrigger=false;
         }
-        public void Begin(Action done)
+        public void Begin(Action done) => Begin(done,Vector3.down*.1f); public void Begin(Action done,Vector3 velocity)
         {
             if(shapes.Count==0){item.FinishPhysicsLanding(transform.position,transform.rotation,done);return;}
             arrived=done;quiet=0;if(!running){running=true;ActiveBodies++;PeakBodies=Mathf.Max(PeakBodies,ActiveBodies);}
             item.hitbox.enabled=true;RefreshColliders();
             body.isKinematic=false;body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
-            body.constraints=RigidbodyConstraints.None;body.linearVelocity=Vector3.down*.1f;body.angularVelocity=Vector3.zero;body.WakeUp();
+            body.constraints=RigidbodyConstraints.None;body.linearVelocity=velocity;body.angularVelocity=Vector3.zero;body.WakeUp();nextFit=0;PrepareNeighbours();
         }
         public void FinishNow(){Stop(true);}
         void Stop(bool complete)
@@ -68,9 +68,28 @@ namespace LabSorting.Sorting
         void FixedUpdate()
         {
             if(!running)return;
-            if(item.location!=ItemLocation.Loose){Stop(false);return;}
+            if(item.location!=ItemLocation.Loose){Stop(false);return;} if(Time.fixedTime>=nextFit){PrepareNeighbours();nextFit=Time.fixedTime+.1f;}
             quiet=body.linearVelocity.sqrMagnitude<.0025f&&body.angularVelocity.sqrMagnitude<.01f?quiet+Time.fixedDeltaTime:0;
             if(body.IsSleeping()||quiet>.35f)Stop(true);
+        }
+        readonly Collider[] neighbours=new Collider[128];
+        void PrepareNeighbours()
+        {
+            var bounds=WorldBounds;
+            int count=Physics.OverlapSphereNonAlloc(bounds.center,bounds.extents.magnitude+.5f,neighbours,1<<gameObject.layer,QueryTriggerInteraction.Ignore);
+            for(int i=0;i<count;i++)
+            {
+                var other=neighbours[i].GetComponentInParent<SortItem>();
+                if(other&&other!=item&&other.location==ItemLocation.Loose&&!other.Moving&&!other.Searched)Fit(other);
+            }
+        }
+        void OnCollisionEnter(Collision collision)
+        {
+            // Wake only the product actually struck; never simulate the whole room.
+            if(!running||collision.relativeVelocity.sqrMagnitude<.25f)return;
+            var other=collision.collider.GetComponentInParent<SortItem>();
+            if(!other||other==item||other.location!=ItemLocation.Loose||other.Moving||other.Searched)return;
+            var natural=Fit(other);if(natural)natural.Begin(null);
         }
         void LateUpdate(){RefreshColliders();}
         void OnDisable(){Stop(false);}

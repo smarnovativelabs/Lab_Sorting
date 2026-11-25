@@ -169,11 +169,16 @@ namespace LabSorting.Sorting
             // Resolve the current aim at the click, not the target cached by the throttled preview.
             RefreshTarget();RefreshToss();
             var item=Active;
-            var path=PlanSmoothDrop(item,out var position);
+            Vector3 release=default;
+            if(!item.definition.isRat&&!TryPhysicsRelease(item,out release)){Fail("Make a little room to drop this item");return;}
+            var path=item.definition.isRat?PlanSmoothDrop(item,out _):null;
             CancelPendingDrop();
             RemoveActive(); item.location=ItemLocation.Loose;item.rack=null;item.slot=-1;item.transform.SetParent(null,true);
             if(item.definition.isRat)item.GetComponent<LabRat>()?.colony.PlayInteraction(item,true);
-            EndTossStreak();item.FollowDropArc(path,position,()=>NotifyLanded(item)); Commit("Dropped "+item.definition.displayName);Feedback?.Invoke(SortingCue.Throw);
+            EndTossStreak();
+            if(item.definition.isRat)item.FollowDropArc(path,path[path.Length-1],()=>NotifyLanded(item));
+            else item.ReleaseNaturally(release,DropVelocity(),()=>NotifyLanded(item));
+            Commit("Dropped "+item.definition.displayName);Feedback?.Invoke(SortingCue.Throw);
         }
         public bool MessageIsError {get;private set;}
         string lastFailure;float nextFailure;
