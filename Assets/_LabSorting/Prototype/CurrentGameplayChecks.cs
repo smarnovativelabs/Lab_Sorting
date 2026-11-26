@@ -41,7 +41,7 @@ namespace LabSorting.Prototype
                 Check(item.location==ItemLocation.Hand&&s.carried.Count==hand&&s.Cash==cash,"Blocked release preserves held item and wallet");
                 blocker.SetActive(false);Physics.SyncTransforms();s.ThrowActive();
                 Check(item.location==ItemLocation.Loose&&s.carried.Count==hand-1,"Unblocked drop releases exactly one product");
-                Check(Vector3.Distance(item.transform.localScale,item.originalScale)<.001f,"Successful release restores original world size");
+                Check(Vector3.Distance(item.transform.localScale,item.GroundScale)<.001f,"Successful release restores floor size");
                 Check(item.GetComponent<NaturalItemSettling>()&&item.GetComponent<Rigidbody>()&&!item.GetComponent<Rigidbody>().isKinematic,"Release starts real physics");
                 if(save)
                 {

@@ -15,5 +15,7 @@ namespace LabSorting.Sorting
         public Vector3 shelfEuler;
         [Tooltip("Model bounds at prefab scale, relative to the pivot. Size-based racks use these to work out how many fit.")]
         public Vector3 center, size;
+        [Tooltip("Size multiplier only while the item lies loose on the floor, so tiny products stay readable there. Racks and the hand keep the model size. Baked by GroundScaleUpgrade.")]
+        [Range(1f,1.5f)] public float groundScale=1f;
     }
 }

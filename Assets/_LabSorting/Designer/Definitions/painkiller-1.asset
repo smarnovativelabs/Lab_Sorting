@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-painkiller-1
   displayName: Yellow Painkiller Box
+  isRat: 0
   heldSizeMultiplier: 1.12
   icon: {fileID: 393150702, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 0
@@ -21,3 +22,4 @@ MonoBehaviour:
   shelfEuler: {x: 0, y: 0, z: 0}
   center: {x: 0, y: 0.014106288, z: 0.000000007450581}
   size: {x: 0.20021486, y: 0.028212575, z: 0.09940238}
+  groundScale: 1.4

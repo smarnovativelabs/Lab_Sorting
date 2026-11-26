@@ -45,7 +45,7 @@ namespace LabSorting.Sorting
         public void RefreshSortingColliders(){player.character.SortingColliders.Clear();foreach(var item in items)if(item&&item.hitbox){item.ApplyItemLayer();player.character.SortingColliders.Add(item.hitbox);}int layer=LayerMask.NameToLayer("SortingItem");if(layer>=0)player.character.Motor.CollidableLayers&=~(1<<layer);}
         public bool Initialized {get;private set;}
         public bool LoadedAtStartup {get;private set;}
-        void Start() { RebuildTypeIndex();RefreshSortingColliders(); replayLayout=Capture(); bool loaded=persistence&&Load(); LoadedAtStartup=loaded; if(bundleEconomy&&!loaded){cash=150;capacity=10;SearchCredits=5;MagnetCredits=2;} InitializeSaveCache();Initialized=true; Notify(); if(bundleEconomy&&persistence&&!loaded)SaveTransaction(); }
+        void Start() { foreach(var item in items)if(item)item.ApplyGroundSize(); RebuildTypeIndex();RefreshSortingColliders(); replayLayout=Capture(); bool loaded=persistence&&Load(); LoadedAtStartup=loaded; if(bundleEconomy&&!loaded){cash=150;capacity=10;SearchCredits=5;MagnetCredits=2;} InitializeSaveCache();Initialized=true; Notify(); if(bundleEconomy&&persistence&&!loaded)SaveTransaction(); }
         void Update()
         {
             PollSaveWriter();
@@ -197,7 +197,7 @@ namespace LabSorting.Sorting
             CaptureSupplies(data);foreach(var item in carried) data.hand.Add(item.id);
             foreach(var item in items)
             {
-                Vector3 pos=item.SavedPosition; Quaternion rot=item.SavedRotation;
+                Quaternion rot=item.SavedRotation; Vector3 pos=item.BasePosition(item.SavedPosition,rot);
                 if(item.location==ItemLocation.Rack) {var pose=item.rack.SlotPose(item.slot);pos=pose.position;rot=pose.rotation;}
                 data.items.Add(new Entry {id=item.id,rack=item.rack?item.rack.id:null,slot=item.slot,location=item.location,position=pos,rotation=rot});
             }
@@ -243,7 +243,7 @@ namespace LabSorting.Sorting
             {
                 var item=lookup[e.id];item.gameObject.SetActive(true);item.location=e.location;item.rack=null;item.slot=-1;
                 if(e.location==ItemLocation.Rack) {var rack=rackLookup[e.rack]; rack.Restore(item,e.slot);var pose=rack.SlotPose(e.slot);item.Snap(pose.position,pose.rotation);}
-                else item.Snap(e.position,e.rotation);
+                else item.Snap(e.location==ItemLocation.Loose?e.position+item.GroundLift(e.rotation):e.position,e.rotation);
             }
             foreach(var id in data.hand) {var item=lookup[id];carried.Add(item);item.Snap(hand.position,hand.rotation,hand);item.gameObject.SetActive(false);}
             if(carried.Count>0) {Active=lookup[data.active];Active.gameObject.SetActive(true);}

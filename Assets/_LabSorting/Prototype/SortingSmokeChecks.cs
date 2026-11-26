@@ -174,7 +174,7 @@ namespace LabSorting.Prototype
                 s.TryPick(s.items[1]);DOTween.CompleteAll();Check(!s.TryPlace(s.racks[0])&&cues.Contains(SortingCue.Reject),"Invalid placement emits rejection feedback");
                 s.TryPick(s.items[0]);DOTween.CompleteAll();selected=s.GetItemProgress().Find(r=>r.type==s.items[0].definition);Check(selected.sorted==0&&selected.Remaining==selected.total,"Taking a rack item reverses sorted count");
                 yield return WaitGameSeconds(.3f);var thrown=s.Active;s.ThrowActive();yield return WaitGameSeconds(2.1f);
-                Check(cues.Contains(SortingCue.Throw)&&thrown.location==ItemLocation.Loose&&thrown.hitbox.enabled&&thrown.transform.localScale==thrown.originalScale,"Throw finishes with feedback, world scale and recoverable collider");
+                Check(cues.Contains(SortingCue.Throw)&&thrown.location==ItemLocation.Loose&&thrown.hitbox.enabled&&thrown.transform.localScale==thrown.GroundScale,"Throw finishes with feedback, world scale and recoverable collider");
                 panel.openButton.onClick.Invoke();yield return WaitGameSeconds(.18f);Check(panel.IsOpen&&s.player.blocked&&panel.group.alpha>.99f,"Progress button opens modal and blocks gameplay");
                 int count=s.carried.Count,cash=s.Cash;var active=s.Active;s.player.SetMove(Vector2.one);
                 Check(!s.TryPick(thrown)&&!s.TryPlace(s.racks[0])&&!s.TryMagnet()&&!s.TrySearch()&&!s.TryUpgradeCapacity(),"Modal rejects all sorting/economy actions");

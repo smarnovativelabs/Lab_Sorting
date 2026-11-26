@@ -74,7 +74,7 @@ namespace LabSorting.Sorting
         {
             var box=item.hitbox as BoxCollider;
             if(!box)throw new System.InvalidOperationException("Sorting drop requires a BoxCollider");
-            var scale=item.originalScale;var size=Vector3.Scale(box.size,scale);size=new Vector3(Mathf.Abs(size.x),Mathf.Abs(size.y),Mathf.Abs(size.z));
+            var scale=item.GroundScale;var size=Vector3.Scale(box.size,scale);size=new Vector3(Mathf.Abs(size.x),Mathf.Abs(size.y),Mathf.Abs(size.z));
             var result=new Bounds(item.transform.position+Vector3.Scale(box.center,scale),size);
             if(item.visual)
             {

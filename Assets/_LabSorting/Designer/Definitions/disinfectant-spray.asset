@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-disinfectant-spray
   displayName: Disinfectant Spray
+  isRat: 0
   heldSizeMultiplier: 1.12
   icon: {fileID: 1375170721, guid: 95580b8109cf03b47a2bf2b507111e39, type: 3}
   placementMaterial: 2
@@ -21,3 +22,4 @@ MonoBehaviour:
   shelfEuler: {x: 0, y: 0, z: 0}
   center: {x: -0.000000059604645, y: 0.10154091, z: 0.000000014901161}
   size: {x: 0.06982434, y: 0.20308182, z: 0.070161015}
+  groundScale: 1.4

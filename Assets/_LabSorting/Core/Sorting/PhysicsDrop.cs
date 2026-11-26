@@ -17,8 +17,9 @@ namespace LabSorting.Sorting
             if(!item||!(item.hitbox is BoxCollider box))return false;
             Physics.SyncTransforms();
             var rotation=item.transform.rotation;
-            var offset=rotation*Vector3.Scale(box.center,item.originalScale);
-            var size=Vector3.Scale(box.size,item.originalScale);
+            var scale=item.GroundScale;
+            var offset=rotation*Vector3.Scale(box.center,scale);
+            var size=Vector3.Scale(box.size,scale);
             var half=new Vector3(Mathf.Abs(size.x),Mathf.Abs(size.y),Mathf.Abs(size.z))*.5f+Vector3.one*.015f;
             var eye=player.view.transform.position;
             var forward=Vector3.ProjectOnPlane(player.view.transform.forward,Vector3.up).normalized;
@@ -47,7 +48,7 @@ namespace LabSorting.Sorting
             SetSearchHighlight(false);selectionPresentation?.Kill();ClearShine();motion?.Kill();
             DropLandingPool.Stop(this,false);DropLandingPool.Unreserve(this);physicsLanding=false;
             ImpactFeedbackPlayed=false;Highlight(false);SetHeldPresentation(false);
-            transform.localScale=originalScale;transform.position=position;hitbox.enabled=true;
+            transform.localScale=GroundScale;transform.position=position;hitbox.enabled=true;
             var natural=NaturalItemSettling.Fit(this);
             natural.Begin(done,velocity);
             PoseChanged();

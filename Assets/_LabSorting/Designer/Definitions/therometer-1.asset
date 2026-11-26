@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-therometer-1
   displayName: Thermometer
+  isRat: 0
   heldSizeMultiplier: 1.15
   icon: {fileID: 479753931, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 0
@@ -21,3 +22,4 @@ MonoBehaviour:
   shelfEuler: {x: 0, y: 0, z: 0}
   center: {x: 0, y: 0.013075348, z: 0}
   size: {x: 0.06199053, y: 0.026150696, z: 0.42000002}
+  groundScale: 1.24

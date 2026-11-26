@@ -39,13 +39,14 @@ namespace LabSorting.Prototype
                 impact.Snap(new Vector3(1400,1.2f,1397),Quaternion.identity);impact.ThrowWithPhysics(targets[0],()=>callbacks++);yield return Wait(.1f);pool.SendMessage("OnApplicationPause",true);
                 Check(DropLandingPool.ActiveCount==0&&!impact.Moving&&impact.transform.position==targets[0],"Pause safely completes flight and releases its physics body");
                 s.Restore(initial);
-                var dense=s.items.Where(i=>i.location==ItemLocation.Loose).OrderBy(i=>i.visual.bounds.size.sqrMagnitude).First();
+                // Model size, not floor size: ground scale must not swap the fixture to a rounded product whose box corners overhang its hull.
+                var dense=s.items.Where(i=>i.location==ItemLocation.Loose).OrderBy(i=>i.definition.size.sqrMagnitude).First();
                 Check(s.TryPick(dense),"Pick real scene item for dense environment release");DOTween.CompleteAll();yield return Wait(.3f);
                 bool found=false;for(int angle=0;angle<360;angle+=30){s.player.look.SetYawPitch(new Vector2(angle,0));yield return null;if(s.TryThrowPosition(dense,out _)){found=true;break;}}
                 Check(found,"Dense designer area has a validated front landing");s.ThrowActive();yield return CurrentGameplayChecks.Until(()=>!dense.Moving,"Dense natural drop settles",25);
                 Check(dense.GetComponent<NaturalItemSettling>()&&dense.location==ItemLocation.Loose&&!dense.Moving&&dense.hitbox.enabled&&DropLandingPool.ActiveCount==0,"Actual dense scene drop completes through full-flight physics");
                 Physics.SyncTransforms();var near=Physics.OverlapBox(dense.hitbox.bounds.center,dense.hitbox.bounds.extents,Quaternion.identity,~0,QueryTriggerInteraction.Ignore);
-                foreach(var other in near)if(other!=dense.hitbox&&!other.transform.IsChildOf(dense.transform))Check(!Physics.ComputePenetration(dense.hitbox,dense.hitbox.transform.position,dense.hitbox.transform.rotation,other,other.transform.position,other.transform.rotation,out _,out float depth)||depth<=.006f,"Dense landing avoids penetration beyond contact tolerance");
+                foreach(var other in near)if(other!=dense.hitbox&&!other.transform.IsChildOf(dense.transform))Check(!Physics.ComputePenetration(dense.hitbox,dense.hitbox.transform.position,dense.hitbox.transform.rotation,other,other.transform.position,other.transform.rotation,out _,out float depth)||depth<=.006f,"Dense landing avoids penetration beyond contact tolerance ("+dense.definition.id+" vs "+other.name+" depth="+depth.ToString("F4")+")");
                 s.Restore(initial);
                 AbilityPerfChecks.Measure(s,"Logs/FullFlightAbilities.txt");
                 System.IO.File.WriteAllText("Logs/FullFlightPhysics.txt","Scene items="+s.items.Length+"; pooled bodies=3; settled flights="+pool.SettledFlights+"; contacts="+pool.ContactCount+"; physics steps="+pool.PhysicsSteps+". Editor validation, not Android FPS.\nPhysics.Simulate idle: "+idle+"\nPhysics.Simulate flight window: "+flight);

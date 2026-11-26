@@ -39,7 +39,7 @@ namespace LabSorting.Sorting
                 if(legacy&&ratCount>0&&data.items.Count==items.Length-ratCount)
                 {
                     foreach(var item in items)if(item.definition.isRat)
-                        data.items.Add(new Entry{id=item.id,slot=-1,location=ItemLocation.Loose,position=item.transform.position,rotation=item.transform.rotation});
+                        data.items.Add(new Entry{id=item.id,slot=-1,location=ItemLocation.Loose,position=item.BasePosition(item.transform.position,item.transform.rotation),rotation=item.transform.rotation});
                     added=true;
                 }
             }
@@ -53,7 +53,7 @@ namespace LabSorting.Sorting
             if(migrate&&data.items!=null)
             {
                 var poses=new Dictionary<string,Pose>(items.Length);
-                foreach(var item in items)poses[item.id]=new Pose(item.transform.position,item.transform.rotation);
+                foreach(var item in items)poses[item.id]=new Pose(item.BasePosition(item.transform.position,item.transform.rotation),item.transform.rotation);
                 foreach(var entry in data.items)if(entry!=null&&entry.location==ItemLocation.Loose&&poses.TryGetValue(entry.id,out var pose)){entry.position=pose.position;entry.rotation=pose.rotation;}
                 data.layoutRevision=layoutRevision;
             }
@@ -158,7 +158,7 @@ namespace LabSorting.Sorting
         {
             pose=default;
             if(replayLayout!=null&&replayLayout.items!=null)foreach(var entry in replayLayout.items)if(entry!=null&&entry.id==id){if(entry.location!=ItemLocation.Loose)return false;pose=new Pose(entry.position,entry.rotation);return true;}
-            foreach(var item in items)if(item&&item.id==id){pose=new Pose(item.transform.position,item.transform.rotation);return true;}
+            foreach(var item in items)if(item&&item.id==id){pose=new Pose(item.BasePosition(item.transform.position,item.transform.rotation),item.transform.rotation);return true;}
             return false;
         }
     }

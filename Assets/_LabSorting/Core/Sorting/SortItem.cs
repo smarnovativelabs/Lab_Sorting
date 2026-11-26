@@ -15,6 +15,38 @@ namespace LabSorting.Sorting
         public Renderer visual;
         public Outline outline;
         public Vector3 originalScale;
+        // Loose items rest at GroundScale; racks and the hand keep the model size (originalScale).
+        public Vector3 GroundScale=>definition&&definition.groundScale>1f?originalScale*definition.groundScale:originalScale;
+        public Vector3 RestScale=>location==ItemLocation.Loose?GroundScale:originalScale;
+        Vector3[] modelCorners;
+        float LowestPoint(Quaternion rotation,Vector3 scale)
+        {
+            if(modelCorners==null)
+            {
+                // Model bounds in this item's unscaled local space; the visual's own transform never changes.
+                Bounds local;Matrix4x4 relative;
+                if(visual&&!(visual is SkinnedMeshRenderer)){local=visual.localBounds;relative=transform.worldToLocalMatrix*visual.transform.localToWorldMatrix;}
+                else if(hitbox is BoxCollider box){local=new Bounds(box.center,box.size);relative=Matrix4x4.identity;}
+                else {local=new Bounds(Vector3.zero,Vector3.zero);relative=Matrix4x4.identity;}
+                modelCorners=new Vector3[8];
+                for(int i=0;i<8;i++)modelCorners[i]=relative.MultiplyPoint3x4(local.center+Vector3.Scale(local.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1)));
+            }
+            float low=float.MaxValue;foreach(var corner in modelCorners)low=Mathf.Min(low,(rotation*Vector3.Scale(corner,scale)).y);return low;
+        }
+        // How far the pivot rises so a ground-sized item keeps the model-size item's lowest point (no sinking into the floor).
+        public Vector3 GroundLift(Quaternion rotation)
+        {
+            var ground=GroundScale;if(ground==originalScale)return Vector3.zero;
+            return Vector3.up*(LowestPoint(rotation,originalScale)-LowestPoint(rotation,ground));
+        }
+        // Saves and authored layouts hold model-size poses, so older saves load unchanged and tuning groundScale later stays safe.
+        public Vector3 BasePosition(Vector3 position,Quaternion rotation)=>location==ItemLocation.Loose?position-GroundLift(rotation):position;
+        public void ApplyGroundSize()
+        {
+            if(originalScale==Vector3.zero)originalScale=transform.localScale;
+            if(location!=ItemLocation.Loose)return;
+            transform.position+=GroundLift(transform.rotation);transform.localScale=GroundScale;
+        }
         Tween motion;
         Tween selectionPresentation;
         Tween placementShine;
@@ -108,7 +140,7 @@ namespace LabSorting.Sorting
         public bool ImpactFeedbackPlayed {get;set;}
         public bool Moving => (naturalSettling&&naturalSettling.Running)||physicsLanding||(motion!=null && motion.IsActive() && motion.IsPlaying());
         public void CompleteMotion() { selectionPresentation?.Complete(true);motion?.Complete(true);DropLandingPool.Stop(this,true);GetComponent<NaturalItemSettling>()?.FinishNow(); }
-        public void FinishPhysicsLanding(Vector3 position,Quaternion rotation,System.Action done){DropLandingPool.Unreserve(this);physicsLanding=false;transform.SetPositionAndRotation(position,rotation);transform.localScale=originalScale;hitbox.enabled=location!=ItemLocation.Hand;done?.Invoke();PoseChanged();}
+        public void FinishPhysicsLanding(Vector3 position,Quaternion rotation,System.Action done){DropLandingPool.Unreserve(this);physicsLanding=false;transform.SetPositionAndRotation(position,rotation);transform.localScale=RestScale;hitbox.enabled=location!=ItemLocation.Hand;done?.Invoke();PoseChanged();}
         Vector3 releaseScale;
         Quaternion releaseRotation;
         float releaseTime;
@@ -117,9 +149,10 @@ namespace LabSorting.Sorting
         {
             float t=flight?Mathf.Clamp01((Time.time-releaseTime)/.18f):1;
             float blend=t*t*(3-2*t);
-            transform.localScale=Vector3.Lerp(releaseScale,originalScale,blend);
+            var ground=GroundScale;
+            transform.localScale=Vector3.Lerp(releaseScale,ground,blend);
             var shown=Quaternion.Slerp(releaseRotation,rotation,blend);
-            var ratio=new Vector3(originalScale.x!=0?transform.localScale.x/originalScale.x:1,originalScale.y!=0?transform.localScale.y/originalScale.y:1,originalScale.z!=0?transform.localScale.z/originalScale.z:1);
+            var ratio=new Vector3(ground.x!=0?transform.localScale.x/ground.x:1,ground.y!=0?transform.localScale.y/ground.y:1,ground.z!=0?transform.localScale.z/ground.z:1);
             transform.SetPositionAndRotation(center-shown*Vector3.Scale(offset,ratio),shown);
         }
         public void ThrowWithPhysics(Vector3 destination,System.Action done)
@@ -128,7 +161,7 @@ namespace LabSorting.Sorting
             ClearShine();releaseScale=transform.localScale;releaseRotation=transform.rotation;releaseTime=Time.time;
             ImpactFeedbackPlayed=false;
             motion?.Kill();motionDestination=destination;motionRotation=Quaternion.identity;hitbox.enabled=false;Highlight(false);
-            transform.rotation=Quaternion.identity;transform.localScale=originalScale;physicsLanding=true;
+            transform.rotation=Quaternion.identity;transform.localScale=GroundScale;physicsLanding=true;
             DropLandingPool.Reserve(this,destination);
             if(!DropLandingPool.TryFlight(this,destination,done)){physicsLanding=false;transform.localScale=releaseScale;transform.rotation=releaseRotation;Travel(destination,Quaternion.identity,done,true);}
             PoseChanged();
@@ -155,14 +188,14 @@ namespace LabSorting.Sorting
                 searchPresentation=DOTween.To(()=>searchLift,lift=>
                 {
                     transform.position+=Vector3.up*(lift-searchLift);searchLift=lift;
-                    transform.localScale=originalScale*Mathf.Lerp(1,1.2f,lift/.125f);
+                    transform.localScale=RestScale*Mathf.Lerp(1,1.2f,lift/.125f);
                     VisualChanged?.Invoke();
                 },.125f,.2f).SetEase(Ease.OutCubic);
             }
             else
             {
                 transform.position-=Vector3.up*searchLift;searchLift=0;
-                transform.localScale=originalScale;
+                transform.localScale=RestScale;
             }
             ApplyHighlight();VisualChanged?.Invoke();
         }
@@ -176,7 +209,7 @@ namespace LabSorting.Sorting
             outline.enabled=heldPresentation||hovered||searched||IsShining;
         }
         public void Snap(Vector3 position, Quaternion rotation, Transform parent=null)
-        { NaturalItemSettling.Suspend(this);SetSearchHighlight(false);StopCompletionFloat();ClearShine();selectionPresentation?.Kill();DropLandingPool.Stop(this,false);physicsLanding=false;motion?.Kill(); transform.SetParent(parent,true); transform.SetPositionAndRotation(position,rotation); transform.localScale=originalScale*(parent?CarryScale:1f); hitbox.enabled=location!=ItemLocation.Hand;PoseChanged(); }
+        { NaturalItemSettling.Suspend(this);SetSearchHighlight(false);StopCompletionFloat();ClearShine();selectionPresentation?.Kill();DropLandingPool.Stop(this,false);physicsLanding=false;motion?.Kill(); transform.SetParent(parent,true); transform.SetPositionAndRotation(position,rotation); transform.localScale=parent?originalScale*CarryScale:RestScale; hitbox.enabled=location!=ItemLocation.Hand;PoseChanged(); }
         public void PlaceOnRack(Pose pose,Transform socket,float delay,System.Action arrived)
         {
             ClearShine();selectionPresentation?.Kill();motion?.Kill();Highlight(false);hitbox.enabled=false;
@@ -219,16 +252,16 @@ namespace LabSorting.Sorting
                     // Orient while still hand-sized, then expand into the validated landing box.
                     transform.rotation=Quaternion.Slerp(fromRotation,rotation,Mathf.Clamp01(t*4));
                 },1f,flight).SetEase(Ease.Linear));
-                sequence.Insert(flight*.25f,transform.DOScale(originalScale,flight*.75f).SetEase(Ease.InOutSine));
+                sequence.Insert(flight*.25f,transform.DOScale(RestScale,flight*.75f).SetEase(Ease.InOutSine));
             }
             else
             {
                 const float duration=.24f;
                 sequence.Join(transform.DOMove(position,duration).SetEase(Ease.InOutSine));
                 sequence.Join(transform.DORotateQuaternion(rotation,duration).SetEase(Ease.OutSine));
-                sequence.Join(transform.DOScale(originalScale,duration).SetEase(Ease.OutCubic));
+                sequence.Join(transform.DOScale(RestScale,duration).SetEase(Ease.OutCubic));
             }
-            motion=sequence.OnComplete(()=>{transform.SetPositionAndRotation(position,rotation);transform.localScale=originalScale;if(drop&&location==ItemLocation.Loose){physicsLanding=true;DropLandingPool.Begin(this,position,rotation,done);}else{hitbox.enabled=location!=ItemLocation.Hand;done?.Invoke();}PoseChanged();});PoseChanged();
+            motion=sequence.OnComplete(()=>{transform.SetPositionAndRotation(position,rotation);transform.localScale=RestScale;if(drop&&location==ItemLocation.Loose){physicsLanding=true;DropLandingPool.Begin(this,position,rotation,done);}else{hitbox.enabled=location!=ItemLocation.Hand;done?.Invoke();}PoseChanged();});PoseChanged();
         }
         // Trick shot into a rack: a spinning arc to a point just in front of the shelf, then a short slide onto its point.
         public void Toss(Vector3 entry, Vector3 position, Quaternion rotation, System.Action landed=null)

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LabSorting.Sorting.ItemDefinition
   id: lab-vilamin-bottle-2
   displayName: Purple Vitamin Bottle
+  isRat: 0
   heldSizeMultiplier: 1.12
   icon: {fileID: -1626540300, guid: 2cbed9d34246fc34b98a06cc13ab2832, type: 3}
   placementMaterial: 2
@@ -21,3 +22,4 @@ MonoBehaviour:
   shelfEuler: {x: 0, y: 0, z: 0}
   center: {x: 0, y: 0.09849973, z: 0}
   size: {x: 0.13783813, y: 0.19699946, z: 0.13708301}
+  groundScale: 1.21

@@ -41,7 +41,7 @@ namespace LabSorting.Sorting
         }
         Entry CaptureEntry(SortItem item)
         {
-            Vector3 position=item.SavedPosition;Quaternion rotation=item.SavedRotation;
+            Quaternion rotation=item.SavedRotation;Vector3 position=item.BasePosition(item.SavedPosition,rotation);
             if(item.location==ItemLocation.Rack){var pose=item.rack.SlotPose(item.slot);position=pose.position;rotation=pose.rotation;}
             return new Entry{id=item.id,rack=item.rack?item.rack.id:null,slot=item.slot,location=item.location,position=position,rotation=rotation};
         }

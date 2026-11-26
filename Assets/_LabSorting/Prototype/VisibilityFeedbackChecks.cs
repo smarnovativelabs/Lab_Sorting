@@ -62,7 +62,7 @@ namespace LabSorting.Prototype
                 Check(s.TryPick(held),"Pick matching item");held.CompleteMotion();
                 Check(s.TrySearch(),"Search starts normally");
                 yield return new WaitForSecondsRealtime(1);
-                Check(Vector3.Distance(item.transform.localScale,item.originalScale*1.2f)<.001f,"Search enlarges object exactly 20 percent");
+                Check(Vector3.Distance(item.transform.localScale,item.RestScale*1.2f)<.001f,"Search enlarges object exactly 20 percent");
                 Check(Mathf.Abs(item.transform.position.y-resting.y-.125f)<.002f,"Search lifts object 12.5 cm");
                 Check(Vector3.Distance(item.SavedPosition,resting)<.002f,"Save retains unlifted world position");
                 Check(item.hitbox.bounds.size.magnitude>restingBounds.size.magnitude*1.19f,"Pickup collider follows enlarged presentation");

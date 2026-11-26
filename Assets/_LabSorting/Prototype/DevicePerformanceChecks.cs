@@ -22,7 +22,7 @@ namespace LabSorting.Prototype
                 foreach(var item in s.items.GroupBy(i=>i.definition).Select(g=>g.First()))
                 {
                     var measured=s.ReleaseBounds(item);var rotation=item.transform.rotation;var scale=item.transform.localScale;bool enabled=item.hitbox.enabled;
-                    item.transform.rotation=Quaternion.identity;item.transform.localScale=item.originalScale;item.hitbox.enabled=true;Physics.SyncTransforms();var reference=item.hitbox.bounds;reference.Encapsulate(item.visual.bounds);
+                    item.transform.rotation=Quaternion.identity;item.transform.localScale=item.GroundScale;item.hitbox.enabled=true;Physics.SyncTransforms();var reference=item.hitbox.bounds;reference.Encapsulate(item.visual.bounds);
                     item.transform.rotation=rotation;item.transform.localScale=scale;item.hitbox.enabled=enabled;Physics.SyncTransforms();
                     Check(Vector3.Distance(measured.center,reference.center)<.002f&&Vector3.Distance(measured.size,reference.size)<.002f,"Pure-math drop bounds match physics: "+item.definition.id);
                 }

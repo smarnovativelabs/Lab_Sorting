@@ -126,7 +126,8 @@ namespace LabSorting.Sorting
             foreach(var support in Physics.OverlapSphere(destination,.8f,~(1<<2),QueryTriggerInteraction.Ignore))
             {var other=support.GetComponentInParent<SortItem>();if(other&&other!=this&&other.location==ItemLocation.Loose&&!other.Moving)NaturalItemSettling.Fit(other);}
             var box=hitbox as BoxCollider;
-            var footprint=new Bounds(destination+Vector3.Scale(box.center,originalScale),Vector3.Scale(box.size,originalScale));
+            var ground=GroundScale;
+            var footprint=new Bounds(destination+Vector3.Scale(box.center,ground),Vector3.Scale(box.size,ground));
             DropLandingPool.Reserve(this,footprint);
             int segments=path.Length-1;float duration=Mathf.Max(.1f,segments/30f);
             motion=DOTween.To(()=>0f,t=>
@@ -135,7 +136,7 @@ namespace LabSorting.Sorting
                 var flightPosition=Vector3.Lerp(path[segment],path[segment+1],index-segment);
                 transform.position=Vector3.Lerp(handPosition,flightPosition,Mathf.SmoothStep(0,1,Mathf.Clamp01(t*duration/.16f)));
                 float blend=Mathf.SmoothStep(0,1,Mathf.Clamp01(t*duration/.15f));
-                transform.localScale=Vector3.Lerp(scale,originalScale,blend);
+                transform.localScale=Vector3.Lerp(scale,ground,blend);
                 transform.rotation=Quaternion.Slerp(rotation,Quaternion.identity,blend);
             },1f,duration).SetEase(Ease.Linear).OnComplete(()=>
             {

@@ -52,9 +52,9 @@ namespace LabSorting.Sorting
             Slot slot=null;foreach(var candidate in instance.slots)if(!candidate.item){slot=candidate;break;}
             if(slot==null){if(flight){HybridFallbacks++;return false;}item.FinishPhysicsLanding(target,rotation,done);return true;}
             var box=item.hitbox as BoxCollider;if(!box){if(flight)return false;item.FinishPhysicsLanding(target,rotation,done);return true;}
-            var size=Vector3.Scale(box.size,item.originalScale);size=new Vector3(Mathf.Abs(size.x),Mathf.Abs(size.y),Mathf.Abs(size.z));
+            var ground=item.GroundScale;var size=Vector3.Scale(box.size,ground);size=new Vector3(Mathf.Abs(size.x),Mathf.Abs(size.y),Mathf.Abs(size.z));
             var root=flight?item.transform.position:target;
-            var bounds=new Bounds(root+Vector3.Scale(box.center,item.originalScale),size);if(item.visual)bounds.Encapsulate(item.visual.bounds);
+            var bounds=new Bounds(root+Vector3.Scale(box.center,ground),size);if(item.visual)bounds.Encapsulate(item.visual.bounds);
             slot.box.size=bounds.size;slot.offset=bounds.center-root;slot.target=target;slot.rotation=rotation;slot.item=item;slot.done=done;slot.flight=flight;slot.quiet=0;slot.until=Time.time+(flight?1.8f:.22f);
             // Changing body mode invalidates interpolation history. Teleport both representations
             // after activating, so a newly pooled body cannot resume at its old/origin pose.
