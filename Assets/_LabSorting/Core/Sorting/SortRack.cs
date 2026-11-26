@@ -42,6 +42,8 @@ namespace LabSorting.Sorting
         public SpriteRenderer labelIcon;
         public Renderer indicator;
         public Material neutral, valid, invalid, compatible;
+        [Tooltip("Rack body mesh for the guide outline. Static batching swaps MeshFilter meshes for a combined mesh at runtime.")]
+        public Mesh outlineMesh;
         public bool CompatibleHint {get;private set;}
         ItemDefinition previewType;
         RackTargetFeedback targetFeedback;
@@ -58,6 +60,8 @@ namespace LabSorting.Sorting
         const float SurfaceOffset=.002f;
         struct Grid { public int columns,rows;public Quaternion rotation;public Bounds bounds; }
         ItemDefinition cachedType; int cachedCapacity;
+        // Rack body geometry only: no contents, labels, indicator or runtime outline proxies.
+        public bool IsFrameRenderer(Renderer r)=>r&&r!=indicator&&r!=labelIcon&&!r.name.StartsWith("__QuickOutline")&&!r.GetComponent<TextMesh>()&&!r.GetComponentInParent<SortItem>();
 
         public void Initialize() { cachedType=null; Type=null; Count=0; contents=SizeBased?Array.Empty<SortItem>():new SortItem[slots!=null?slots.Length:0]; Refresh(); }
         public bool CanAccept(ItemDefinition type) => type && (!Type || Type==type) && Count<(Type?Capacity:CapacityFor(type));

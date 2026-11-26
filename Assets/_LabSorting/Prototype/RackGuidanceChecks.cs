@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using LabSorting.Sorting;
 using LabSorting.UI;
+using IAmJanitor.Rendering.Highlighting;
 namespace LabSorting.Prototype
 {
     public static class RackGuidanceChecks
@@ -43,6 +44,19 @@ namespace LabSorting.Prototype
                 Check(Vector2.Distance(new Vector2(rect.center.x,rect.yMin),screen)<2,label+": pin tip anchored to rack world point");
             }
         }
+        // The pin's rack (and only that rack) gets a mint rim that stays visible through walls.
+        static void Outlined(MatchingRackGuide guide,SortRack rack,string label)
+        {
+            if(!rack){Check(!guide.OutlinedRack,label+": no rack outline");return;}
+            var highlight=rack.GetComponent<ObjectHighlight>();
+            // Static batching must not leave the rim on the scene's combined mesh (drawn at the world origin).
+            var body=rack.GetComponentsInChildren<MeshRenderer>(true).First(rack.IsFrameRenderer);
+            var rims=rack.GetComponentsInChildren<Renderer>(true).Where(r=>r.name.StartsWith("__QuickOutline")).ToArray();
+            Check(rims.Length>0&&rims.All(r=>r.enabled&&Vector3.Distance(r.bounds.center,body.bounds.center)<.25f&&r.sharedMaterials.Length<=2),label+": outline drawn on the rack body mesh ("+body.bounds.center+" vs "+string.Join(";",rims.Select(r=>r.name+" en="+r.enabled+" "+r.bounds.center+" m="+r.sharedMaterials.Length))+")");
+            Check(guide.OutlinedRack==rack&&highlight&&highlight.IsThroughWallHighlighted,label+": guided rack has through-wall outline");
+            Check(UnityEngine.Object.FindObjectsByType<ObjectHighlight>(FindObjectsSortMode.None).Count(h=>h.IsHighlighted)==1,label+": exactly one rack outlined");
+            Check(rack.contents.All(i=>!i||!i.GetComponentsInChildren<Renderer>(true).Any(r=>r.name.StartsWith("__QuickOutline"))),label+": rack contents not outlined");
+        }
         public static IEnumerator Run()
         {
             if(!Application.isPlaying)throw new InvalidOperationException("Play Mode required");
@@ -78,24 +92,25 @@ namespace LabSorting.Prototype
                 unreachable=new GameObject("Unreachable rack check");unreachable.transform.position=new Vector3(1000,0,1000);var isolated=unreachable.AddComponent<SortRack>();isolated.slots=new[]{unreachable.transform};isolated.Initialize();
                 s.racks=new[]{isolated};yield return LookAway(s);Check(!MatchingRackGuide.FindRack(s,held.definition),"Disconnected destination skipped");UnityEngine.Object.Destroy(unreachable);unreachable=null;
                 s.racks=all;s.Restore(saved);Check(s.TryPick(held),"Reset presentation fixture");held.CompleteMotion();
-                yield return Aim(s,a);Check(guide.GuidedRack==a&&guide.MarkerIsPin,"Visible aimed rack uses location pin");Presentation(guide,s,"Normal view");yield return Capture("01-visible-pin");
+                yield return Aim(s,a);Check(guide.GuidedRack==a&&guide.MarkerIsPin,"Visible aimed rack uses location pin");Presentation(guide,s,"Normal view");Outlined(guide,null,"Aimed rack keeps its green feedback");yield return Capture("01-visible-pin");
                 yield return Aim(s,a,.95f);Check(guide.MarkerIsPin,"Nearby rack still uses attached pin");Presentation(guide,s,"Close view");yield return Capture("02-close-pin");
                 yield return Aim(s,b);Check(guide.GuidedRack==b&&guide.MarkerIsPin,"Hovering another rack moves pin to that rack");yield return Capture("03-alternate-rack");
                 var oldYaw=s.player.look.Yaw;s.player.look.SetYawPitch(new Vector2(oldYaw+180,-45));yield return Wait();s.RefreshTarget();yield return Wait();
-                Check(guide.MarkerVisible&&!guide.MarkerIsPin,"Off-screen destination uses directional arrow");Presentation(guide,s,"Off-screen");yield return Capture("04-offscreen-arrow");
+                Check(guide.MarkerVisible&&!guide.MarkerIsPin,"Off-screen destination uses directional arrow");Presentation(guide,s,"Off-screen");Outlined(guide,guide.GuidedRack,"Off-screen");yield return Capture("04-offscreen-arrow");
                 yield return Aim(s,a);
                 obstacle=GameObject.CreatePrimitive(PrimitiveType.Cube);obstacle.name="Rack pin occlusion check";var eye=s.player.view.transform;
                 obstacle.transform.SetPositionAndRotation(eye.position+eye.forward*.6f,eye.rotation);obstacle.transform.localScale=new Vector3(8,8,.1f);Physics.SyncTransforms();yield return Wait();
-                Check(!guide.MarkerVisible&&guide.MarkerOccluded,"Wall does not show a pin through geometry");yield return Capture("05-occluded");UnityEngine.Object.Destroy(obstacle);obstacle=null;yield return Wait();
+                Check(!guide.MarkerVisible&&guide.MarkerOccluded,"Wall does not show a pin through geometry");Outlined(guide,guide.GuidedRack,"Behind wall");yield return Capture("05-occluded");UnityEngine.Object.Destroy(obstacle);obstacle=null;yield return Wait();
                 var upper=all.FirstOrDefault(r=>Mathf.Abs(r.transform.position.y-s.player.transform.position.y)>1.8f&&r.CanAccept(held.definition)&&routes.Route(s.player.transform.position,r,out _,out _));
-                Check(upper,"Reachable upstairs rack exists");s.racks=new[]{upper};guide.enabled=false;guide.enabled=true;yield return LookAway(s);yield return Wait();Check(guide.GuidedRack==upper&&guide.MarkerVisible&&!guide.MarkerIsPin,"Other floor keeps route arrow rather than false visible pin");yield return Capture("06-upstairs-route");s.racks=all;
+                Check(upper,"Reachable upstairs rack exists");s.racks=new[]{upper};guide.enabled=false;guide.enabled=true;yield return LookAway(s);yield return Wait();Check(guide.GuidedRack==upper&&guide.MarkerVisible&&!guide.MarkerIsPin,"Other floor keeps route arrow rather than false visible pin");Outlined(guide,null,"Other floor");yield return Capture("06-upstairs-route");s.racks=all;
                 foreach(int width in new[]{1280,1440,1560,1600,1680,1152,960})
                 {
                     yield return (IEnumerator)typeof(ThumbControlsChecks).GetMethod("Resize",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic).Invoke(null,new object[]{width,720});
                     sizes.Apply(sizes.JoystickScale,1.15f);yield return Aim(s,a);Presentation(guide,s,"Layout "+width);yield return Capture("layout-"+width);
                 }
                 safe.enabled=false;safe.ApplySample(new Rect(60,25,Screen.width-120,Screen.height-25),new Vector2Int(Screen.width,Screen.height));Canvas.ForceUpdateCanvases();yield return Wait();Presentation(guide,s,"Inset UI");yield return Capture("07-safe-area");
-                s.player.SetBlocked(true);yield return Wait();Check(!guide.MarkerVisible,"Pause hides marker");s.player.SetBlocked(false);
+                s.player.SetBlocked(true);yield return Wait();Check(!guide.MarkerVisible,"Pause hides marker");Check(!guide.OutlinedRack,"Pause hides outline");s.player.SetBlocked(false);
+                foreach(var rack in all){var feedback=rack.GetComponent<RackTargetFeedback>();if(feedback&&feedback.SurfaceCount>0&&rack.GetComponent<ObjectHighlight>())Check(feedback.SurfaceCount==rack.GetComponentsInChildren<Renderer>(true).Count(rack.IsFrameRenderer),rack.name+": aim feedback ignores outline proxies");}
                 File.AppendAllText(Folder+"/checks.txt","DONE\n");
             }
             finally

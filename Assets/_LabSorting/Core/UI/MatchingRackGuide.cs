@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using LabSorting.Sorting;
 using LabSorting.Player;
 using PixelPlay.OffScreenIndicator;
+using IAmJanitor.Rendering.Highlighting;
 namespace LabSorting.UI
 {
     [DefaultExecutionOrder(12000)]
@@ -28,6 +29,11 @@ namespace LabSorting.UI
         ItemDefinition selectedType;SortRack lastAim;int revision=-1,anchorIndex;
         float nextRefresh;Vector3 lastPosition,waypoint;bool routeValid;
         static readonly Color Mint=new Color(.35f,1,.72f);
+        // Same mint as the pin, visible through walls, with a slow light breathe (~1.25 s, 25% dimmer at its low).
+        static readonly HighlightStyle OutlineStyle=new HighlightStyle{color=Mint,widthPixels=3,pulse=true,pulseFrequency=.8f,pulseAmount=.25f,throughWalls=true};
+        // The one rack the pin is guiding to also gets a rim, so its shape reads from behind walls.
+        public SortRack OutlinedRack {get;private set;}
+        ObjectHighlight outlined;
 
         static bool Eligible(SortingSession s,SortRack rack,ItemDefinition type,out float distance)
         {
@@ -71,10 +77,12 @@ namespace LabSorting.UI
         {
             MarkerIsPin=false;MarkerOccluded=false;MarkerScreenRect=default;
             if(!session||!session.Initialized||session.player.blocked||!session.Active||(tutorial&&tutorial.IsRunning)||!GuidedRack||!routeValid)
-            {if(marker)marker.gameObject.SetActive(false);MarkerRack=null;return;}
+            {if(marker)marker.gameObject.SetActive(false);MarkerRack=null;SetOutline(null);return;}
             if(!GuidedRack.gameObject.activeInHierarchy||!GuidedRack.CanAccept(session.Active.definition)){Hide();return;}
             EnsureMarker();MarkerRack=GuidedRack;
             bool otherFloor=Mathf.Abs(GuidedRack.transform.position.y-session.player.transform.position.y)>1.8f;
+            // Another floor follows the stair waypoint instead; an aimed rack already shows its green/red feedback.
+            SetOutline(otherFloor||GuidedRack==session.TargetRack?null:GuidedRack);
             bool onScreen=false;
             if(!otherFloor)
             {
@@ -117,7 +125,7 @@ namespace LabSorting.UI
                 bool found=false;bounds=new Bounds(rack.transform.position+Vector3.up*.8f,new Vector3(1,1.6f,.5f));
                 foreach(var surface in rack.GetComponentsInChildren<Renderer>())
                 {
-                    if(surface==rack.labelIcon||surface==rack.indicator||surface.GetComponent<TextMesh>()||surface.GetComponentInParent<SortItem>())continue;
+                    if(!rack.IsFrameRenderer(surface))continue;
                     if(!found){bounds=surface.bounds;found=true;}else bounds.Encapsulate(surface.bounds);
                 }
                 rackGeometry[rack]=bounds;
@@ -198,7 +206,28 @@ namespace LabSorting.UI
             var p=pin.rectTransform;p.anchorMin=Vector2.zero;p.anchorMax=Vector2.one;p.offsetMin=p.offsetMax=Vector2.zero;
             var rim=pinObject.GetComponent<UnityEngine.UI.Outline>();rim.effectColor=outline.effectColor;rim.effectDistance=Vector2.one*1.5f;
         }
-        void Hide(){if(label){label.text="";label.gameObject.SetActive(false);}if(marker)marker.gameObject.SetActive(false);MarkerRack=null;GuidedRack=null;selectedType=null;routeValid=false;nextRefresh=0;}
+        void SetOutline(SortRack rack)
+        {
+            if(rack==OutlinedRack)return;
+            if(outlined)outlined.Release(this,HighlightChannel.Task);
+            OutlinedRack=rack;outlined=rack?RackOutline(rack):null;
+            if(outlined)outlined.SetRequest(this,HighlightChannel.Task,OutlineStyle);
+        }
+        // Created once per rack on first guidance; only the rack body is outlined, never its contents.
+        static ObjectHighlight RackOutline(SortRack rack)
+        {
+            var highlight=rack.GetComponent<ObjectHighlight>();if(highlight)return highlight;
+            var frame=new List<Renderer>();
+            foreach(var r in rack.GetComponentsInChildren<MeshRenderer>(true))if(rack.IsFrameRenderer(r))frame.Add(r);
+            if(frame.Count==0)return null;
+            // A static-batched renderer only exposes the scene's combined mesh, so use the rack's baked body mesh.
+            Mesh[] prepared=null;
+            if(frame.Count==1&&rack.outlineMesh)prepared=new[]{OutlineMeshCache.Acquire(rack.outlineMesh)};
+            else if(frame.Exists(r=>r.isPartOfStaticBatch))return null;
+            highlight=rack.gameObject.AddComponent<ObjectHighlight>();highlight.Configure(frame.ToArray(),null,prepared);
+            return highlight;
+        }
+        void Hide(){if(label){label.text="";label.gameObject.SetActive(false);}if(marker)marker.gameObject.SetActive(false);SetOutline(null);MarkerRack=null;GuidedRack=null;selectedType=null;routeValid=false;nextRefresh=0;}
         void OnDisable(){Hide();}
         void OnDestroy(){if(marker)Destroy(marker.gameObject);}
     }

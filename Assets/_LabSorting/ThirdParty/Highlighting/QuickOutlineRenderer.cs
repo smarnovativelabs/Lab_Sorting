@@ -110,7 +110,8 @@ namespace IAmJanitor.Rendering.Highlighting
                     holder.AddComponent<MeshFilter>().sharedMesh = mesh;
                     effect = holder.AddComponent<MeshRenderer>();
                 }
-                Bounds bounds = source.localBounds; bounds.Expand(.5f); effect.localBounds = bounds;
+                // A static-batched source reports world-space localBounds; the proxy mesh is local.
+                Bounds bounds = source.isPartOfStaticBatch ? mesh.bounds : source.localBounds; bounds.Expand(.5f); effect.localBounds = bounds;
                 // Fallback meshes can remain GPU-only. Cover ALL submeshes without combining
                 // indices or writing UV channels; prepared meshes reduce this to one draw.
                 var materials = new Material[mesh.subMeshCount];
