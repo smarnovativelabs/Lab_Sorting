@@ -38,7 +38,7 @@ namespace LabSorting.Sorting
         public string SavePath => Path.Combine(Application.persistentDataPath,saveName);
         void Awake()
         {
-            foreach(var rack in racks) rack.Initialize();
+            foreach(var rack in racks) {rack.group=racks; rack.Initialize();}
             // Clutter remains raycastable, but does not snag the player's capsule.
             RefreshSortingColliders();
         }
@@ -144,7 +144,7 @@ namespace LabSorting.Sorting
             if(player.blocked) return false;
             if(!Active || Active.Moving) return Fail("Pick an item first");
             if(!rack) return Fail("Aim at a rack");
-            if(!rack.CanAccept(Active.definition)) return Fail(rack.Type&&rack.Type!=Active.definition?"This rack holds "+rack.Type.displayName:rack.Count>0?"Rack full":"Too big for this rack");
+            if(!rack.CanAccept(Active.definition)) return Fail(RackRefusal(rack,Active.definition));
             var item=Active; int index=rack.Add(item); RemoveActive(); item.transform.SetParent(null,true);
             if(launch.HasValue)item.transform.SetPositionAndRotation(launch.Value.position,launch.Value.rotation);
             if(launchScale.HasValue)item.transform.localScale=launchScale.Value;
@@ -158,6 +158,10 @@ namespace LabSorting.Sorting
             ItemPlaced?.Invoke(item);CheckSmallGoals(rack,firstPlacement);
             EndTossStreak();CheckMilestones();Commit("Placed "+item.definition.displayName);return true;
         }
+        public static string RackRefusal(SortRack rack,ItemDefinition type)=>
+            rack.Type&&rack.Type!=type?"This rack holds "+rack.Type.displayName:
+            !rack.Type&&rack.HomeFor(type)?type.displayName+" already has a rack. Follow the marker":
+            rack.Count>0?"Rack full":"Too big for this rack";
         public void ThrowActive()
         {
             CancelHold();

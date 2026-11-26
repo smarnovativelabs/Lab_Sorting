@@ -58,11 +58,66 @@ namespace LabSorting.Sorting
                 data.layoutRevision=layoutRevision;
             }
             int relocated=migrate?0:ApplyLayoutFixes(data);
+            int merged=MergeSplitTypes(data);
             bool restored=Restore(data);
             // Anything an older build left hanging in the air is set down before the first frame shows it.
             int settled=restored?SettleFloatingLooseItems():0;
-            LastLoadRelocated=restored?relocated:0;LastLoadSettled=settled;
-            if(restored&&(added||migrate||relocated>0||settled>0))saveAt=Time.unscaledTime+.4f;return restored;
+            LastLoadRelocated=restored?relocated:0;LastLoadSettled=settled;LastLoadMerged=restored?merged:0;
+            if(restored&&merged>0){Message="Racks organized: matching items moved together";MessageIsError=false;Notify();}
+            if(restored&&(added||migrate||relocated>0||settled>0||merged>0))saveAt=Time.unscaledTime+.4f;return restored;
+        }
+        public int LastLoadMerged {get;private set;}
+        // Older builds let one type spread over several racks. Each type now has one home rack, and every
+        // type's count fits one rack, so a split would leave another type with no rack. Move the items into
+        // the fullest of their racks; items, rewards and progress are unchanged, only their shelf moves.
+        int MergeSplitTypes(Snapshot data)
+        {
+            if(data==null||data.items==null)return 0;
+            var itemLookup=new Dictionary<string,SortItem>(items.Length);foreach(var item in items)if(item&&item.id!=null)itemLookup[item.id]=item;
+            var rackLookup=new Dictionary<string,SortRack>();foreach(var rack in racks)if(rack&&rack.id!=null)rackLookup[rack.id]=rack;
+            var byType=new Dictionary<ItemDefinition,Dictionary<string,List<Entry>>>();
+            foreach(var e in data.items)
+            {
+                if(e==null||e.location!=ItemLocation.Rack||e.rack==null||!itemLookup.TryGetValue(e.id,out var item)||!rackLookup.ContainsKey(e.rack))continue;
+                if(!byType.TryGetValue(item.definition,out var perRack))byType[item.definition]=perRack=new Dictionary<string,List<Entry>>();
+                if(!perRack.TryGetValue(e.rack,out var list))perRack[e.rack]=list=new List<Entry>();
+                list.Add(e);
+            }
+            int moved=0;
+            foreach(var pair in byType)
+            {
+                var perRack=pair.Value;if(perRack.Count<2)continue;
+                var type=pair.Key;var order=new List<string>(perRack.Keys);
+                order.Sort((a,b)=>{int c=perRack[b].Count.CompareTo(perRack[a].Count);return c!=0?c:string.CompareOrdinal(a,b);});
+                var taken=new Dictionary<string,bool[]>();
+                foreach(var id in order)
+                {
+                    var used=new bool[Mathf.Max(0,rackLookup[id].CapacityFor(type))];
+                    foreach(var e in perRack[id])if(e.slot>=0&&e.slot<used.Length)used[e.slot]=true;
+                    taken[id]=used;
+                }
+                // Empty the smallest racks first, into the fullest rack that still has room.
+                for(int donor=order.Count-1;donor>0;donor--)
+                {
+                    var from=perRack[order[donor]];
+                    for(int k=from.Count-1;k>=0;k--)
+                    {
+                        for(int home=0;home<donor;home++)
+                        {
+                            var used=taken[order[home]];int slot=System.Array.IndexOf(used,false);if(slot<0)continue;
+                            var e=from[k];used[slot]=true;if(e.slot>=0&&e.slot<taken[order[donor]].Length)taken[order[donor]][e.slot]=false;
+                            e.rack=order[home];e.slot=slot;from.RemoveAt(k);perRack[order[home]].Add(e);moved++;break;
+                        }
+                    }
+                }
+                // A rack this filled counts as completed, with the bonus the player would have earned placing it.
+                if(data.completedRacks!=null)foreach(var id in order)
+                {
+                    int capacity=rackLookup[id].CapacityFor(type);
+                    if(capacity>0&&perRack[id].Count==capacity&&!data.completedRacks.Contains(id)){data.completedRacks.Add(id);data.cash+=RackBonus;}
+                }
+            }
+            return moved;
         }
         bool AppendContent(Snapshot data,out bool added)
         {

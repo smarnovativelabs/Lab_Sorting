@@ -20,7 +20,7 @@ Hands|En mano
 FULL|LLENO
 SLOTS LEFT|ESPACIOS LIBRES
 SLOT LEFT|ESPACIO LIBRE
-EMPTY / ANY ITEM|VACÍO / CUALQUIER OBJETO
+EMPTY / NEW ITEM|VACÍO / ARTÍCULO NUEVO
 Empty rack — assign selected item|Estante vacío: coloca el objeto seleccionado
 Rack full|Estante lleno
 Wrong item|Tipo incorrecto

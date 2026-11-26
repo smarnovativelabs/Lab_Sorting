@@ -108,7 +108,8 @@ namespace LabSorting.UI
             if(!session.player.blocked&&rack&&session.Active)
             {
                 bool accepts=rack.CanAccept(session.Active.definition);
-                target.text=accepts?"":rack.Type&&rack.Type!=session.Active.definition?"This rack only accepts "+rack.Type.displayName:rack.CapacityFor(session.Active.definition)==0?"Too big for this rack":"Rack full";
+                var type=session.Active.definition;
+                target.text=accepts?"":rack.Type&&rack.Type!=type?"This rack only accepts "+rack.Type.displayName:!rack.Type&&rack.HomeFor(type)?SortingSession.RackRefusal(rack,type):rack.CapacityFor(type)==0?"Too big for this rack":"Rack full";
                 target.color=accepts?new Color(.35f,1,.55f):new Color(1,.45f,.4f);
             }
             if(targetBackdrop)targetBackdrop.enabled=target.text.Length>0;

@@ -75,23 +75,42 @@ namespace LabSorting.Prototype
                 var candidates=all.Where(r=>r.CanAccept(held.definition)&&Mathf.Abs(r.transform.position.y-s.player.transform.position.y)<1&&routes.Route(s.player.transform.position,r,out _,out _))
                     .OrderBy(r=>(r.transform.position-s.player.transform.position).sqrMagnitude).Take(3).ToArray();Check(candidates.Length==3,"Three reachable racks");
                 var a=candidates[0];var b=candidates[1];var c=candidates[2];s.racks=candidates;
-                foreach(var rack in new[]{a,b}){var item=s.items.First(i=>i!=held&&i.definition==held.definition&&i.location==ItemLocation.Loose);int slot=rack.Add(item);var pose=rack.SlotPose(slot);item.Snap(pose.position,pose.rotation);}
-                var nearest=new[]{a,b}.OrderBy(r=>{routes.Route(s.player.transform.position,r,out float length,out _);return length;}).First();
-                Check(MatchingRackGuide.FindRack(s,held.definition)==nearest,"Nearest matching rack preferred to empty rack");
-                yield return Aim(s,c);Check(s.TargetRack==c,"Actually aiming at alternate empty rack");
-                Check(MatchingRackGuide.FindRack(s,held.definition)==c,"Valid aim overrides assigned-rack preference");
-                var guide=UnityEngine.Object.FindFirstObjectByType<MatchingRackGuide>();Check(guide.GuidedRack==c,"Live marker follows alternate aimed rack");
-                var wrong=s.items.First(i=>i.location==ItemLocation.Loose&&i.definition!=held.definition&&!i.definition.isRat&&c.CanAccept(i.definition));c.Add(wrong);wrong.Snap(c.SlotPose(0).position,c.SlotPose(0).rotation);
-                Check(MatchingRackGuide.FindRack(s,held.definition)!=c,"Incompatible aimed rack skipped");
-                Count(a,a.Capacity);Check(MatchingRackGuide.FindRack(s,held.definition)==b,"Full rack skipped");Count(b,b.Capacity);
-                Check(!MatchingRackGuide.FindRack(s,held.definition),"No eligible destination returns none");Count(a,1);Count(b,1);
+                // While the type has no rack yet, every empty rack is open: aim and distance pick the guide.
+                yield return Aim(s,c);Check(s.TargetRack==c,"Actually aiming at an empty rack");
+                Check(MatchingRackGuide.FindRack(s,held.definition)==c,"Valid aim picks the guided empty rack");
+                var guide=UnityEngine.Object.FindFirstObjectByType<MatchingRackGuide>();Check(guide.GuidedRack==c,"Live marker follows aimed rack");
                 yield return Aim(s,b);yield return LookAway(s);
                 Check(MatchingRackGuide.FindRack(s,held.definition,a)==b,"Walking much closer updates old recommendation");
                 var stable=MatchingRackGuide.FindRack(s,held.definition);s.player.character.Motor.SetPosition(s.player.transform.position+Vector3.right*.03f);
                 Check(MatchingRackGuide.FindRack(s,held.definition,stable)==stable,"Small movement keeps stable recommendation");
+                // Once a type has a home rack, no other rack takes it until that rack is full.
+                {var item=s.items.First(i=>i!=held&&i.definition==held.definition&&i.location==ItemLocation.Loose);int slot=a.Add(item);Check(slot>=0,"Home rack takes the first item");var pose=a.SlotPose(slot);item.Snap(pose.position,pose.rotation);}
+                Check(!b.CanAccept(held.definition)&&!c.CanAccept(held.definition)&&c.HomeFor(held.definition)==a,"Empty racks refuse a type that already has a home rack");
+                Check(MatchingRackGuide.FindRack(s,held.definition)==a,"Guide points to the home rack");
+                yield return Aim(s,c);Check(s.TargetRack==c&&MatchingRackGuide.FindRack(s,held.definition)==a,"Aiming at an empty rack keeps the guide on the home rack");
+                Check(!s.TryPlace(c)&&c.Count==0&&s.Message.Contains("already has a rack"),"Empty rack refuses the item with a hint: "+s.Message);
+                var wrong=s.items.First(i=>i.location==ItemLocation.Loose&&i.definition!=held.definition&&!i.definition.isRat&&c.CanAccept(i.definition));c.Add(wrong);wrong.Snap(c.SlotPose(0).position,c.SlotPose(0).rotation);
+                Check(!c.CanAccept(held.definition),"Rack holding another type refuses");
+                Count(a,a.Capacity);Check(MatchingRackGuide.FindRack(s,held.definition)==b,"A full home rack opens the nearest empty rack");
+                s.racks=new[]{a,c};Check(!MatchingRackGuide.FindRack(s,held.definition),"No eligible destination returns none");s.racks=candidates;Count(a,1);
                 unreachable=new GameObject("Unreachable rack check");unreachable.transform.position=new Vector3(1000,0,1000);var isolated=unreachable.AddComponent<SortRack>();isolated.slots=new[]{unreachable.transform};isolated.Initialize();
                 s.racks=new[]{isolated};yield return LookAway(s);Check(!MatchingRackGuide.FindRack(s,held.definition),"Disconnected destination skipped");UnityEngine.Object.Destroy(unreachable);unreachable=null;
-                s.racks=all;s.Restore(saved);Check(s.TryPick(held),"Reset presentation fixture");held.CompleteMotion();
+                s.racks=all;s.Restore(saved);
+                {
+                    // An older save with one type split over two racks is merged into one on load.
+                    var split=s.Capture();var type=held.definition;var ids=s.items.Where(i=>i.definition==type).Select(i=>i.id).ToList();
+                    var entries=split.items.Where(e=>ids.Contains(e.id)).ToList();int n=entries.Count;
+                    Check(n==a.CapacityFor(type)&&entries.All(e=>e.location==ItemLocation.Loose),"Fixture: whole "+type.displayName+" set loose, sized to one rack ("+n+")");
+                    for(int i=0;i<n;i++){entries[i].location=ItemLocation.Rack;entries[i].rack=i<n-2?a.id:b.id;entries[i].slot=i<n-2?i:i-(n-2);}
+                    int cashBefore=split.cash,completedBefore=split.completedRacks.Count;
+                    Check(s.RestoreLoadedLayout(split),"Split save loads");
+                    Check(s.LastLoadMerged==2&&a.Count==n&&a.IsFull&&b.Count==0&&!b.Type,"Split type merged into the fuller rack, other rack freed");
+                    Check(s.Cash==cashBefore+SortingSession.RackBonus&&s.CompletedRackCount==completedBefore+1,"Merged full rack counts as completed with its bonus");
+                    Check(s.Message.StartsWith("Racks organized"),"Player is told the racks were organized");
+                    Check(b.label&&!b.label.text.Contains("ANY ITEM")&&!b.label.text.Contains("CUALQUIER")&&(b.label.text.Contains("NEW ITEM")||b.label.text.Contains("NUEVO")),"Freed rack label says new item: "+(b.label?b.label.text:"none"));
+                    s.Restore(saved);
+                }
+                Check(s.TryPick(held),"Reset presentation fixture");held.CompleteMotion();
                 yield return Aim(s,a);Check(guide.GuidedRack==a&&guide.MarkerIsPin,"Visible aimed rack uses location pin");Presentation(guide,s,"Normal view");Outlined(guide,null,"Aimed rack keeps its green feedback");yield return Capture("01-visible-pin");
                 yield return Aim(s,a,.95f);Check(guide.MarkerIsPin,"Nearby rack still uses attached pin");Presentation(guide,s,"Close view");yield return Capture("02-close-pin");
                 yield return Aim(s,b);Check(guide.GuidedRack==b&&guide.MarkerIsPin,"Hovering another rack moves pin to that rack");yield return Capture("03-alternate-rack");
