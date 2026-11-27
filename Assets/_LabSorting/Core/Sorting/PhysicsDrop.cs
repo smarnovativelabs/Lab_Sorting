@@ -43,6 +43,7 @@ namespace LabSorting.Sorting
     }
     public sealed partial class SortItem
     {
+        internal void PhysicsWoke()=>PoseChanged();
         public void ReleaseNaturally(Vector3 position,Vector3 velocity,System.Action done)
         {
             SetSearchHighlight(false);selectionPresentation?.Kill();ClearShine();motion?.Kill();

@@ -35,6 +35,7 @@ namespace LabSorting.UI
                 ((RectTransform)cashOfferDetails.transform.parent).anchoredPosition=new Vector2(left?-106:-136,-35);
                 ((RectTransform)adOfferDetails.transform.parent).anchoredPosition=new Vector2(left?136:106,-35);
             }
+            LabSorting.Services.LabTelemetry.Event("supply_panel_opened",value.ToString().ToLowerInvariant(),session.Cash);
             kind=value;previousBlocked=session.player.blocked;cursor=Cursor.lockState;cursorVisible=Cursor.visible;session.CancelHold();session.player.SetBlocked(true);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;root.SetActive(true);root.transform.SetAsLastSibling();status.text="";Refresh();
         }
         public void Close(){if(!IsOpen||(commerce.Busy&&!commerce.CanClosePurchaseUI))return;root.SetActive(false);session.player.SetBlocked(previousBlocked);Cursor.lockState=cursor;Cursor.visible=cursorVisible;}

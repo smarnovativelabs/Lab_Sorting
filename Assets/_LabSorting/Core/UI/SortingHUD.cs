@@ -96,7 +96,30 @@ namespace LabSorting.UI
             var rack=session.TossRack;float distance=Vector3.Distance(session.player.view.transform.position,rack.transform.position);
             return "TOSS into "+(rack.Type?rack.Type.displayName+" rack":"empty rack")+"   "+distance.ToString("0")+" m";
         }
+        // Smart Place: the rack holds another carried type, so PLACE will switch to it. Say what will land there.
+        ItemDefinition smartType;int smartCount=-1;string smartText;
+        string SmartPlaceText(SortRack rack,ItemDefinition type)
+        {
+            int count=0;foreach(var held in session.carried)if(held.definition==type)count++;
+            count=session.batchPlacement?Mathf.Min(count,rack.CapacityFor(type)-rack.Count):Mathf.Min(count,1);
+            if(type!=smartType||count!=smartCount){smartType=type;smartCount=count;smartText="PLACE "+(count>1?count+" ":"")+type.displayName;}
+            return smartText;
+        }
         void SelectType(ItemDefinition type){if(!type)return;for(int i=session.carried.Count-1;i>=0;i--)if(session.carried[i].definition==type){session.Select(i);return;}}
+        string fittedTarget;
+        // The aim label is 380 wide but its backplate was a fixed 340, so long refusals ("IV Bag already
+        // has a rack. Follow the marker") ran past the plate. Size the plate to the message and keep the
+        // label inside it; a message too long for one line even at the smallest size wraps onto a taller plate.
+        void FitTargetBackdrop()
+        {
+            if(target.text==fittedTarget)return;fittedTarget=target.text;
+            const float padX=14,minPlate=120,maxPlate=400,oneLine=30,twoLines=48;
+            float room=maxPlate-padX*2,full=TextFit.Width(target,fittedTarget,TextFit.MaxSize(target));
+            float smallest=TextFit.Width(target,fittedTarget,target.resizeTextForBestFit?target.resizeTextMinSize:target.fontSize);
+            float width=full<=room?Mathf.Max(minPlate,full+padX*2+2):maxPlate,height=smallest<=room?oneLine:twoLines;
+            targetBackdrop.rectTransform.sizeDelta=new Vector2(width,height);
+            target.rectTransform.sizeDelta=new Vector2(width-padX*2,height);
+        }
         void Update()
         {
             TickInventoryMotion();TickFullFeedback();TickSelectedCard();
@@ -107,12 +130,13 @@ namespace LabSorting.UI
             target.color=session.TargetItem?SortItem.HoverLabelColor:Color.white;
             if(!session.player.blocked&&rack&&session.Active)
             {
-                bool accepts=rack.CanAccept(session.Active.definition);
                 var type=session.Active.definition;
-                target.text=accepts?"":rack.Type&&rack.Type!=type?"This rack only accepts "+rack.Type.displayName:!rack.Type&&rack.HomeFor(type)?SortingSession.RackRefusal(rack,type):rack.CapacityFor(type)==0?"Too big for this rack":"Rack full";
+                var placeType=session.PlaceableType(rack);
+                bool accepts=placeType;
+                target.text=accepts?(placeType!=type?SmartPlaceText(rack,placeType):""):rack.Type&&rack.Type!=type?"This rack only accepts "+rack.Type.displayName:!rack.Type&&rack.HomeFor(type)?SortingSession.RackRefusal(rack,type):rack.CapacityFor(type)==0?"Too big for this rack":"Rack full";
                 target.color=accepts?new Color(.35f,1,.55f):new Color(1,.45f,.4f);
             }
-            if(targetBackdrop)targetBackdrop.enabled=target.text.Length>0;
+            if(targetBackdrop){targetBackdrop.enabled=target.text.Length>0;if(targetBackdrop.enabled)FitTargetBackdrop();}
             if(revision==session.Revision&&wasBlocked==session.player.blocked) return; revision=session.Revision;wasBlocked=session.player.blocked;
             if(!sortedProgress||!sortedProgress.isActiveAndEnabled)
             {
@@ -124,7 +148,8 @@ namespace LabSorting.UI
             if(activeIcon){activeIcon.sprite=session.Active?session.Active.definition.icon:null;activeIcon.enabled=activeIcon.sprite;}
             int heldCount=0;
             if(session.Active)foreach(var item in session.carried)if(item.definition==session.Active.definition)heldCount++;
-            active.text=session.Active?"HOLDING\n"+session.Active.definition.displayName+" ×"+heldCount:"HANDS EMPTY";
+            // No "HOLDING" heading: it took a line and best-fit shrank the item name.
+            active.text=session.Active?session.Active.definition.displayName+" ×"+heldCount:"HANDS EMPTY";
             var toasts=GetComponent<DesignerToasts>();if(toasts)toasts.Present(session.Message,session.MessageIsError,session.FullNoticeVersion);else {status.text=session.Message;status.color=session.MessageIsError?new Color(1,.68f,.32f):Color.white;}
             int groups=0;
             for(int i=0;i<session.carried.Count;i++)

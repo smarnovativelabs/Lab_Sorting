@@ -47,8 +47,8 @@ namespace LabSorting.Services
 #endif
         }
         public void BindSession(SortingSession value){if(ReferenceEquals(session,value))return;OnDisable();session=value;if(isActiveAndEnabled)OnEnable();}
-        void OnEnable(){if(session){session.SearchStarted+=Search;session.MagnetCollected+=Magnet;session.RackCompleted+=Rack;session.ItemPlaced+=Placed;session.MilestoneEarned+=Goal;}}
-        void Start(){Initialize();}
+        void OnEnable(){if(session){session.SearchStarted+=Search;session.MagnetCollected+=Magnet;session.RackCompleted+=Rack;session.ItemPlaced+=Placed;session.MilestoneEarned+=Goal;session.ItemFirstSorted+=FirstSorted;session.SuppliesEmpty+=Empty;}}
+        void Start(){activeSince=Time.realtimeSinceStartupAsDouble;Initialize();}
         public void Initialize()
         {
             if(starting||!Live)return;
@@ -164,8 +164,27 @@ namespace LabSorting.Services
         void Rack(SortRack rack)=>Event("rack_completed",rack.id);
         void Goal(string name,int cash)=>Event("milestone_completed",name,cash);
         void Placed(SortItem item){if(++placements%25==0)Event("sorting_progress","placed_this_session",placements);}
-        void OnApplicationPause(bool paused){if(paused){Event("lab_session_pause","placements",placements);if(Live)Persist();}else{retryAt=0;try{if(tenjin&&AttributionAllowed)tenjin.Connect();}catch{Destroy(tenjin.gameObject);tenjin=null;}}}
-        void OnDisable(){if(session){session.SearchStarted-=Search;session.MagnetCollected-=Magnet;session.RackCompleted-=Rack;session.ItemPlaced-=Placed;session.MilestoneEarned-=Goal;}}
+        // Run funnel: unique items sorted in this run, once per checkpoint (sorting_progress counts re-placements per session).
+        static readonly int[] SortedCheckpoints={10,25,50,100,250,500,1000,2000,3000};
+        void FirstSorted(int count)
+        {
+            bool all=session&&count==session.items.Length;
+            if(all||Array.IndexOf(SortedCheckpoints,count)>=0)Event("items_sorted",all?"all":"checkpoint",count);
+        }
+        // A tool refused for lack of uses and cash: once a minute per tool at most, so repeated taps do not flood.
+        readonly System.Collections.Generic.Dictionary<SupplyKind,double> emptyReported=new System.Collections.Generic.Dictionary<SupplyKind,double>();
+        void Empty(SupplyKind kind)
+        {
+            double now=Time.realtimeSinceStartupAsDouble;
+            if(emptyReported.TryGetValue(kind,out var at)&&now-at<60)return;
+            emptyReported[kind]=now;Event("out_of_supplies",kind.ToString().ToLowerInvariant(),session?session.Cash:0);
+        }
+        // Foreground play time from start/resume to pause, in seconds.
+        double activeSince=-1;
+        void ReportSessionLength(){if(activeSince<0)return;Event("lab_session_length","seconds",Math.Round(Time.realtimeSinceStartupAsDouble-activeSince));activeSince=-1;}
+        void OnApplicationPause(bool paused){if(paused){ReportSessionLength();Event("lab_session_pause","placements",placements);if(Live)Persist();}else{activeSince=Time.realtimeSinceStartupAsDouble;retryAt=0;try{if(tenjin&&AttributionAllowed)tenjin.Connect();}catch{Destroy(tenjin.gameObject);tenjin=null;}}}
+        void OnApplicationQuit(){ReportSessionLength();if(Live&&outbox!=null)Persist();}
+        void OnDisable(){if(session){session.SearchStarted-=Search;session.MagnetCollected-=Magnet;session.RackCompleted-=Rack;session.ItemPlaced-=Placed;session.MilestoneEarned-=Goal;session.ItemFirstSorted-=FirstSorted;session.SuppliesEmpty-=Empty;}}
         void OnDestroy(){if(Live&&outbox!=null)Persist();if(instance==this)instance=null;}
     }
 }

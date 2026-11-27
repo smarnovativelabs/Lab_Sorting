@@ -110,7 +110,7 @@ namespace LabSorting.Sorting
             if(!rack||!rack.CanAccept(item.definition)||!TossPlan(item,rack,out int slot,out var pose,out var entry))return false;
             int index=rack.Add(item);if(index!=slot){rack.Remove(item);item.location=ItemLocation.Hand;return false;}
             RemoveActive();item.transform.SetParent(null,true);
-            bool firstPlacement=rewardedItems.Add(item.id);
+            bool firstPlacement=rewardedItems.Add(item.id);if(firstPlacement)ItemFirstSorted?.Invoke(rewardedItems.Count);
             TossStreak=Time.unscaledTime-lastToss<=tossStreakWindow?TossStreak+1:1;lastToss=Time.unscaledTime;
             int bonus=0;
             item.Toss(entry,pose.position,pose.rotation,()=>ItemLanded?.Invoke(item,true));

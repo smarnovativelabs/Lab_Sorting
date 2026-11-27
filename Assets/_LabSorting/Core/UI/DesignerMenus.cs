@@ -36,7 +36,7 @@ namespace LabSorting.UI
             root.SetActive(true);root.transform.SetAsLastSibling();
         }
         public void OpenPause(){Open(pauseRoot);saveStatus.text="";}
-        public void OpenStore(){Open(storeRoot);RefreshStore();}
+        public void OpenStore(){LabSorting.Services.LabTelemetry.Event("store_opened");Open(storeRoot);RefreshStore();}
         public void Close()
         {
             if(!IsOpen||(storeRoot.activeSelf&&Commerce&&Commerce.Busy&&!Commerce.CanClosePurchaseUI))return;

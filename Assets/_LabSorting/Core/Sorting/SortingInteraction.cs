@@ -116,21 +116,23 @@ namespace LabSorting.Sorting
             }
             if(item!=TargetItem){if(TargetItem)TargetItem.Highlight(false);TargetItem=item;lockedAim=forward;lockedOrigin=origin;pendingTarget=null;if(item)item.Highlight(true);}
             if(rack!=TargetRack){if(TargetRack)TargetRack.Preview(null);TargetRack=rack;}
-            if(TargetRack)TargetRack.Preview(Active?Active.definition:null);
+            // Smart Place: a rack that already holds another carried type previews that type (green), not a refusal.
+            if(TargetRack){var type=PlaceableType(TargetRack);TargetRack.Preview(type?type:Active?Active.definition:null);}
         }
         public void BeginHold(bool place)
         {
             CancelPendingDrop();CancelHold();if(player.blocked)return;RefreshTarget();
             if(!place&&TargetItem&&carried.Count>=capacity){FullInventoryNotice();return;}
+            var placeType=place?PlaceableType(TargetRack):null;
             if(!Ready()||(place&&Active&&Active.Moving))
             {
-                if(place?Active&&TargetRack&&TargetRack.CanAccept(Active.definition):TargetItem&&!TargetItem.Moving&&carried.Count<capacity)
+                if(place?placeType!=null:TargetItem&&!TargetItem.Moving&&carried.Count<capacity)
                 {bufferedTap=true;BufferedTapState=TapBufferState.Waiting;bufferedPlace=place;bufferedRepeat=true;
                     // Arrival tweens can update after this component on a slow frame. Allow bounded grace after cooldown.
-                    bufferedUntil=Mathf.Max(Time.unscaledTime,nextAction)+.5f;bufferedItem=TargetItem;bufferedRack=TargetRack;bufferedType=place?Active.definition:TargetItem.definition;}
+                    bufferedUntil=Mathf.Max(Time.unscaledTime,nextAction)+.5f;bufferedItem=TargetItem;bufferedRack=TargetRack;bufferedType=place?placeType:TargetItem.definition;}
                 return;
             }
-            holdPlace=place;holdType=place?(Active?Active.definition:null):(TargetItem?TargetItem.definition:null);holdRack=TargetRack;
+            holdPlace=place;holdType=place?(placeType?placeType:Active?Active.definition:null):(TargetItem?TargetItem.definition:null);holdRack=TargetRack;
             bool success=place?PlaceMatching(TargetRack):TryPick(TargetItem);
             holding=success&&(!place||!batchPlacement);repeatAt=Time.unscaledTime+Mathf.Max(.3f,holdDelay);
         }
@@ -140,7 +142,7 @@ namespace LabSorting.Sorting
         void TickBufferedTap()
         {
             if(!bufferedTap)return;
-            bool valid=!player.blocked&&Time.unscaledTime<=bufferedUntil&&(bufferedPlace?Active&&Active.definition==bufferedType&&TargetRack==bufferedRack&&bufferedRack&&bufferedRack.CanAccept(bufferedType):TargetItem&&TargetItem==bufferedItem&&!TargetItem.Moving&&!TargetItem.PickLocked&&TargetItem.location!=ItemLocation.Hand&&carried.Count<capacity);
+            bool valid=!player.blocked&&Time.unscaledTime<=bufferedUntil&&(bufferedPlace?Active&&TargetRack==bufferedRack&&bufferedRack&&PlaceableType(bufferedRack)==bufferedType:TargetItem&&TargetItem==bufferedItem&&!TargetItem.Moving&&!TargetItem.PickLocked&&TargetItem.location!=ItemLocation.Hand&&carried.Count<capacity);
             if(!valid){bool expired=Time.unscaledTime>bufferedUntil;CancelHold();BufferedTapState=expired?TapBufferState.Expired:TapBufferState.TargetChanged;return;}
             if(!Ready()||(bufferedPlace&&Active.Moving))return;
             bool place=bufferedPlace,repeat=bufferedRepeat;var type=bufferedType;var rack=bufferedRack;bufferedTap=false;

@@ -38,6 +38,8 @@ namespace LabSorting.Services
         public string[] testDeviceAdvertisingIds = new string[0];
         [Tooltip("Seconds of active gameplay between automatic interstitials. Also restarts after every rewarded video.")]
         [Min(30)] public float interstitialCooldownSeconds=120;
+        [Tooltip("Seconds of active gameplay before the first automatic interstitial of an app launch. Later ones use interstitialCooldownSeconds.")]
+        [Min(30)] public float firstInterstitialSeconds=90;
         [Tooltip("On-screen 5, 4, 3, 2, 1 warning shown before an automatic interstitial.")]
         [Range(1,10)] public int interstitialWarningSeconds=5;
         [Header("Editor testing")]

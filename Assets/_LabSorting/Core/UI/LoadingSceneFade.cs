@@ -17,7 +17,12 @@ namespace LabSorting.UI
             for(float t=0;t<.18f;t+=Time.unscaledDeltaTime){fade.group.alpha=t/.18f;yield return null;}fade.group.alpha=1;
         }
         void Loaded(Scene scene,LoadSceneMode mode){SceneManager.sceneLoaded-=Loaded;StartCoroutine(Reveal());}
-        IEnumerator Reveal(){yield return null;yield return null;for(float t=0;t<.22f;t+=Time.unscaledDeltaTime){group.alpha=1-t/.22f;yield return null;}Destroy(gameObject);}
+        IEnumerator Reveal()
+        {
+            yield return null;yield return null;
+            // Keep the cover up while ItemBatchRenderer warms shaders and meshes off-screen (a few frames, capped).
+            for(float waited=0;LabSorting.Sorting.ItemBatchRenderer.WarmingUp&&waited<2f;waited+=Time.unscaledDeltaTime)yield return null;
+            for(float t=0;t<.22f;t+=Time.unscaledDeltaTime){group.alpha=1-t/.22f;yield return null;}Destroy(gameObject);}
         void OnDestroy(){SceneManager.sceneLoaded-=Loaded;}
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -25,6 +26,15 @@ namespace LabSorting.Sorting
         public int FarInstances {get;private set;}
         Dictionary<Mesh,Mesh> farMeshes;
         readonly Matrix4x4[] scratchFar=new Matrix4x4[Limit];
+        [Tooltip("Instances between this distance and farLodDistance use the mid mesh (about half the triangles) from Resources/ItemMeshLodMap; closer ones keep full detail. 0 disables it.")]
+        [Min(0)] public float midLodDistance=2.5f;
+        public int MidInstances {get;private set;}
+        Dictionary<Mesh,Mesh> midMeshes;
+        readonly Matrix4x4[] scratchMid=new Matrix4x4[Limit];
+        [Tooltip("Right after load, render the lab once in six directions to a small off-screen target, so first-use shader and mesh uploads happen behind the loading cover instead of mid-tour.")]
+        public bool warmupOnStart=true;
+        public static bool WarmingUp {get;private set;}
+        Camera warmupCamera;
         public double PrepareMilliseconds {get;private set;}
         const int Limit=256;
         sealed class Source {public SortItem item;public Renderer renderer;public Mesh mesh;public Material normal,search;public bool forceOff;}
@@ -52,7 +62,7 @@ namespace LabSorting.Sorting
         public void Rebuild()
         {
             Release();if(!session||session.items==null)return;registered=session.items;
-            var lodMap=Resources.Load<ItemMeshLodMap>("ItemMeshLodMap");farMeshes=lodMap?lodMap.Build():null;
+            var lodMap=Resources.Load<ItemMeshLodMap>("ItemMeshLodMap");farMeshes=lodMap?lodMap.Build():null;midMeshes=lodMap?lodMap.BuildMid():null;
             if(!SystemInfo.supportsInstancing||registered.Length<minimumItems)return;
             foreach(var item in registered)
             {
@@ -73,14 +83,49 @@ namespace LabSorting.Sorting
             }
         }
         void OnEnable(){RenderPipelineManager.beginCameraRendering+=BeginCamera;Camera.onPreCull+=BeforeCamera;}
-        void BeginCamera(ScriptableRenderContext context,Camera camera){if(camera==targetCamera)RenderNow();}
-        void BeforeCamera(Camera camera){if(GraphicsSettings.currentRenderPipeline==null&&camera==targetCamera)RenderNow();}
+        void BeginCamera(ScriptableRenderContext context,Camera camera){if(camera==targetCamera)RenderNow();else if(camera&&camera==warmupCamera)RenderFor(camera);}
+        void BeforeCamera(Camera camera){if(GraphicsSettings.currentRenderPipeline!=null)return;if(camera==targetCamera)RenderNow();else if(camera&&camera==warmupCamera)RenderFor(camera);}
         void LateUpdate(){if(session&&registered!=session.items)Rebuild();if(!targetCamera&&session)targetCamera=session.player.view;}
+        static readonly Quaternion[] WarmupDirections={Quaternion.LookRotation(Vector3.forward),Quaternion.LookRotation(Vector3.right),Quaternion.LookRotation(Vector3.back),Quaternion.LookRotation(Vector3.left),Quaternion.LookRotation(Vector3.down,Vector3.forward),Quaternion.LookRotation(Vector3.up,Vector3.back)};
+        // Six off-screen views from the player's start (one per frame): every item mesh, its mid/far meshes and the
+        // instanced shader variants get used once while LoadingSceneFade still covers the screen.
+        IEnumerator Start()
+        {
+            if(!warmupOnStart||!Application.isPlaying)yield break;
+            WarmingUp=true;
+            try
+            {
+                yield return null; // the first LateUpdate registers the items
+                var main=targetCamera?targetCamera:session?session.player.view:null;
+                if(!main||!main.isActiveAndEnabled)yield break;
+                // A plain scene object: unloading the scene mid-warmup destroys it with everything else.
+                warmupRig=new GameObject("Item Warmup Camera");
+                warmupTarget=new RenderTexture(256,256,24){name="Item Warmup Target"};
+                var camera=warmupRig.AddComponent<Camera>();camera.CopyFrom(main);camera.targetTexture=warmupTarget;camera.fieldOfView=90;camera.aspect=1;camera.depth=main.depth-1;
+                warmupRig.transform.position=main.transform.position;warmupCamera=camera;dirty=true;
+                foreach(var direction in WarmupDirections){warmupRig.transform.rotation=direction;yield return null;}
+                yield return null;
+            }
+            finally{EndWarmup();}
+        }
+        GameObject warmupRig;RenderTexture warmupTarget;
+        // Also runs from OnDisable: a stopped coroutine never reaches its finally block.
+        void EndWarmup()
+        {
+            if(warmupCamera)warmupCamera.targetTexture=null; // never release a texture a camera still targets
+            warmupCamera=null;WarmingUp=false;
+            if(warmupRig)Destroy(warmupRig);warmupRig=null;
+            if(warmupTarget){warmupTarget.Release();Destroy(warmupTarget);}warmupTarget=null;
+        }
         public void RenderNow()
         {
-            long started=System.Diagnostics.Stopwatch.GetTimestamp();SubmittedBatches=VisibleInstances=DrawnInstances=FarInstances=0;
             if(!targetCamera&&session)targetCamera=session.player.view;
-            if(!targetCamera||!targetCamera.isActiveAndEnabled){RestoreSources();dirty=true;return;}
+            if(!targetCamera||!targetCamera.isActiveAndEnabled){SubmittedBatches=VisibleInstances=DrawnInstances=FarInstances=MidInstances=0;RestoreSources();dirty=true;return;}
+            RenderFor(targetCamera);
+        }
+        void RenderFor(Camera targetCamera)
+        {
+            long started=System.Diagnostics.Stopwatch.GetTimestamp();SubmittedBatches=VisibleInstances=DrawnInstances=FarInstances=MidInstances=0;
             if(session&&session.SearchType)
             {
                 float strength=.80f+.18f*Mathf.Sin(Time.unscaledTime*4);
@@ -121,7 +166,8 @@ namespace LabSorting.Sorting
                     continue;
                 }
                 Mesh far=null;bool useFar=farLodDistance>0&&farMeshes!=null&&farMeshes.TryGetValue(key.mesh,out far);
-                int pending=0,pendingFar=0;
+                Mesh mid=null;bool useMid=midLodDistance>0&&midMeshes!=null&&midMeshes.TryGetValue(key.mesh,out mid);
+                int pending=0,pendingFar=0,pendingMid=0;
                 for(int i=0;i<group.count;i++)
                 {
                     var sphere=group.spheres[i];var center=new Vector3(sphere.x,sphere.y,sphere.z);
@@ -135,17 +181,24 @@ namespace LabSorting.Sorting
                         if(pendingFar==Limit){Graphics.RenderMeshInstanced(rp,far,0,scratchFar,pendingFar);SubmittedBatches++;DrawnInstances+=pendingFar;FarInstances+=pendingFar;pendingFar=0;}
                         continue;
                     }
+                    if(useMid&&distanceSqr>midLodDistance*midLodDistance)
+                    {
+                        scratchMid[pendingMid++]=group.chunks[i/Limit][i%Limit];
+                        if(pendingMid==Limit){Graphics.RenderMeshInstanced(rp,mid,0,scratchMid,pendingMid);SubmittedBatches++;DrawnInstances+=pendingMid;MidInstances+=pendingMid;pendingMid=0;}
+                        continue;
+                    }
                     scratch[pending++]=group.chunks[i/Limit][i%Limit];
                     if(pending==Limit){Graphics.RenderMeshInstanced(rp,key.mesh,0,scratch,pending);SubmittedBatches++;DrawnInstances+=pending;pending=0;}
                 }
                 if(pending>0){Graphics.RenderMeshInstanced(rp,key.mesh,0,scratch,pending);SubmittedBatches++;DrawnInstances+=pending;}
                 if(pendingFar>0){Graphics.RenderMeshInstanced(rp,far,0,scratchFar,pendingFar);SubmittedBatches++;DrawnInstances+=pendingFar;FarInstances+=pendingFar;}
+                if(pendingMid>0){Graphics.RenderMeshInstanced(rp,mid,0,scratchMid,pendingMid);SubmittedBatches++;DrawnInstances+=pendingMid;MidInstances+=pendingMid;}
             }
             PrepareMilliseconds=(System.Diagnostics.Stopwatch.GetTimestamp()-started)*1000.0/System.Diagnostics.Stopwatch.Frequency;
         }
         void RestoreSources(){foreach(var source in sources){if(source.renderer)source.renderer.forceRenderingOff=source.forceOff;if(source.item)source.item.SetBatchHighlight(false);}}
         void Release(){RestoreSources();foreach(var source in sources)if(source.item)source.item.VisualChanged-=MarkDirty;sources.Clear();groups.Clear();foreach(var pair in materials.Values)foreach(var m in pair)if(m)Destroy(m);materials.Clear();registered=null;dirty=true;}
-        void OnDisable(){RenderPipelineManager.beginCameraRendering-=BeginCamera;Camera.onPreCull-=BeforeCamera;Release();}
+        void OnDisable(){RenderPipelineManager.beginCameraRendering-=BeginCamera;Camera.onPreCull-=BeforeCamera;EndWarmup();Release();}
     }
 }
 

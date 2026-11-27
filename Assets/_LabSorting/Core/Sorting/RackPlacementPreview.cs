@@ -15,6 +15,8 @@ namespace LabSorting.Sorting
             Visible=false;if(!session||!previewMaterial||session.player.blocked)return;
             var item=session.Active;var rack=session.TargetRack;
             if(!item||!rack||item.Moving)return;
+            // Smart Place: ghost the carried type PLACE will switch to.
+            var type=session.PlaceableType(rack);if(type&&type!=item.definition)item=session.CarriedOf(type);if(!item)return;
             int slot=rack.NextSlot(item.definition);if(slot<0||!item.visual)return;
             var filter=item.visual.GetComponent<MeshFilter>();if(!filter||!filter.sharedMesh)return;
             PreviewPose=rack.SlotPoseFor(item.definition,slot);Visible=true;

@@ -33,7 +33,7 @@ namespace LabSorting.Sorting
             var type=Active.definition;int count=0;
             foreach(var item in ItemsOfType(type)) if(item.location==ItemLocation.Loose && item.definition==type) count++;
             if(count==0) return Fail("No loose "+type.displayName+" remaining — no charge");
-            int cost=Mathf.Max(1,searchCost);if(SearchCredits<=0&&cash<cost) return Fail("Get search uses with cash, a rewarded ad or the store");
+            int cost=Mathf.Max(1,searchCost);if(SearchCredits<=0&&cash<cost){SuppliesEmpty?.Invoke(SupplyKind.Search);return Fail("Get search uses with cash, a rewarded ad or the store");}
             if(SearchCredits>0)SearchCredits--;else cash-=cost;searchType=type;searchUntil=Time.unscaledTime+Mathf.Max(30,searchDuration);
             foreach(var item in ItemsOfType(type)) if(item.location==ItemLocation.Loose && item.definition==type) item.SetSearchHighlight(true);
             Commit("Search: "+count+" loose "+type.displayName+" found");SearchStarted?.Invoke(type,count);SaveTransaction();return true;
@@ -48,7 +48,7 @@ namespace LabSorting.Sorting
             var type=Active.definition;int available=0;
             foreach(var item in ItemsOfType(type)) if(item.location==ItemLocation.Loose && item.definition==type && !item.Moving) available++;
             if(available==0) return MagnetEmpty("No loose "+type.displayName+" available — no charge","NO MATCH");
-            int cost=Mathf.Max(1,magnetCost);if(MagnetCredits<=0&&cash<cost) return Fail("Get magnet uses with cash, a rewarded ad or the store");
+            int cost=Mathf.Max(1,magnetCost);if(MagnetCredits<=0&&cash<cost){SuppliesEmpty?.Invoke(SupplyKind.Magnet);return Fail("Get magnet uses with cash, a rewarded ad or the store");}
             int collected=0;var origins=new List<Vector3>(capacity-carried.Count);
             // No distance/visibility filter. Only loose items, up to free capacity.
             foreach(var item in ItemsOfType(type))
@@ -63,7 +63,7 @@ namespace LabSorting.Sorting
         {
             if(player.blocked) return false;
             if(capacity>=maxCapacity) return Fail("Maximum capacity reached — no charge");
-            int cost=UpgradeCost;if(SlotCredits<=0&&cash<cost) return Fail("Get a slot with cash, a rewarded ad or the store");
+            int cost=UpgradeCost;if(SlotCredits<=0&&cash<cost){SuppliesEmpty?.Invoke(SupplyKind.Slot);return Fail("Get a slot with cash, a rewarded ad or the store");}
             if(SlotCredits>0)SlotCredits--;else cash-=cost;capacity++;Commit("Capacity upgraded to "+capacity);SaveTransaction();LabSorting.Services.LabTelemetry.Event("capacity_upgraded","slots",capacity);return true;
         }
         void UpdateSearch() { if(searchType && Time.unscaledTime>=searchUntil) {EndSearch();Notify();} }

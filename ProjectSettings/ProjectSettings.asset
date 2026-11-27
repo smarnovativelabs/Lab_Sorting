@@ -274,7 +274,7 @@ PlayerSettings:
   AndroidAllowedArchitectures: -13
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: '{dedicated}: Downloads/periGame_duckPuzzel.keystore'
+  AndroidKeystoreName: '{inproject}: periGame_duckPuzzel.keystore'
   AndroidKeyaliasName: lab_sorting
   AndroidEnableArmv9SecurityFeatures: 0
   AndroidEnableArm64MTE: 0

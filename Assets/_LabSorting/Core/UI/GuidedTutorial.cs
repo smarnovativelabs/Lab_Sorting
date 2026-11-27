@@ -58,14 +58,19 @@ namespace LabSorting.UI
         public void Skip()
         {
             if(!IsRunning)return;
+            LabSorting.Services.LabTelemetry.Event("tutorial_skipped",StepName,StepOrdinal);
             PlayerPrefs.SetInt(preferencesPrefix+"GuidedDone",1);PlayerPrefs.DeleteKey(preferencesPrefix+"GuidedStep");PlayerPrefs.Save();
             Stop();
         }
+        string StepName=>Current==Step.Tools?"tools_"+(ToolPage+1):Current.ToString().ToLowerInvariant();
+        int StepOrdinal=>(int)Current+(Current==Step.Tools?ToolPage:0);
         public void GotIt(){if(!IsRunning||Current!=Step.Tools||session.player.NetworkBlocked||Time.unscaledTime<nextToolAdvance)return;nextToolAdvance=Time.unscaledTime+.35f;if(ToolPage<2){ToolPage++;Enter(Step.Tools);}else Enter(Step.Done);}
         void Stop(){IsRunning=false;Unsubscribe();Hide();}
         void Enter(Step step)
         {
             HidePickGuide();Current=step;fresh=true;lastActivity=-99;nextThrowCheck=0;canThrow=false;
+            // Funnel: which step players reach (and where they leave). Each tools page counts as its own step.
+            if(step!=Step.Done)LabSorting.Services.LabTelemetry.Event("tutorial_step",StepName,StepOrdinal);
             if(step==Step.Look)lookGestureAt=Time.unscaledTime+.35f;
             if(step==Step.Done)
             {

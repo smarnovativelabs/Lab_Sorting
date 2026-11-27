@@ -55,7 +55,8 @@ namespace LabSorting.Services
             MaxSdkCallbacks.OnSdkInitializedEvent+=OnAdsInitialized;MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent+=OnReward;MaxSdkCallbacks.Rewarded.OnAdHiddenEvent+=OnAdHidden;MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent+=OnAdFailed;MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent+=OnAdLoadFailed;
             MaxSdkCallbacks.Rewarded.OnAdRevenuePaidEvent+=AdRevenue;MaxSdkCallbacks.Interstitial.OnAdRevenuePaidEvent+=AdRevenue;
             MaxSdkCallbacks.Interstitial.OnAdHiddenEvent+=InterstitialHidden;MaxSdkCallbacks.Interstitial.OnAdDisplayFailedEvent+=InterstitialFailed;MaxSdkCallbacks.Interstitial.OnAdLoadFailedEvent+=InterstitialLoadFailed;
-            subscribed=true;ResetInterstitialTimer();
+            // First interstitial of the launch comes sooner (90 s); every later one waits the full cooldown (120 s).
+            subscribed=true;interstitialTimer=settings?Mathf.Max(30,settings.firstInterstitialSeconds):90;
             // The SDK key is written into the Android manifest from AppLovinSettings (Integration Manager) at build time.
             // Development builds log every MAX request to logcat (tag AppLovinSdk).
             if(Debug.isDebugBuild)MaxSdk.SetVerboseLogging(true);

@@ -81,8 +81,9 @@ namespace LabSorting.UI
             if(!GuidedRack.gameObject.activeInHierarchy||!GuidedRack.CanAccept(session.Active.definition)){Hide();return;}
             EnsureMarker();MarkerRack=GuidedRack;
             bool otherFloor=Mathf.Abs(GuidedRack.transform.position.y-session.player.transform.position.y)>1.8f;
-            // Another floor follows the stair waypoint instead; an aimed rack already shows its green/red feedback.
-            SetOutline(otherFloor||GuidedRack==session.TargetRack?null:GuidedRack);
+            // The rim stays on from another floor too (it draws through walls and floors), so the rack's place reads
+            // while the arrow follows the stair waypoint. An aimed rack already shows its green/red feedback.
+            SetOutline(GuidedRack==session.TargetRack?null:GuidedRack);
             bool onScreen=false;
             if(!otherFloor)
             {

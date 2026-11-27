@@ -122,8 +122,31 @@ namespace LabSorting.Sorting
         public void PlaceTarget() { if(Ready()) PlaceMatching(TargetRack); }
         // TryPlace remains a single-item primitive for tutorial, replay and scripted actions.
         public bool TryPlace(SortRack rack) => PlaceOne(rack,0);
+        [Tooltip("Smart Place: PLACE on a rack that already holds a carried type selects that type first, so the player skips the inventory.")]
+        public bool smartPlace=true;
+        // The carried type this rack takes: the selected type first, otherwise a carried type the rack already holds.
+        // An empty rack is never claimed for a type the player has not selected.
+        public ItemDefinition PlaceableType(SortRack rack)
+        {
+            if(!rack||!Active)return null;
+            if(rack.CanAccept(Active.definition))return Active.definition;
+            if(!smartPlace||!rack.Type||!rack.CanAccept(rack.Type))return null;
+            ItemDefinition found=null;
+            // Select() refuses while a magnet batch is flying, so the rack must not promise a place yet.
+            foreach(var held in carried){if(held.MagnetFlying)return null;if(held.definition==rack.Type)found=rack.Type;}
+            return found;
+        }
+        // The carried item of this type that selecting the type shows (the latest, as RemoveActive does).
+        public SortItem CarriedOf(ItemDefinition type){for(int i=carried.Count-1;i>=0;i--)if(carried[i].definition==type)return carried[i];return null;}
+        void SelectForRack(SortRack rack)
+        {
+            if(player.blocked)return;
+            var type=PlaceableType(rack);if(!type||type==Active.definition)return;
+            var item=CarriedOf(type);if(item)Select(carried.IndexOf(item));
+        }
         public bool PlaceMatching(SortRack rack)
         {
+            SelectForRack(rack);
             if(!batchPlacement)return TryPlace(rack);
             if(player.blocked||!Active||Active.Moving||!rack||!rack.CanAccept(Active.definition))return TryPlace(rack);
             var type=Active.definition;int count=0;
@@ -154,7 +177,7 @@ namespace LabSorting.Sorting
                 ItemPlacementArrived?.Invoke(item);
                 Feedback?.Invoke(SortingCue.Place);
             });
-            bool firstPlacement=rewardedItems.Add(item.id);
+            bool firstPlacement=rewardedItems.Add(item.id);if(firstPlacement)ItemFirstSorted?.Invoke(rewardedItems.Count);
             ItemPlaced?.Invoke(item);CheckSmallGoals(rack,firstPlacement);
             EndTossStreak();CheckMilestones();Commit("Placed "+item.definition.displayName);return true;
         }

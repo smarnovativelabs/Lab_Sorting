@@ -9,6 +9,9 @@ namespace LabSorting.Sorting
         HashSet<string> completedRacks=new HashSet<string>();
         public event Action<string,int> SmallGoalEarned;
         public event Action<SortRack> RackCompleted;
+        // Telemetry hooks: unique items sorted this run (count after the add), and a tool refused for lack of uses and cash.
+        public event Action<int> ItemFirstSorted;
+        public event Action<SupplyKind> SuppliesEmpty;
         public int CompletedRackCount=>completedRacks.Count;
         public bool ShortGoalsComplete=>items.Length>0&&rewardedItems.Count>=items.Length;
         public int ShortGoalOrdinal=>rewardedItems.Count/ShortGoalSize;

@@ -71,7 +71,7 @@ namespace LabSorting.Prototype
                 Check(g.Current==GuidedTutorial.Step.Place&&g.GuidedRack,"Pickup selects a suitable rack");
                 Check(g.GuidedRack.CanAccept(item.definition)&&Mathf.Abs(g.GuidedRack.transform.position.y-s.player.transform.position.y)<.8f,"Guide chooses compatible rack on same floor");
                 Check(carry.OverlayActive&&item.gameObject.layer==LayerMask.NameToLayer("HeldItem"),"Held geometry uses overlay camera");
-                Check(hud.active.text.Contains("HOLDING")&&hud.active.text.Contains(item.definition.displayName)&&hud.active.text.Contains("×1"),"Holding card names item and carried count");
+                Check(hud.active.text==item.definition.displayName+" ×1","Holding card names item and carried count");
                 Check(!hud.GetComponent<DesignerToasts>().ShownText.StartsWith("Picked"),"Pickup does not produce repeated toast");
                 var rack=g.GuidedRack;s.player.look.SetYawPitch(new Vector2(s.player.look.Yaw,75));yield return Wait(.3f);
                 Check(g.GuidedRack==rack&&carry.OverlayActive,"Turning down preserves rack target and held rendering");
@@ -187,7 +187,7 @@ namespace LabSorting.Prototype
                 Check(g.Current==GuidedTutorial.Step.Place,"Picking completes the Pick step"); Check(g.GuidedRack&&g.RackGuideVisible,"Tutorial marks a compatible same-floor rack");
                 var carry=s.hand.GetComponent<LabSorting.Player.CarryPresentation>();var hud=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();
                 Check(carry.OverlayActive&&s.Active.gameObject.layer==LayerMask.NameToLayer("HeldItem"),"Held model renders separately from floor geometry");
-                Check(hud.active.text.Contains("HOLDING")&&hud.active.text.Contains(item.definition.displayName)&&hud.active.text.Contains("×1"),"Holding card identifies selected type and carried count");
+                Check(hud.active.text==item.definition.displayName+" ×1","Holding card identifies selected type and carried count");
                 Check(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<LabSoundscape>().musicVolume-.12f)<.001f,"Music target is 12 percent");
                 var dropTap=new PointerEventData(EventSystem.current){pointerId=95,position=g.throwButton.position};
                 ExecuteEvents.Execute(g.throwButton.gameObject,dropTap,ExecuteEvents.pointerDownHandler);

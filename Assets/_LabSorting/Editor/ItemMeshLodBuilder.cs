@@ -17,13 +17,19 @@ namespace LabSorting.EditorTools
         const string MapPath = "Assets/Resources/ItemMeshLodMap.asset";
         const int MinimumTriangles = 150;
         const float TargetFraction = .4f;
+        // "Mid" mesh (ItemBatchRenderer.midLodDistance to farLodDistance): about half the triangles, only for heavy meshes.
+        const int MidMinimumTriangles = 400;
+        const float MidFraction = .55f;
+        // Side-by-side renders at 2-3 m (2026-11-27) showed these simplified meshes with broken UVs or lost parts.
+        // Gas mask and oxygen cylinder have no level between full and far, and their far mesh looked wrong up close.
+        static readonly HashSet<string> MidExcluded = new HashSet<string> { "micro-scope", "micro-scope-big", "bandage-rolls-1", "thermal-blanket-2" };
 
         [MenuItem("Lab Sorting/Build Item Mesh LODs")]
         public static void Build()
         {
             Directory.CreateDirectory(LodFolder);
             var entries = new List<ItemMeshLodMap.Entry>();
-            long fullTotal = 0, farTotal = 0;
+            long fullTotal = 0, farTotal = 0, midTotal = 0;int midSources = 0;
             foreach (var guid in AssetDatabase.FindAssets("t:Mesh", new[] { SourceFolder }))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -45,12 +51,15 @@ namespace LabSorting.EditorTools
                     }
                     if (pick < 0) continue;
 
-                    var far = Compact(probe, probe.GetIndices(0, pick), source.name + "-far");
-                    var farPath = LodFolder + "/" + source.name + "-far.asset";
-                    var existing = AssetDatabase.LoadAssetAtPath<Mesh>(farPath);
-                    if (existing) { EditorUtility.CopySerialized(far, existing); Object.DestroyImmediate(far); far = existing; }
-                    else AssetDatabase.CreateAsset(far, farPath);
-                    entries.Add(new ItemMeshLodMap.Entry { full = source, far = far });
+                    var far = Save(Compact(probe, probe.GetIndices(0, pick), source.name + "-far"));
+                    Mesh mid = null;
+                    if (baseTriangles >= MidMinimumTriangles && !MidExcluded.Contains(source.name))
+                        for (int lod = 1; lod < pick; lod++)
+                        {
+                            int triangles = probe.GetIndices(0, lod).Length / 3;
+                            if (triangles <= baseTriangles * MidFraction) { mid = Save(Compact(probe, probe.GetIndices(0, lod), source.name + "-mid")); midTotal += triangles; midSources++; break; }
+                        }
+                    entries.Add(new ItemMeshLodMap.Entry { full = source, far = far, mid = mid });
                     fullTotal += baseTriangles; farTotal += pickTriangles;
                 }
                 finally { Object.DestroyImmediate(probe); }
@@ -65,7 +74,17 @@ namespace LabSorting.EditorTools
             map.entries = entries.OrderBy(e => e.full.name).ToArray();
             EditorUtility.SetDirty(map);
             AssetDatabase.SaveAssets();
-            Debug.Log("Item mesh LODs: " + entries.Count + " meshes, " + fullTotal + " -> " + farTotal + " triangles per set of one each.");
+            Debug.Log("Item mesh LODs: " + entries.Count + " meshes, " + fullTotal + " -> " + farTotal + " far triangles per set of one each; " + midSources + " mid meshes, " + midTotal + " mid triangles.");
+        }
+
+        // Writes into the existing asset when there is one, so GUIDs and references stay stable.
+        static Mesh Save(Mesh mesh)
+        {
+            var path = LodFolder + "/" + mesh.name + ".asset";
+            var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            if (existing) { EditorUtility.CopySerialized(mesh, existing); Object.DestroyImmediate(mesh); return existing; }
+            AssetDatabase.CreateAsset(mesh, path);
+            return mesh;
         }
 
         // Copies only the vertices the chosen LOD index buffer references.
