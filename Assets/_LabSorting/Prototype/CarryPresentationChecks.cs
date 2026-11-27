@@ -26,11 +26,21 @@ namespace LabSorting.Prototype
             float end=Time.realtimeSinceStartup+3;yield return new WaitForSeconds(.25f);
             while(s.Active&&(s.Active.Presenting||s.Active.Moving)&&Time.realtimeSinceStartup<end)yield return null;
             yield return new WaitForEndOfFrame();
+            yield return CurrentGameplayChecks.Frames();
+            var carry=s.hand.GetComponent<CarryPresentation>();end=Time.realtimeSinceStartup+3;
+            while(s.Active&&!FinalPoseMatches(s.Active,carry,out _)&&Time.realtimeSinceStartup<end)yield return null;
+            if(s.Active)Check(FinalPoseMatches(s.Active,carry,out var details),"Held presentation settles after selection/layout: "+s.Active.definition.displayName+" "+details);
+        }
+        static bool FinalPoseMatches(SortItem item,CarryPresentation carry,out string details)
+        {
+            var t=item.transform;var pose=carry.ResolveHeldPose(item);
+            float position=Vector3.Distance(t.localPosition,pose.position),rotation=Quaternion.Angle(t.localRotation,pose.rotation),scale=Vector3.Distance(t.localScale,pose.scale);
+            details="position error="+position+", rotation error="+rotation+", scale error="+scale+", screen="+Screen.width+"x"+Screen.height;
+            return position<.0001f&&rotation<.05f&&scale<.0001f;
         }
         static void PoseCheck(SortItem item,CarryPresentation carry,string label)
         {
-            var t=item.transform;var pose=carry.ResolveHeldPose(item);
-            Check(Vector3.Distance(t.localPosition,pose.position)<.0001f&&Quaternion.Angle(t.localRotation,pose.rotation)<.05f&&Vector3.Distance(t.localScale,pose.scale)<.0001f,label+" uses final held pose");
+            Check(FinalPoseMatches(item,carry,out var details),label+" uses final held pose; "+details);
             var rect=carry.HeldScreenRect;var safe=carry.HeldSafeRect;
             Check(rect.width>5&&rect.height>5&&rect.xMin>=safe.xMin-1&&rect.xMax<=safe.xMax+1&&rect.yMin>=safe.yMin-1&&rect.yMax<=safe.yMax+1,label+" visible inside HUD clearance "+rect);
             var b=item.visual.localBounds;
@@ -44,8 +54,9 @@ namespace LabSorting.Prototype
         static IEnumerator Resize(int w,int h)
         {
             typeof(ThumbControlsChecks).GetMethod("GameView",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{w,h});
-            for(int n=0;n<10;n++)yield return null;
-            Canvas.ForceUpdateCanvases();Check(Screen.width==w&&Screen.height==h,"Resolution "+w+"x"+h);
+            yield return CurrentGameplayChecks.Frames();
+            yield return CurrentGameplayChecks.Until(()=>Screen.width==w&&Screen.height==h,"Game view adopts carry resolution "+w+"x"+h,10);
+            Canvas.ForceUpdateCanvases();Check(Screen.width==w&&Screen.height==h,"Resolution "+w+"x"+h+"; actual="+Screen.width+"x"+Screen.height);
         }
         public static IEnumerator Run()
         {
@@ -91,7 +102,7 @@ namespace LabSorting.Prototype
                         sizes.Apply(sizes.JoystickScale,control);
                         for(int index=0;index<5;index++)
                         {
-                            Unblock(s);s.Select(index);s.Active.CompleteMotion();yield return null;yield return new WaitForEndOfFrame();
+                            Unblock(s);s.Select(index);s.Active.CompleteMotion();yield return Presented(s);
                             PoseCheck(s.Active,carry,"Layout "+width+" controls="+control+" "+s.Active.definition.displayName);
                         }
                     }

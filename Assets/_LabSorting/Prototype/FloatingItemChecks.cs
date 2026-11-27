@@ -25,7 +25,31 @@ namespace LabSorting.Prototype
             foreach(var other in Physics.OverlapBox(new Vector3(b.center.x,b.max.y+.02f+height*.5f,b.center.z),column,Quaternion.identity,~0,QueryTriggerInteraction.Ignore))if(!other.transform.IsChildOf(item.transform))return false;
             return true;
         }
-        public static IEnumerator Run()=>CurrentGameplayChecks.SupportRemoval();
+        public static IEnumerator Run(){SupportGeometry();yield return CurrentGameplayChecks.SupportRemoval();}
+        static void SupportGeometry()
+        {
+            var owner=new GameObject("Support geometry fixture");var box=owner.AddComponent<BoxCollider>();box.size=new Vector3(1,.2f,1);
+            var item=owner.AddComponent<SortItem>();item.hitbox=box;item.location=ItemLocation.Loose;
+            var support=GameObject.CreatePrimitive(PrimitiveType.Cube);support.name="Narrow edge support";
+            var origin=new Vector3(1600,2,1600);owner.transform.position=origin;
+            try
+            {
+                support.transform.localScale=new Vector3(.1f,.1f,.1f);support.transform.position=origin+new Vector3(.45f,-.15f,.45f);Physics.SyncTransforms();
+                Check(Physics.ComputePenetration(box,owner.transform.position-Vector3.up*.01f,owner.transform.rotation,support.GetComponent<Collider>(),support.transform.position,support.transform.rotation,out var normal,out _)&&normal.y>.9f,"Corner fixture has real upward collision support");
+                Check(!ItemSupport.Floating(item),"A corner contact outside the five inner probes still supports the item");
+                support.SetActive(false);Physics.SyncTransforms();Check(ItemSupport.Floating(item),"Removing edge support makes the item unsupported");
+                support.SetActive(true);support.transform.localScale=new Vector3(2,.1f,2);support.transform.position=origin+Vector3.down*(.15f+ItemSupport.Gap+.02f);Physics.SyncTransforms();
+                Check(ItemSupport.Floating(item),"A floor beyond the existing support gap does not count");
+                support.transform.position+=Vector3.up*.04f;Physics.SyncTransforms();Check(!ItemSupport.Floating(item),"A floor inside the existing support gap counts");
+                support.transform.localScale=new Vector3(.1f,3,1);support.transform.position=origin+Vector3.right*.55f;Physics.SyncTransforms();
+                Check(ItemSupport.Floating(item),"A vertical wall touching only the side is not ground support");
+                owner.transform.rotation=Quaternion.Euler(0,45,0);support.transform.localScale=new Vector3(.08f,.1f,.08f);support.transform.position=origin+new Vector3(.66f,-.15f,0);Physics.SyncTransforms();
+                Check(!ItemSupport.Floating(item),"Rotated collider corner contact counts as support");
+                support.transform.position=origin+new Vector3(.62f,-.15f,.62f);Physics.SyncTransforms();
+                Check(ItemSupport.Floating(item),"Empty space inside a rotated collider's AABB is not support");
+            }
+            finally{owner.SetActive(false);support.SetActive(false);UnityEngine.Object.Destroy(owner);UnityEngine.Object.Destroy(support);}
+        }
         static IEnumerator LegacyRun()
         {
             var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();var recovery=s.GetComponent<ItemRecovery>();var initial=s.Capture();var fixes=s.layoutFixes;

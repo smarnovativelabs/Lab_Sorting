@@ -24,10 +24,10 @@ namespace LabSorting.Prototype
                 for(int i=0;i<20;i++){s.TryPick(extra);s.TryMagnet();}
                 Check(s.FullNoticeVersion==version+40,"Every full pick/magnet attempt refreshes the notice");
                 Check(s.Cash==cash&&s.MagnetCredits==magnet&&s.carried.Count==s.capacity,"Full attempts never spend or collect");
-                yield return new WaitForSecondsRealtime(.2f);
+                yield return CurrentGameplayChecks.Until(()=>hud.inventorySummary.transform.localScale.x>1,"Full-capacity feedback starts on a gameplay frame",3);
                 Check(hud.inventorySummary.transform.localScale.x>1&&hud.inventorySummary.transform.localScale.x<=1.036f,"Capacity summary uses a bounded subtle pulse");
                 var guide=hud.GetComponent<MatchingRackGuide>();Check(guide.GuidedRack,"Full hands retain matching rack guidance");
-                yield return new WaitForSecondsRealtime(.5f);Check(hud.inventorySummary.transform.localScale==Vector3.one,"Capacity pulse returns to normal");
+                yield return CurrentGameplayChecks.Until(()=>hud.inventorySummary.transform.localScale==Vector3.one,"Capacity pulse returns to normal",3);
                 var first=a.GetComponent<SortingHoldButton>();var second=b.GetComponent<SortingHoldButton>();first.session=second.session=s;
                 var one=new PointerEventData(EventSystem.current){pointerId=10,button=PointerEventData.InputButton.Left};
                 var two=new PointerEventData(EventSystem.current){pointerId=11,button=PointerEventData.InputButton.Left};

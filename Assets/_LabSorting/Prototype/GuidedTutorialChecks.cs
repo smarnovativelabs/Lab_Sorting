@@ -181,9 +181,11 @@ namespace LabSorting.Prototype
                     guidedPick=g.group.GetComponentsInChildren<UnityEngine.UI.Button>(false).FirstOrDefault(b=>b.name=="Tutorial PICK");
                     return guidedPick&&guidedPick.interactable&&s.TargetItem;
                 },"Guided PICK automatically aims at reachable item",15);
-                Check(s.player.TutorialBlocked&&g.Mode==GuidedTutorial.HandMode.Tap,"Guided PICK locks other controls and points at PICK");
+                Check(s.player.PickTutorialLocked&&g.Mode==GuidedTutorial.HandMode.Tap,"Guided PICK locks other controls and points at PICK");
+                s.player.SetMove(Vector2.one);
+                Check(s.player.Move==Vector2.zero,"Guided PICK rejects movement input");
                 var item=s.TargetItem;guidedPick.onClick.Invoke();yield return Wait(.7f);
-                Check(s.Active==item&&!s.player.TutorialBlocked,"Guided PICK collects the aimed item and releases its input lock");
+                Check(s.Active==item&&!s.player.PickTutorialLocked,"Guided PICK collects the aimed item and releases its input lock");
                 Check(g.Current==GuidedTutorial.Step.Place,"Picking completes the Pick step"); Check(g.GuidedRack&&g.RackGuideVisible,"Tutorial marks a compatible same-floor rack");
                 var carry=s.hand.GetComponent<LabSorting.Player.CarryPresentation>();var hud=UnityEngine.Object.FindFirstObjectByType<SortingHUD>();
                 Check(carry.OverlayActive&&s.Active.gameObject.layer==LayerMask.NameToLayer("HeldItem"),"Held model renders separately from floor geometry");
@@ -212,6 +214,7 @@ namespace LabSorting.Prototype
                 Check(item.location==ItemLocation.Rack&&item.rack==rack,"PLACE button places item on the aimed rack");
 
                 Check(g.Current==GuidedTutorial.Step.Tools&&g.gotItButton.gameObject.activeSelf,"Placing completes the main task; optional tools and GOT IT appear");
+                yield return CurrentGameplayChecks.Until(()=>g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,g.gotItButton.transform as RectTransform,70),"Tools hand reaches NEXT after modal layout",3);
                 Check(g.ToolModalActive&&s.player.TutorialBlocked&&g.Mode==GuidedTutorial.HandMode.Tap&&HandNear(g,g.gotItButton.transform as RectTransform,70)&&!g.skipButton.gameObject.activeSelf,"Tools highlight their button but hand points only to NEXT");
                 var bubbleCorners=new Vector3[4];g.bubble.GetWorldCorners(bubbleCorners);
                 Check(!RectTransformUtility.RectangleContainsScreenPoint(g.bubble,g.searchButton.position),"Search callout does not cover highlighted control");

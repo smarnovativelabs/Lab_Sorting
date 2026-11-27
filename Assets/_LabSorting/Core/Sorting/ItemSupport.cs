@@ -17,8 +17,8 @@ namespace LabSorting.Sorting
             if(item.definition&&item.definition.isRat)return false;
             var body=item.hitbox.attachedRigidbody;return !body||body.isKinematic;
         }
-        // True only when none of five downward probes (centre and four inner corners) touches anything within Gap of
-        // the item's bottom. Probes start at the item's centre, so an item resting slightly sunk into a surface still counts as supported.
+        // Fast probes cover ordinary floors; an oriented collider sweep also catches narrow edge contacts
+        // between the probes. Neither side walls nor empty corners of a rotated AABB count as support.
         public static bool Floating(SortItem item)
         {
             if(!Eligible(item))return false;
@@ -30,6 +30,17 @@ namespace LabSorting.Sorting
                 int count=Physics.RaycastNonAlloc(origin,Vector3.down,probes,reach,~0,QueryTriggerInteraction.Ignore);
                 if(count>=probes.Length)return false;
                 for(int h=0;h<count;h++)if(!probes[h].collider.transform.IsChildOf(item.transform))return false;
+            }
+            if(item.hitbox is BoxCollider box)
+            {
+                var scale=box.transform.lossyScale;
+                var half=Vector3.Scale(box.size*.5f,new Vector3(Mathf.Abs(scale.x),Mathf.Abs(scale.y),Mathf.Abs(scale.z)));
+                // Start above the current contact so a resting box produces a real hit normal.
+                // Zero-distance overlaps can be side walls; they are not downward support.
+                int count=Physics.BoxCastNonAlloc(box.transform.TransformPoint(box.center)+Vector3.up*Gap,half,Vector3.down,casts,box.transform.rotation,Gap*2,~0,QueryTriggerInteraction.Ignore);
+                if(count>=casts.Length)return false;
+                for(int h=0;h<count;h++)
+                    if(casts[h].distance>0&&casts[h].normal.y>.1f&&!casts[h].collider.transform.IsChildOf(item.transform))return false;
             }
             return true;
         }

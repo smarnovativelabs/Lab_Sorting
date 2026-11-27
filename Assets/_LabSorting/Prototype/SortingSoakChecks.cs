@@ -18,7 +18,7 @@ namespace LabSorting.Prototype
         }
         [Serializable] public class Report
         {
-            public string status="running",context="15-minute real-time Editor soak, first 2 minutes warm-up. 3500 logical items, 70 pre-sorted rack items repeatedly picked/placed with real animations, paid search/upgrades, held and settled save/load and pause-save cycles. Synthetic starting cash 100000 to keep paid actions available; user saves never touched. Raw memory includes uncollected garbage and Editor allocations. Forced GC occurs ONLY at warm-up/end diagnostic boundaries, never during the measured gameplay interval. 8 MiB retained-managed and 64 MiB Unity-allocated growth tolerances allow Editor noise; not proof of indefinite leak freedom or Android memory usage.";
+            public string status="running",context="15-minute real-time Editor soak. Warm-up requires at least 2 minutes AND a full first search cycle for every catalog type, so lazy outline caches and first-search poses exist before the baseline; at least 10 minutes must remain measured. 3500 logical items, 70 pre-sorted rack items repeatedly picked/placed with real animations, paid search/upgrades, held and settled save/load and pause-save cycles. Synthetic starting cash 100000 to keep paid actions available; user saves never touched. Raw memory includes uncollected garbage and Editor allocations. Forced GC occurs ONLY at warm-up/end diagnostic boundaries, never during the measured gameplay interval. 8 MiB retained-managed and 64 MiB Unity-allocated growth tolerances allow Editor noise; not proof of indefinite leak freedom or Android memory usage.";
             public double elapsedSeconds;public int cycles,checks,saveRequests,roundTrips,searches,upgrades,pauseSaves,expectedCash,finalCash,finalSorted;
             public Sample baseline,final;public long retainedManagedGrowth,unityUsedGrowth;public List<Sample> samples=new List<Sample>(40);
         }
@@ -86,9 +86,12 @@ namespace LabSorting.Prototype
                 yield return catalog.Populate(3500);clean=s.Capture();var seed=s.Capture();seed.cash=100000;Check(s.Restore(seed),"Isolated seed wallet restored");s.player.SendMessage("OnApplicationFocus",true);
                 int expected=100000;
                 for(int i=0;i<70;i++){Check(s.TryPick(s.items[i]),"Seed pick");s.items[i].CompleteMotion();Check(s.TryPlace(s.racks[i%5]),"Seed place");s.items[i].CompleteMotion();}
-                expected+=70*s.placementReward+s.firstTenBonus+2*SortingSession.ShortGoalBonus;
-                Check(s.Cash==expected&&s.SortedCount==70&&s.CompletedRackCount==0,"Independent seed cash and progress totals");
+                // placementReward is a legacy serialized field, no longer paid by PlaceOne.
+                expected+=s.firstTenBonus+2*SortingSession.ShortGoalBonus;
+                Check(s.Cash==expected&&s.SortedCount==70&&s.CompletedRackCount==0,"Independent seed cash and progress totals: cash="+s.Cash+", expected="+expected+", sorted="+s.SortedCount+", completed racks="+s.CompletedRackCount);
                 s.persistence=true;Request(s);yield return Durable(s,camera);
+                var catalogTypes=new HashSet<ItemDefinition>();foreach(var item in s.items)catalogTypes.Add(item.definition);
+                var searchedTypes=new HashSet<ItemDefinition>();double lastFirstSearch=0;
                 var timer=System.Diagnostics.Stopwatch.StartNew();double nextSample=30;
                 while(timer.Elapsed.TotalSeconds<Duration)
                 {
@@ -96,7 +99,7 @@ namespace LabSorting.Prototype
                     Check(s.TryPick(item),"Repeated rack pickup");Request(s);yield return Motion(item,camera);
                     if(report.cycles%13==0)
                     {
-                        int before=s.Cash;bool accepted=s.TrySearch();if(accepted){expected-=Mathf.Max(1,s.searchCost);report.searches++;}
+                        int before=s.Cash;bool accepted=s.TrySearch();if(accepted){expected-=Mathf.Max(1,s.searchCost);report.searches++;if(searchedTypes.Add(item.definition))lastFirstSearch=timer.Elapsed.TotalSeconds;}
                         Check(s.Cash==(accepted?before-Mathf.Max(1,s.searchCost):before),"Search charges once only on success");
                     }
                     if(report.cycles%100==0&&s.capacity<s.maxCapacity)
@@ -107,13 +110,14 @@ namespace LabSorting.Prototype
                     if(report.cycles%10==0)yield return RoundTrip(s,camera,expected);
                     if(report.cycles%60==0){s.SendMessage("OnApplicationPause",true);s.SendMessage("OnApplicationPause",false);report.pauseSaves++;yield return Durable(s,camera);Check(s.Cash==expected,"Pause-save preserves cash");}
                     report.cycles++;report.expectedCash=expected;report.elapsedSeconds=timer.Elapsed.TotalSeconds;
-                    if(report.baseline==null&&timer.Elapsed.TotalSeconds>=Warmup)
+                    if(report.baseline==null&&timer.Elapsed.TotalSeconds>=Warmup&&searchedTypes.Count==catalogTypes.Count&&timer.Elapsed.TotalSeconds>=lastFirstSearch+Mathf.Max(30,s.searchDuration)+1)
                     {yield return Durable(s,camera);report.baseline=Measure(s,timer.Elapsed.TotalSeconds,true);Check(report.baseline.managedUsed>0&&report.baseline.unityUsed>0,"Memory counters available");}
                     if(timer.Elapsed.TotalSeconds>=nextSample)
                     {report.samples.Add(Measure(s,timer.Elapsed.TotalSeconds,false));WriteReport();Debug.Log("SOAK_PROGRESS seconds="+(int)timer.Elapsed.TotalSeconds+" cycles="+report.cycles+" reloads="+report.roundTrips+" cash="+s.Cash);nextSample=timer.Elapsed.TotalSeconds+30;}
                 }
                 yield return RoundTrip(s,camera,expected);yield return Frames(camera,.5);yield return Durable(s,camera);
                 report.final=Measure(s,timer.Elapsed.TotalSeconds,true);report.elapsedSeconds=timer.Elapsed.TotalSeconds;report.finalCash=s.Cash;report.finalSorted=s.SortedCount;
+                Check(report.baseline!=null&&report.elapsedSeconds-report.baseline.seconds>=600,"All search types warmed before at least 10 minutes of steady-state measurement");
                 report.retainedManagedGrowth=report.final.managedUsed-report.baseline.managedUsed;report.unityUsedGrowth=report.final.unityUsed-report.baseline.unityUsed;
                 Check(report.elapsedSeconds>=Duration&&report.cycles>=200&&report.roundTrips>=40,"Long session exercises sufficient actions and reloads");
                 Check(report.retainedManagedGrowth<=8*MiB,"Retained managed memory stays within 8 MiB growth budget");

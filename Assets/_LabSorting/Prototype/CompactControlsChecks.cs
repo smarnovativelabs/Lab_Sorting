@@ -21,6 +21,14 @@ namespace LabSorting.Prototype
         // farthest local-bounds corner from the pivot; a SkinnedMeshRenderer's localBounds live in its root bone's space.
         static float HeldRadius(SortItem i){var r=i.visual;var space=r is SkinnedMeshRenderer skin&&skin.rootBone?skin.rootBone:r.transform;var b=r.localBounds;float max=0;for(int c=0;c<8;c++){var corner=b.center+Vector3.Scale(b.extents,new Vector3((c&1)==0?-1:1,(c&2)==0?-1:1,(c&4)==0?-1:1));max=Mathf.Max(max,Vector3.Distance(space.TransformPoint(corner),i.transform.position));}return max;}
         static bool Shows(Transform t,ControlGlyph.Symbol symbol,string sprite){var image=t.GetComponent<UnityEngine.UI.Image>();return (image&&image.enabled&&image.sprite&&image.sprite.name==sprite)||t.GetComponentsInChildren<ControlGlyph>(true).Any(g=>g.symbol==symbol&&g.enabled&&Visible(g.transform,t));}
+        static float BaseCarryRadius(SortItem item)
+        {
+            // Loose products have an additional groundScale. Measure the base carry
+            // pose without that floor-only enlargement, then restore the transform.
+            var previous=item.transform.localScale;
+            try { item.transform.localScale=item.originalScale*item.CarryScale;return HeldRadius(item); }
+            finally { item.transform.localScale=previous; }
+        }
         public static IEnumerator Run()
         {
             var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();var initial=s.Capture();string saveName=s.saveName;bool persistence=s.persistence;
@@ -38,8 +46,8 @@ namespace LabSorting.Prototype
                 Check(hud.target.rectTransform.anchoredPosition.y<=-110&&hud.targetBackdrop.rectTransform.anchoredPosition==hud.target.rectTransform.anchoredPosition,"Hover name/backplate sit below the aimed item");
                 var stick=hud.GetComponentsInChildren<LabSorting.Player.LabTouchArea>(true).Single(t=>t.movement);
                 Check(Shows(stick.transform,ControlGlyph.Symbol.Joystick,"LabUI_joystick")&&stick.knob&&Shows(stick.knob,ControlGlyph.Symbol.Thumb,"LabUI_knob"),"Round joystick base and thumb wired");
-                var widest=s.items.OrderByDescending(i=>HeldRadius(i)*i.CarryScale).First();
-                Check(HeldRadius(widest)*widest.CarryScale<=.180f,"All "+s.items.Length+" items fit the held presentation envelope; widest "+widest.definition.id+"="+(HeldRadius(widest)*widest.CarryScale).ToString("F4"));
+                var widest=s.items.OrderByDescending(BaseCarryRadius).First();
+                Check(BaseCarryRadius(widest)<=.180f,"All "+s.items.Length+" items fit the base carry envelope; widest "+widest.definition.id+"="+BaseCarryRadius(widest).ToString("F4"));
                 Check(!hud.GetComponent<SortingRewardsHUD>().showMagnetChips,"Magnet uses real models without floating UI squares");
                 // With designerQuickUse, SEARCH spends an owned use directly; the "+" (SearchOffers) is the offers entry.
                 panel.SearchOffers();Check(panel.IsOpen&&s.player.blocked,"Offer panel blocks movement");int cash=s.Cash;

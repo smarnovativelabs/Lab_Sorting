@@ -197,7 +197,12 @@ namespace LabSorting.Prototype
                 cameraObject=new GameObject("DesignerStressCamera");var camera=cameraObject.AddComponent<Camera>();camera.orthographic=true;camera.orthographicSize=13;camera.transform.SetPositionAndRotation(new Vector3(0,6.8f,0),Quaternion.Euler(90,0,0));camera.farClipPlane=20;
                 target=new RenderTexture(1280,720,24);camera.targetTexture=target;s.player.view.enabled=false;batch.targetCamera=camera;
                 yield return Measure(camera,batch,false,report);yield return Measure(camera,batch,true,report);
-                Check(batch.BatchedItems==items.Length,"All "+items.Length+" items use the instanced path");
+                var animated=items.Where(i=>i.definition.isRat).ToArray();
+                Check(batch.BatchedItems==items.Length-animated.Length&&batch.FallbackItems==animated.Length,
+                    "All rigid products use instancing; only animated rats use fallback: batched="+batch.BatchedItems+", fallback="+batch.FallbackItems);
+                Check(animated.All(i=>i.visual is SkinnedMeshRenderer&&i.gameObject.activeInHierarchy&&i.visual.enabled&&!i.visual.forceRenderingOff),
+                    "Animated rats remain visible through their normal renderers");
+                Check(items.Where(i=>!i.definition.isRat).All(i=>i.visual&&i.visual.forceRenderingOff),"Instanced products do not also render individually");
                 Check(batch.SubmittedBatches<=300,"Item submissions stay bounded: "+batch.SubmittedBatches);
                 Check(report.samples[1].batches>0&&report.samples[1].batches<report.samples[0].batches,"Batching reduces total batches");
                 Capture(camera,"Logs/DesignerPiles.png");

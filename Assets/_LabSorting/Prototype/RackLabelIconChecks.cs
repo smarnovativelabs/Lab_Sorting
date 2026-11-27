@@ -31,7 +31,12 @@ namespace LabSorting.Prototype
                 var snapshot=s.Capture();Check(s.Restore(snapshot),"Snapshot restores assigned rack icons");Check(labeled.All(r=>r.Type&&r.labelIcon.sprite==r.Type.icon),"Restored labels match saved types");
                 var first=labeled[0];var held=first.contents.First(i=>i);Check(s.TryPick(held),"Last rack item can be retrieved");DG.Tweening.DOTween.CompleteAll();Check(!first.Type&&!first.labelIcon.enabled&&!first.labelIcon.sprite,"Last retrieval clears icon");
                 s.ThrowActive();DG.Tweening.DOTween.CompleteAll();
-                var different=s.items.First(i=>i.definition==definitions[1]&&i.location==ItemLocation.Loose);Check(s.TryPick(different),"Different type picked");DG.Tweening.DOTween.CompleteAll();Check(s.TryPlace(first),"Empty rack accepts different type");DG.Tweening.DOTween.CompleteAll();Check(first.labelIcon.sprite==different.definition.icon,"Reassignment replaces old icon");
+                var different=s.items.First(i=>i.definition==definitions[1]&&i.location==ItemLocation.Loose);Check(s.TryPick(different),"Different type picked");DG.Tweening.DOTween.CompleteAll();
+                Check(!s.TryPlace(first)&&!first.Type&&!first.labelIcon.enabled,"Existing home rack prevents duplicate type assignment and leaves icon empty");
+                var oldHome=labeled[1];Check(s.TryPick(oldHome.contents.First(i=>i)),"Retrieve last item from different type's existing home");DG.Tweening.DOTween.CompleteAll();
+                Check(!oldHome.Type&&!oldHome.labelIcon.enabled,"Emptying old home releases its type and icon");
+                s.Select(s.carried.IndexOf(different));DG.Tweening.DOTween.CompleteAll();
+                Check(s.TryPlace(first),"Empty rack accepts type after its previous home is emptied");DG.Tweening.DOTween.CompleteAll();Check(first.labelIcon.sprite==different.definition.icon,"Reassignment replaces old icon");
             }
             finally{DG.Tweening.DOTween.CompleteAll();s.Restore(saved);}
         }

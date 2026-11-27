@@ -11,6 +11,12 @@ namespace LabSorting.Prototype
     {
         static void Check(bool ok,string message){if(!ok)throw new Exception("UI LAYOUT: "+message);Debug.Log("UI LAYOUT PASS: "+message);}
         static Rect ScreenRect(RectTransform r,Camera camera,Vector3[] corners){r.GetWorldCorners(corners);var a=RectTransformUtility.WorldToScreenPoint(camera,corners[0]);var b=RectTransformUtility.WorldToScreenPoint(camera,corners[2]);return Rect.MinMaxRect(Mathf.Min(a.x,b.x),Mathf.Min(a.y,b.y),Mathf.Max(a.x,b.x),Mathf.Max(a.y,b.y));}
+        static bool VisibleControl(RectTransform control)
+        {
+            if(!control.gameObject.activeInHierarchy)return false;
+            foreach(var group in control.GetComponentsInParent<CanvasGroup>())if(group.alpha<=.01f)return false;
+            return true;
+        }
         // Center toast at its settled spot (rack direction forced visible, the worst case) must clear the
         // aim point and the HUD above it; the compact Selected card must clear the bottom controls.
         static void CenterToastClear(SortingHUD hud,Transform safe,Camera camera,Vector2Int size,Vector3[] corners)
@@ -48,16 +54,19 @@ namespace LabSorting.Prototype
                     try
                     {
                         canvas.scaleFactor=Mathf.Min(size.x/scaler.referenceResolution.x,size.y/scaler.referenceResolution.y);
-                        safe.ApplySample(new Rect(32,20,size.x-64,size.y-40),size);Canvas.ForceUpdateCanvases();yield return null;
+                        safe.ApplySample(new Rect(32,20,size.x-64,size.y-40),size);Canvas.ForceUpdateCanvases();yield return CurrentGameplayChecks.Frames();
                         var controls=hud.GetComponent<ControlSizes>();
                         if(controls)
                         {
                             var rects=new System.Collections.Generic.List<Rect>();
+                            var names=new System.Collections.Generic.List<string>();
                             foreach(var control in new System.Collections.Generic.List<RectTransform>(controls.actions){controls.joystick})
                             {
                                 control.GetWorldCorners(corners);var low=RectTransformUtility.WorldToScreenPoint(camera,corners[0]);var high=RectTransformUtility.WorldToScreenPoint(camera,corners[2]);
                                 Check(low.x>=31&&high.x<=size.x-31&&low.y>=19&&high.y<=size.y-19,"Sized control remains inside safe area: "+control.name+" at "+size);
-                                var rect=new Rect(low,high-low);foreach(var other in rects)Check(!rect.Overlaps(other),"Sized controls do not overlap at "+size);rects.Add(rect);
+                                // Context controls stay active for pointer ownership even at alpha zero.
+                                if(!VisibleControl(control))continue;
+                                var rect=new Rect(low,high-low);for(int n=0;n<rects.Count;n++)Check(!rect.Overlaps(rects[n]),"Visible controls do not overlap: "+control.name+" "+rect+" / "+names[n]+" "+rects[n]+" at "+size);rects.Add(rect);names.Add(control.name);
                             }
                         }
                         var goal=hud.GetComponent<TaskCardLayout>().card;

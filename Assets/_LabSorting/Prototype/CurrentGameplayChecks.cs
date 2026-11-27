@@ -20,6 +20,13 @@ namespace LabSorting.Prototype
             while(!ready()&&Time.realtimeSinceStartup<end)yield return null;
             Check(ready(),label);
         }
+        // EditMode coroutine ticks can occur between player frames. Wait for actual
+        // rendered frames before inspecting Update/LateUpdate-driven presentation.
+        public static IEnumerator Frames(int count=2)
+        {
+            int target=Time.frameCount+count;
+            yield return Until(()=>Time.frameCount>=target,"Gameplay frames advance",30);
+        }
         public static IEnumerator NaturalDrop()=>Drop(false);
         public static IEnumerator DropSave()=>Drop(true);
         static IEnumerator Drop(bool save)
@@ -34,8 +41,11 @@ namespace LabSorting.Prototype
                 s.persistence=false;s.player.SetBlocked(false);s.player.SetNetworkBlocked(false);s.player.SendMessage("OnApplicationFocus",true);
                 s.player.character.Motor.SetPosition(origin+Vector3.up*.02f);s.player.look.SetYawPitch(Vector2.zero);
                 yield return new WaitForSecondsRealtime(.4f);s.player.character.Motor.enabled=false;
-                var item=s.items.First(i=>!i.definition.isRat&&i.location==ItemLocation.Loose&&!i.Moving);
-                Check(s.TryPick(item),"Product pickup accepted");yield return Until(()=>!item.Moving,"Pickup finishes");
+                // Resume may leave a full magnet collection in hand. Exercise dropping that
+                // real held item instead of asking an already-full inventory to pick another.
+                var item=s.Active&&!s.Active.definition.isRat?s.Active:s.items.First(i=>!i.definition.isRat&&i.location==ItemLocation.Loose&&!i.Moving);
+                if(item.location!=ItemLocation.Hand)Check(s.TryPick(item),"Product pickup accepted");
+                yield return Until(()=>!item.Moving,"Pickup finishes");
                 blocker=GameObject.CreatePrimitive(PrimitiveType.Cube);blocker.transform.position=s.player.view.transform.position;blocker.transform.localScale=Vector3.one*3;Physics.SyncTransforms();
                 int hand=s.carried.Count,cash=s.Cash;s.ThrowActive();
                 Check(item.location==ItemLocation.Hand&&s.carried.Count==hand&&s.Cash==cash,"Blocked release preserves held item and wallet");
@@ -73,24 +83,37 @@ namespace LabSorting.Prototype
         {
             var s=UnityEngine.Object.FindFirstObjectByType<SortingSession>();var snapshot=s.Capture();
             var floor=GameObject.CreatePrimitive(PrimitiveType.Cube);floor.transform.position=new Vector3(1500,-.1f,1500);floor.transform.localScale=new Vector3(20,.2f,20);
+            var interpolation=new System.Collections.Generic.Dictionary<Rigidbody,RigidbodyInterpolation>();
             try
             {
                 s.player.SetBlocked(false);s.player.SetNetworkBlocked(false);s.player.SendMessage("OnApplicationFocus",true);
                 var support=s.items.First(i=>i.definition.id=="lab-first-aid-box"&&i.location==ItemLocation.Loose);
                 var top=s.items.First(i=>i.definition.id.Contains("bandage")&&i.location==ItemLocation.Loose);
                 NaturalItemSettling.Fit(support);NaturalItemSettling.Fit(top);
-                support.Snap(new Vector3(1500,0,1500),Quaternion.Euler(90,0,0));yield return null;Physics.SyncTransforms();
+                // Teleport fixture bodies coherently: interpolated kinematic transforms can
+                // otherwise expose their previous pose while these EditMode coroutines run.
+                foreach(var item in new[]{support,top}){var body=item.GetComponent<Rigidbody>();interpolation.Add(body,body.interpolation);body.interpolation=RigidbodyInterpolation.None;}
+                FixturePose(support,new Vector3(1500,0,1500),Quaternion.identity);
                 var bounds=support.GetComponent<NaturalItemSettling>().WorldBounds;
-                support.Snap(support.transform.position+Vector3.up*(.003f-bounds.min.y),support.transform.rotation);yield return null;Physics.SyncTransforms();bounds=support.GetComponent<NaturalItemSettling>().WorldBounds;
-                top.Snap(bounds.center+Vector3.up,Quaternion.identity);yield return null;Physics.SyncTransforms();var b=top.GetComponent<NaturalItemSettling>().WorldBounds;
-                top.Snap(top.transform.position+new Vector3(bounds.center.x-b.center.x,bounds.max.y+.003f-b.min.y,bounds.center.z-b.center.z),Quaternion.identity);yield return null;
+                FixturePose(support,support.transform.position+Vector3.up*(.003f-bounds.min.y),support.transform.rotation);bounds=support.GetComponent<NaturalItemSettling>().WorldBounds;
+                Check(Mathf.Abs(bounds.min.y-.003f)<.005f,"Support fixture rests above the floor");
+                FixturePose(top,bounds.center+Vector3.up,Quaternion.identity);var b=top.GetComponent<NaturalItemSettling>().WorldBounds;
+                FixturePose(top,top.transform.position+new Vector3(bounds.center.x-b.center.x,bounds.max.y+.003f-b.min.y,bounds.center.z-b.center.z),Quaternion.identity);
                 top.GetComponent<NaturalItemSettling>().Begin(null);yield return Until(()=>!top.Moving,"Stack settles before support removal");
                 float height=top.transform.position.y;Check(!ItemSupport.Floating(top),"Top product supported before pickup");
+                Check(top.hitbox.bounds.min.y>ItemSupport.Gap+.03f,"Stack fixture is high enough to require support after removal");
                 Check(s.TryPick(support),"Stable support can be picked");support.CompleteMotion();
-                yield return Until(()=>top.transform.position.y<height-.03f&&!top.Moving,"Unsupported product falls and settles",25);
+                float deadline=Time.realtimeSinceStartup+25;
+                while(!(top.transform.position.y<height-.03f&&!top.Moving)&&Time.realtimeSinceStartup<deadline)yield return null;
+                Check(top.transform.position.y<height-.03f&&!top.Moving,"Unsupported product falls and settles: before="+height+", after="+top.transform.position.y+", moving="+top.Moving+", eligible="+ItemSupport.Eligible(top)+", floating="+ItemSupport.Floating(top)+", bounds="+top.hitbox.bounds+", support bounds="+bounds);
                 Check(!ItemSupport.Floating(top),"Top product rests on floor after support removal");
             }
-            finally{foreach(var item in s.items)item.CompleteMotion();s.Restore(snapshot);floor.SetActive(false);UnityEngine.Object.Destroy(floor);}
+            finally{foreach(var item in s.items)item.CompleteMotion();s.Restore(snapshot);foreach(var pair in interpolation)if(pair.Key)pair.Key.interpolation=pair.Value;floor.SetActive(false);UnityEngine.Object.Destroy(floor);}
+        }
+        static void FixturePose(SortItem item,Vector3 position,Quaternion rotation)
+        {
+            item.Snap(position,rotation);var body=item.GetComponent<Rigidbody>();
+            if(body){body.position=position;body.rotation=rotation;}Physics.SyncTransforms();
         }
         public static IEnumerator EnglishLanguage()
         {

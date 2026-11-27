@@ -14,6 +14,19 @@ namespace LabSorting.Prototype
         static readonly List<string> failures=new List<string>();
         static void Check(bool ok,string text){report.Add((ok?"PASS ":"FAIL ")+text);Debug.Log("CROWDED DROP: "+report.Last());if(!ok)failures.Add(text);}
         static IEnumerator Capture(string name){ShotGate.Capture("Logs/CrowdedDrop/"+name+".png");yield return new WaitForSecondsRealtime(.35f);}
+        static string SupportEvidence(SortItem item)
+        {
+            var b=item.hitbox.bounds;var evidence=new System.Text.StringBuilder();
+            evidence.Append(" bounds="+b+" position="+item.transform.position.ToString("F6")+" rotation="+item.transform.rotation.ToString("F6"));
+            foreach(var other in Physics.OverlapBox(b.center,b.extents+Vector3.one*ItemSupport.Gap,Quaternion.identity,~0,QueryTriggerInteraction.Ignore))
+            {
+                if(other.transform.IsChildOf(item.transform))continue;
+                foreach(float down in new[]{.01f,ItemSupport.Gap})
+                    if(Physics.ComputePenetration(item.hitbox,item.hitbox.transform.position-Vector3.up*down,item.hitbox.transform.rotation,other,other.transform.position,other.transform.rotation,out var direction,out float depth))
+                        evidence.Append(" contact="+other.name+" down="+down+" normal="+direction+" depth="+depth);
+            }
+            return evidence.ToString();
+        }
         static bool Intersects(SortItem item,out string obstacle)
         {
             Physics.SyncTransforms();var b=item.hitbox.bounds;
@@ -101,7 +114,9 @@ namespace LabSorting.Prototype
                         }
                         Check(!item.Moving&&item.hitbox.enabled,label+" drop completes "+item.definition.displayName);
                         Check(!Intersects(item,out var obstacle),label+" no intersection "+item.name+" with "+obstacle);
-                        Check(!ItemSupport.Floating(item),label+" supported landing "+item.name);
+                        bool supported=!ItemSupport.Floating(item);
+                        if(!supported){report.Add(SupportEvidence(item));File.WriteAllText("Logs/CrowdedDrop/unsupported-"+label+"-"+item.id+".json",JsonUtility.ToJson(s.Capture()));}
+                        Check(supported,label+" supported landing "+item.name);
                         Check(largestJump<.65f,label+" frame continuity "+item.name+" maxStep="+largestJump.ToString("F3"));
                         report.Add(label+" landed "+item.name+" at="+item.transform.position+" planned="+expected);
                     }

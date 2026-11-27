@@ -22,7 +22,8 @@ namespace LabSorting.Prototype
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1560,720),new Vector2Int(1680,720),new Vector2Int(1152,720),new Vector2Int(960,720)})
                 {
                     typeof(ThumbControlsChecks).GetMethod("GameView",flags).Invoke(null,new object[]{size.x,size.y});
-                    for(int n=0;n<10;n++)yield return null;
+                    yield return CurrentGameplayChecks.Until(()=>Screen.width==size.x&&Screen.height==size.y,"Game view adopts sizing resolution "+size,10);
+                    yield return CurrentGameplayChecks.Frames();
                     Canvas.ForceUpdateCanvases();Check(Screen.width==size.x&&Screen.height==size.y,"Resolution "+size);
                     yield return HeldSizingAt();
                 }

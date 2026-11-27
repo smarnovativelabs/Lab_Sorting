@@ -11,7 +11,7 @@ namespace LabSorting.Prototype
     {
         static void Check(bool condition, string message)
         {
-            if (!condition) throw new Exception("CONNECTIVITY: " + message);
+            if (!condition) throw new Exception("CONNECTIVITY: " + message+"; status="+LabServiceRoot.Instance.internet.Status+", ready="+LabServiceRoot.Instance.internet.IsReady+", frame="+Time.frameCount);
             Debug.Log("CONNECTIVITY PASS: " + message);
         }
         static IEnumerator Until(Func<bool> condition, float seconds, string message)

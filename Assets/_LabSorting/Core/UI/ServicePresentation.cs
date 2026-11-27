@@ -56,7 +56,7 @@ namespace LabSorting.UI
         public void DismissLoading(){if(commerce&&commerce.CanClosePurchaseUI){dismissedWait=true;loadingRoot.SetActive(false);ShowToast("Purchase pending. Your reward will be delivered after confirmation.");}}
         public void OpenOffline(){if(visible)return;visible=true;var p=hud.session.player;cursor=Cursor.lockState;cursorVisible=Cursor.visible;p.SetNetworkBlocked(true);hud.session.SuspendForConnection();Cursor.lockState=CursorLockMode.None;Cursor.visible=true;offlineRoot.SetActive(true);offlineRoot.transform.SetAsLastSibling();LabTelemetry.Event("internet_gate_shown",internet?internet.Status.ToString():"Unknown");}
         public void Retry(){LabTelemetry.Event("internet_retry");if(internet)internet.CheckNow();ShowToast("Checking connection...");}
-        void CloseOffline(){if(!visible)return;visible=false;offlineRoot.SetActive(false);hud.session.player.SetNetworkBlocked(false);Cursor.lockState=cursor;Cursor.visible=cursorVisible;}
-        void OnDisable(){if(commerce)commerce.StatusChanged-=Status;commerce=null;CloseOffline();if(hud&&hud.session.player.NetworkBlocked)hud.session.player.SetNetworkBlocked(false);if(loadingRoot)loadingRoot.SetActive(false);}
+        void CloseOffline(){if(!visible)return;visible=false;if(offlineRoot)offlineRoot.SetActive(false);if(hud&&hud.session&&hud.session.player)hud.session.player.SetNetworkBlocked(false);Cursor.lockState=cursor;Cursor.visible=cursorVisible;}
+        void OnDisable(){if(commerce)commerce.StatusChanged-=Status;commerce=null;CloseOffline();if(hud&&hud.session&&hud.session.player&&hud.session.player.NetworkBlocked)hud.session.player.SetNetworkBlocked(false);if(loadingRoot)loadingRoot.SetActive(false);}
     }
 }
